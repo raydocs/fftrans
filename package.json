@@ -48,8 +48,11 @@
       "zones-latest.json"
     ],
     "asarUnpack": [
-      "**/node_modules/sharp/**/*"
+      "**/node_modules/sharp/**/*",
+      "**/node_modules/@img/**/*"
     ],
+    "npmRebuild": true,
+    "buildDependenciesFromSource": true,
     "win": {
       "requestedExecutionLevel": "highestAvailable",
       "icon": "src/html/img/icon/tataru.ico",
