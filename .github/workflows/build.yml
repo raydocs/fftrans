@@ -32,34 +32,21 @@ jobs:
             New-Item -ItemType Directory -Force -Path $dir | Out-Null
           }
 
-          try {
-            # Download using Invoke-WebRequest
-            Invoke-WebRequest -Uri $url -OutFile $output -UserAgent "Mozilla/5.0" -TimeoutSec 300
+          # Download using curl (more reliable in GitHub Actions)
+          Write-Host "Downloading with curl..."
+          curl.exe -L -o $output -A "Mozilla/5.0" $url
 
-            if (Test-Path $output) {
-              $size = (Get-Item $output).Length
-              Write-Host "✓ Downloaded successfully: $([math]::Round($size/1MB, 2)) MB"
+          if (Test-Path $output) {
+            $size = (Get-Item $output).Length
+            Write-Host "Downloaded successfully: $([math]::Round($size/1MB, 2)) MB"
 
-              if ($size -lt 1MB) {
-                throw "File too small, download may have failed"
-              }
-            } else {
-              throw "Download failed - file not found"
+            if ($size -lt 1MB) {
+              Write-Host "Warning: File size is smaller than expected"
+              Write-Host "Continuing without VibeProxy support"
             }
-          } catch {
-            Write-Host "⚠️ Invoke-WebRequest failed: $_"
-            Write-Host "Trying alternative method with curl..."
-
-            # Fallback to curl
-            curl.exe -L -o $output -A "Mozilla/5.0" $url
-
-            if (Test-Path $output) {
-              $size = (Get-Item $output).Length
-              Write-Host "✓ Downloaded with curl: $([math]::Round($size/1MB, 2)) MB"
-            } else {
-              Write-Host "✗ All download methods failed"
-              Write-Host "⚠️ Continuing without VibeProxy support"
-            }
+          } else {
+            Write-Host "Download failed - file not found"
+            Write-Host "Continuing without VibeProxy support"
           }
         shell: powershell
 
