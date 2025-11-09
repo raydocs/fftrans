@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title id="title-dictionary"></title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- 
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://*; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    />
+    -->
+
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+    <!-- app -->
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- window -->
+    <link rel="stylesheet" href="css/dictionary.css" />
+
+    <!-- enhancements -->
+    <link rel="stylesheet" href="css/enhancements.css" />
+  </head>
+
+  <body>
+    <header class="container-fluid p-2">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <img id="img-button-drag" class="img-button" src="./img/ui/open_with_white_48dp.svg" />
+        </div>
+        <div class="col">
+          <span id="span-title-dictionary"></span>
+        </div>
+        <div class="col-auto">
+          <img id="img-button-close" class="img-button" src="./img/ui/close_white_48dp.svg" />
+        </div>
+      </div>
+    </header>
+
+    <main class="container-fluid p-2">
+      <div class="row align-items-center">
+        <div class="col-5">
+          <select class="form-select" id="select-from"></select>
+        </div>
+        <div class="col-auto">
+          <img class="img-fluid" id="img-arrow-right" src="./img/ui/arrow_forward_white_48dp.svg" alt="" />
+        </div>
+        <div class="col-5">
+          <select class="form-select" id="select-to"></select>
+        </div>
+      </div>
+
+      <br />
+
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <button id="button-switch" class="btn btn-primary"></button>
+        </div>
+        <div class="col-auto">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" name="" id="checkbox-tataru" />
+            <label class="form-check-label" for="checkbox-tataru" style="user-select: none"></label>
+          </div>
+        </div>
+      </div>
+
+      <br />
+
+      <div id="div-original-name" hidden>
+        <div class="row align-items-center">
+          <div class="col">
+            <input class="form-control" type="text" name="" id="input-original-name" />
+          </div>
+        </div>
+
+        <br />
+      </div>
+
+      <div class="row align-items-center">
+        <div class="col">
+          <textarea class="form-control" id="textarea-original-text" rows="3"></textarea>
+        </div>
+      </div>
+
+      <br />
+
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <select class="form-select" id="select-engine"></select>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary" id="button-translate"></button>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="row align-items-center">
+        <div class="col">
+          <div><span id="span-translated-text"></span></div>
+        </div>
+      </div>
+
+      <br />
+
+      <div class="row align-items-center">
+        <div class="col">
+          <div id="div-audio"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- renderer -->
+    <script src="./js/drag.js"></script>
+    <script src="./js/language.js"></script>
+  </body>
+</html>

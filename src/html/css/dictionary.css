@@ -1,0 +1,38 @@
+main {
+  margin-top: 3rem;
+  padding: 1rem;
+}
+
+#img-arrow-right {
+  width: 1.5rem;
+  height: 1.5rem;
+  opacity: 0.7;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s ease;
+}
+
+#img-arrow-right:hover {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+#span-translated-text {
+  word-wrap: break-word;
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.3);
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.6;
+  transition: all 0.3s ease;
+  margin: 0.5rem 0;
+}
+
+#span-translated-text:hover {
+  background: rgba(17, 24, 39, 0.75);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.3);
+  border-color: rgba(102, 126, 234, 0.3);
+}

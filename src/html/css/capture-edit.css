@@ -1,0 +1,20 @@
+main {
+  padding-top: 4rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* 优化截图编辑区域 */
+#canvas-preview,
+#img-preview {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+#canvas-preview:hover,
+#img-preview:hover {
+  box-shadow: 0 12px 48px rgba(99, 102, 241, 0.5);
+  border-color: rgba(102, 126, 234, 0.3);
+}

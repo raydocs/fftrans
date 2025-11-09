@@ -1,0 +1,90 @@
+body {
+  overflow: hidden;
+  background-color: transparent;
+}
+
+#div-dialog {
+  scroll-behavior: smooth;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem 1.2rem;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+  width: 100vw;
+  height: 100vh;
+}
+
+#div-dialog div {
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
+  line-break: loose;
+  color: #ffffff;
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInUp 0.4s ease-out;
+}
+
+/* 渐变边框效果 */
+#div-dialog div::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+  opacity: 0.8;
+}
+
+#div-dialog div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 48px 0 rgba(99, 102, 241, 0.4);
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#div-dialog p,
+#div-dialog span {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+  line-height: 1.8;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+/* 对话框滑入动画 */
+@keyframes slideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 优化滚动条样式 */
+#div-dialog::-webkit-scrollbar {
+  width: 6px;
+}
+
+#div-dialog::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  margin: 5rem 0;
+}
+
+#div-dialog::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+  border-radius: 10px;
+}
+
+#div-dialog::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+}

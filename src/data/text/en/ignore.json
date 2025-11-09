@@ -1,0 +1,27 @@
+[
+  "// 本文件使用正規表達式，正規表達式寫法可參考此網頁：https://5xruby.tw/posts/15min-regular-expression",
+  "// ^：開頭",
+  "// $：結尾",
+  "// .*：0個以上的任意文字",
+  "// .+：1個以上的任意文字",
+
+  "^Triple Triad matches not allowed in current area.$",
+  "^Triple Triad matches allowed in current area.$",
+  "^You have left the sanctuary.$",
+  "^You have entered a sanctuary.$",
+  "^Updating online status to Away from Keyboard.$",
+  "^Updating online status. No longer away from keyboard.$",
+
+  "^You spent \\d+ gil.$",
+
+  "^(Mist|The Lavender Beds|The Goblet|Shirogane|Empyreum), Ward \\d+$",
+
+  "^You are no longer selling items in the (Limsa Lominsa|Gridania|Ul'dah|Ishgard|Kugane|Crystarium|Old Sharlayan|Tuliyollal) markets.$",
+  "^You are now selling items in the (Limsa Lominsa|Gridania|Ul'dah|Ishgard|Kugane|Crystarium|Old Sharlayan|Tuliyollal) markets.$",
+  "^The .+ you put up for sale in the (Limsa Lominsa|Gridania|Ul'dah|Ishgard|Kugane|Crystarium|Old Sharlayan|Tuliyollal) markets has sold for \\d+ gil (after fees).$",
+
+  "⇒",
+  "",
+
+  "//comment END"
+]

@@ -1,0 +1,348 @@
+/* ===================================
+   Tataru Assistant UI 增强样式
+   额外的UI优化和动画效果
+   =================================== */
+
+/* ========== 全局优化 ========== */
+
+/* 优化所有文本输入框 */
+textarea.form-control {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  resize: vertical;
+  min-height: 60px;
+}
+
+textarea.form-control:focus {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  outline: none;
+}
+
+textarea.form-control:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 优化input输入框 */
+input.form-control[type="text"],
+input.form-control[type="number"] {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  padding: 0.5rem 0.75rem;
+}
+
+input.form-control[type="text"]:focus,
+input.form-control[type="number"]:focus {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  outline: none;
+}
+
+input.form-control[type="text"]:hover,
+input.form-control[type="number"]:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ========== 分隔线优化 ========== */
+hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(102, 126, 234, 0.5) 20%,
+    rgba(118, 75, 162, 0.5) 50%,
+    rgba(102, 126, 234, 0.5) 80%,
+    transparent
+  );
+  margin: 1.5rem 0;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+hr:hover {
+  opacity: 1;
+}
+
+/* ========== 按钮增强样式 ========== */
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.5);
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+/* ========== 标签页/选项卡优化 ========== */
+.config-page {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== 表格增强 ========== */
+.table-hover tbody tr {
+  cursor: pointer;
+}
+
+.table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.sticky-top {
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== 加载动画 ========== */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ========== 提示/通知样式 ========== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.4);
+  color: #ffffff;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification.success {
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.notification.error {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.notification.info {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* ========== Placeholder文本优化 ========== */
+::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+::-ms-input-placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ========== 选中文本样式 ========== */
+::selection {
+  background: rgba(102, 126, 234, 0.5);
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background: rgba(102, 126, 234, 0.5);
+  color: #ffffff;
+}
+
+/* ========== 音频控件样式 ========== */
+audio {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========== 隐藏的元素过渡 ========== */
+[hidden] {
+  display: none !important;
+}
+
+/* ========== 禁用状态优化 ========== */
+.btn:disabled,
+.form-control:disabled,
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+/* ========== 图标旋转动画 ========== */
+.img-button.rotating {
+  animation: spin 1s linear infinite;
+}
+
+/* ========== 徽章样式 ========== */
+.badge {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ========== 标题样式优化 ========== */
+header span {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+/* ========== 响应式优化 ========== */
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  header, footer {
+    margin: 4px;
+  }
+
+  .img-button {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+/* ========== 无障碍优化 ========== */
+*:focus-visible {
+  outline: 2px solid rgba(102, 126, 234, 0.6);
+  outline-offset: 2px;
+}
+
+/* ========== 平滑滚动 ========== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ========== 选项组样式 ========== */
+optgroup {
+  font-weight: 600;
+  color: rgba(102, 126, 234, 0.9);
+  background: rgba(17, 24, 39, 0.8);
+}
+
+option {
+  padding: 0.5rem;
+  background: rgba(17, 24, 39, 0.9);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+option:checked {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.5), rgba(118, 75, 162, 0.5));
+}
+
+/* ========== 工具提示样式 ========== */
+[title] {
+  position: relative;
+  cursor: help;
+}
+
+/* ========== 动画性能优化 ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========== 打印样式优化 ========== */
+@media print {
+  body {
+    background: white;
+  }
+
+  header,
+  footer,
+  .img-button {
+    display: none;
+  }
+}
+
+/* ========== 深色模式优化 ========== */
+@media (prefers-color-scheme: dark) {
+  /* 已经是深色主题，保持现有样式 */
+}
+
+/* ========== 高对比度模式 ========== */
+@media (prefers-contrast: high) {
+  .img-button,
+  .btn,
+  .form-control,
+  .form-select {
+    border-width: 2px;
+  }
+}

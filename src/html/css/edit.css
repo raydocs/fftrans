@@ -1,0 +1,40 @@
+main {
+  padding-top: 4rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+#div-text1,
+#div-text2 {
+  word-wrap: break-word;
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.3);
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.8;
+  min-height: 100px;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+#div-text1:hover,
+#div-text2:hover {
+  background: rgba(17, 24, 39, 0.75);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.3);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* 如果是可编辑的 */
+[contenteditable="true"] {
+  cursor: text;
+  outline: none;
+}
+
+[contenteditable="true"]:focus {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 6px 24px rgba(99, 102, 241, 0.4);
+}

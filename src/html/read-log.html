@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title id="title-read-log"></title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- 
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://*; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    />
+    -->
+
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+    <!-- app -->
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- window -->
+    <link rel="stylesheet" href="css/read-log.css" />
+
+    <!-- enhancements -->
+    <link rel="stylesheet" href="css/enhancements.css" />
+  </head>
+
+  <body>
+    <header class="container-fluid p-2">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <img id="img-button-drag" class="img-button" src="./img/ui/open_with_white_48dp.svg" />
+        </div>
+        <div class="col">
+          <span id="span-title-read-log"></span>
+        </div>
+        <div class="col-auto">
+          <img id="img-button-close" class="img-button" src="./img/ui/close_white_48dp.svg" />
+        </div>
+      </div>
+    </header>
+
+    <main class="container-fluid px-2">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <label for="select-log"></label>
+        </div>
+        <div class="col-auto">
+          <select class="form-select" id="select-log">
+            <option value="none"></option>
+          </select>
+        </div>
+      </div>
+
+      <br />
+
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <button id="button-read-log" class="btn btn-primary">讀取</button>
+          <button id="button-view-log" class="btn btn-secondary">檢視對話紀錄檔案</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- renderer -->
+    <script src="./js/drag.js"></script>
+    <script src="./js/language.js"></script>
+  </body>
+</html>

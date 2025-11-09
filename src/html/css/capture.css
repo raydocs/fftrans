@@ -1,0 +1,46 @@
+body {
+  background-color: transparent;
+  border: 2px solid rgba(102, 126, 234, 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+header {
+  background: rgba(17, 24, 39, 0.9);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+#canvas-select {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  cursor: crosshair;
+}
+
+#button-screenshot {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 10;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+
+#button-screenshot:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
+  background: linear-gradient(135deg, #764ba2, #667eea);
+}
+
+#button-screenshot:active {
+  transform: translateY(0) scale(0.98);
+}

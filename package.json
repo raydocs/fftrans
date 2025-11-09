@@ -1,0 +1,60 @@
+{
+  "name": "tataru-assistant",
+  "version": "2.8.19",
+  "description": "Tataru Assistant",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "repository": "https://github.com/winw1010/tataru-assistant",
+  "keywords": [],
+  "author": "https://github.com/winw1010",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "electron": "^37.2.6",
+    "electron-builder": "^24.13.3",
+    "eslint": "^9.20.1",
+    "globals": "^15.15.0"
+  },
+  "dependencies": {
+    "@google-cloud/vision": "^5.3.3",
+    "axios": "^1.11.0",
+    "crypto-js": "^4.2.0",
+    "decompress": "^4.2.1",
+    "nodejs-file-downloader": "^4.13.0",
+    "sharp": "^0.34.3",
+    "temp": "^0.9.4",
+    "tesseract.js": "^6.0.1"
+  },
+  "build": {
+    "appId": "com.app.tataru.assistant",
+    "productName": "Tataru Assistant",
+    "directories": {
+      "output": "build"
+    },
+    "extraFiles": [
+      "src/data",
+      "!src/data/img/*.png",
+      "eng.traineddata",
+      "jpn.traineddata",
+      "actions-latest.json",
+      "signatures-global-latest.json",
+      "signatures.json",
+      "statuses-latest.json",
+      "structures-global-latest.json",
+      "zones-latest.json"
+    ],
+    "win": {
+      "requestedExecutionLevel": "highestAvailable",
+      "icon": "src/html/img/icon/tataru.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "createStartMenuShortcut": true,
+      "createDesktopShortcut": "always"
+    }
+  }
+}

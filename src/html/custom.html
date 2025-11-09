@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title id="title-custom"></title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- 
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://*; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    />
+    -->
+
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+    <!-- app -->
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- window -->
+    <link rel="stylesheet" href="css/custom.css" />
+
+    <!-- enhancements -->
+    <link rel="stylesheet" href="css/enhancements.css" />
+  </head>
+
+  <body>
+    <header class="container-fluid p-2">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <img id="img-button-drag" class="img-button" src="./img/ui/open_with_white_48dp.svg" />
+        </div>
+        <div class="col">
+          <span id="span-title-custom"></span>
+        </div>
+        <div class="col-auto">
+          <img id="img-button-close" class="img-button" src="./img/ui/close_white_48dp.svg" />
+        </div>
+      </div>
+    </header>
+
+    <main class="container-fluid">
+      <!-- Custom -->
+      <div class="row">
+        <!-- Custom Before -->
+        <div class="col">
+          <textarea
+            class="form-control"
+            name=""
+            id="textarea-before"
+            cols="30"
+            rows="2"
+            placeholder="Custom Before"
+          ></textarea>
+        </div>
+
+        <!-- Custom After -->
+        <div class="col">
+          <textarea
+            class="form-control"
+            name=""
+            id="textarea-after"
+            cols="30"
+            rows="2"
+            placeholder="Custom After"
+          ></textarea>
+        </div>
+      </div>
+
+      <br />
+
+      <!-- Add -->
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <label for="select-type"></label>
+        </div>
+
+        <div class="col-auto">
+          <select class="form-select" id="select-type">
+            <option value="#player-name" disabled></option>
+            <option value="player"></option>
+            <option value="retainer"></option>
+            <option value="#custom-target" disabled></option>
+            <option value="npc" selected></option>
+            <option value="title"></option>
+            <option value="group"></option>
+            <option value="monster"></option>
+            <option value="things"></option>
+            <option value="skill"></option>
+            <option value="map"></option>
+            <option value="other"></option>
+            <option value="#custom-overwrite" disabled></option>
+            <option value="custom-overwrite"></option>
+            <option value="#custom-source" disabled></option>
+            <option value="custom-source"></option>
+          </select>
+        </div>
+
+        <div class="col">
+          <button class="btn btn-primary" id="button-save-custom"></button>
+          <button class="btn btn-danger" id="button-delete-custom"></button>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="row">
+        <!-- Select Table -->
+        <div class="col-auto">
+          <select class="form-select" name="" id="select-table-type">
+            <option value="player-name-table"></option>
+            <option value="custom-target-table" selected></option>
+            <option value="custom-overwrite-table"></option>
+            <option value="custom-source-table"></option>
+            <option value="temp-name-table"></option>
+            <option value="temp-name-table-valid"></option>
+          </select>
+        </div>
+
+        <!-- buttons -->
+        <div class="col-auto">
+          <!-- View Files Button -->
+          <button class="btn btn-secondary" id="button-view-files"></button>
+
+          <!-- Clear Cache Button -->
+          <button class="btn btn-danger" id="button-clear-cache"></button>
+        </div>
+      </div>
+
+      <br />
+
+      <div class="row">
+        <!-- Keyword -->
+        <div class="col-auto">
+          <input class="form-control" type="text" name="" id="input-Keyword" />
+        </div>
+
+        <!-- buttons -->
+        <div class="col-auto">
+          <!-- Search Button -->
+          <button class="btn btn-primary" id="button-search"></button>
+
+          <!-- View All Button -->
+          <button class="btn btn-primary" id="button-view-all"></button>
+        </div>
+      </div>
+
+      <br />
+
+      <!-- Table -->
+      <div class="row" id="div-custom-table">
+        <div class="col">
+          <table class="table table-hover">
+            <thead class="sticky-top">
+              <tr>
+                <th id="th-custom-before"></th>
+                <th id="th-custom-after"></th>
+                <th id="th-custom-type"></th>
+                <th id="th-custom-edit"></th>
+              </tr>
+            </thead>
+
+            <tbody id="tbody-custom-table">
+              <tr>
+                <td colspan="4">No data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- renderer -->
+    <script src="./js/drag.js"></script>
+    <script src="./js/language.js"></script>
+  </body>
+</html>
