@@ -26,7 +26,7 @@ const defaultConfig = {
     hideButton: true,
     hideDialog: true,
     timeout: '15',
-    backgroundColor: '#00000034',
+    backgroundColor: '#00000000',
     clickThrough: false,
     lock: false,
     speech: false,
@@ -37,7 +37,7 @@ const defaultConfig = {
     fontSize: '1',
     spacing: '1',
     radius: '0',
-    backgroundColor: '#000000A0',
+    backgroundColor: '#00000000',
   },
   captureWindow: {
     x: -1,
