@@ -53,6 +53,7 @@
             <option value="#option-api" disabled></option>
             <option value="div-api"></option>
             <option value="div-ai"></option>
+            <option value="div-vibeproxy"></option>
             <option value="#option-system" disabled></option>
             <option value="div-system"></option>
             <option value="div-proxy"></option>
@@ -741,6 +742,188 @@
         <p class="text-warning">${source} = Source language from settings</p>
         <p class="text-warning">${target} = Target language from settings</p>
         <p class="text-warning">Keep blank if you want to disable custom promopt</p>
+      </div>
+
+      <!-- VibeProxy page -->
+      <div id="div-vibeproxy" class="config-page" hidden>
+        <div class="row">
+          <div class="col-auto">
+            <p id="p-vibeproxy-intro"></p>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Enable VibeProxy -->
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-vibeproxy-enable" />
+              <label class="form-check-label" for="checkbox-vibeproxy-enable"></label>
+            </div>
+          </div>
+        </div>
+
+        <br />
+
+        <!-- Auto Start -->
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-vibeproxy-autostart" />
+              <label class="form-check-label" for="checkbox-vibeproxy-autostart"></label>
+            </div>
+          </div>
+        </div>
+
+        <br />
+
+        <!-- Port -->
+        <div class="row align-items-center">
+          <div class="col">
+            <label for="input-vibeproxy-port"></label>
+          </div>
+          <div class="col-4">
+            <input class="form-control" type="number" name="" id="input-vibeproxy-port" min="1024" max="65535" step="1" value="8318" />
+          </div>
+        </div>
+
+        <br />
+
+        <!-- Request Retry -->
+        <div class="row align-items-center">
+          <div class="col">
+            <label for="input-vibeproxy-retry"></label>
+          </div>
+          <div class="col-4">
+            <input class="form-control" type="number" name="" id="input-vibeproxy-retry" min="0" max="10" step="1" value="3" />
+          </div>
+        </div>
+
+        <br />
+
+        <!-- Debug Mode -->
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-vibeproxy-debug" />
+              <label class="form-check-label" for="checkbox-vibeproxy-debug"></label>
+            </div>
+          </div>
+        </div>
+
+        <br />
+
+        <!-- File Logging -->
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-vibeproxy-logging" />
+              <label class="form-check-label" for="checkbox-vibeproxy-logging"></label>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Server Control -->
+        <div class="row">
+          <div class="col-auto">
+            <p id="p-vibeproxy-server-control"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-auto">
+            <button id="button-vibeproxy-start" class="btn btn-success"></button>
+            <button id="button-vibeproxy-stop" class="btn btn-danger"></button>
+            <button id="button-vibeproxy-restart" class="btn btn-warning"></button>
+          </div>
+        </div>
+
+        <br />
+
+        <div class="row">
+          <div class="col">
+            <span id="span-vibeproxy-status"></span>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Authentication -->
+        <div class="row">
+          <div class="col-auto">
+            <p id="p-vibeproxy-auth"></p>
+          </div>
+        </div>
+
+        <!-- Claude -->
+        <div class="row align-items-center">
+          <div class="col">
+            <label for="button-vibeproxy-auth-claude">Claude</label>
+          </div>
+          <div class="col-auto">
+            <span id="span-vibeproxy-auth-claude-status"></span>
+          </div>
+          <div class="col-auto">
+            <button id="button-vibeproxy-auth-claude" class="btn btn-primary btn-sm"></button>
+          </div>
+        </div>
+
+        <br />
+
+        <!-- OpenAI Codex -->
+        <div class="row align-items-center">
+          <div class="col">
+            <label for="button-vibeproxy-auth-codex">OpenAI Codex</label>
+          </div>
+          <div class="col-auto">
+            <span id="span-vibeproxy-auth-codex-status"></span>
+          </div>
+          <div class="col-auto">
+            <button id="button-vibeproxy-auth-codex" class="btn btn-primary btn-sm"></button>
+          </div>
+        </div>
+
+        <br />
+
+        <!-- Gemini -->
+        <div class="row align-items-center">
+          <div class="col">
+            <label for="button-vibeproxy-auth-gemini">Google Gemini</label>
+          </div>
+          <div class="col-auto">
+            <span id="span-vibeproxy-auth-gemini-status"></span>
+          </div>
+          <div class="col-auto">
+            <button id="button-vibeproxy-auth-gemini" class="btn btn-primary btn-sm"></button>
+          </div>
+        </div>
+
+        <br />
+
+        <!-- Qwen -->
+        <div class="row align-items-center">
+          <div class="col">
+            <label for="button-vibeproxy-auth-qwen">Alibaba Qwen</label>
+          </div>
+          <div class="col-auto">
+            <span id="span-vibeproxy-auth-qwen-status"></span>
+          </div>
+          <div class="col-auto">
+            <button id="button-vibeproxy-auth-qwen" class="btn btn-primary btn-sm"></button>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- View Logs -->
+        <div class="row">
+          <div class="col">
+            <button id="button-vibeproxy-logs" class="btn btn-secondary"></button>
+          </div>
+        </div>
       </div>
 
       <!-- system page -->
