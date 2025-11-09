@@ -18,7 +18,6 @@ const openai = require('../translator/openai');
 const cohere = require('../translator/cohere');
 const gemini = require('../translator/gemini');
 const kimi = require('../translator/kimi');
-const factoryAi = require('../translator/factory-ai');
 const openRouter = require('../translator/openrouter');
 const zhConverter = require('../translator/zh-convert');
 
@@ -122,10 +121,6 @@ async function getTranslation(engine = '', option = {}, type = 'sentence') {
         break;
       case 'Kimi':
         text = await kimi.exec(option, type);
-        break;
-
-      case 'Factory-AI':
-        text = await factoryAi.exec(option, type);
         break;
 
       case 'OpenRouter':
