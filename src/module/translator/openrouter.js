@@ -30,7 +30,7 @@ async function translate(text, source, target, type) {
   aiFunction.initializeChatHistory(chatHistoryList, prompt, config);
 
   const payload = {
-    model: config.api.openRouterModel || 'openai/gpt-4o-mini',
+    model: config.api.openRouterModel || 'openrouter/polaris-alpha',
     messages: [
       {
         role: 'system',
