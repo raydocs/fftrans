@@ -34,14 +34,18 @@
 
 翻譯能力較佳，可正確翻譯較艱深的句子，需申請 API key 才能使用，目前支援以下方案
 
+### 單一模型方案
 - Gemini
-
 - ChatGPT
-
 - Cohere
-
 - Kimi
 
+### AI 聚合平台（推薦）
+- **Factory AI** - 一個 API key 訪問多種 AI 模型（Claude、GPT、GLM 等）
+- **OpenRouter** - 統一接口訪問 100+ AI 模型，支援 Claude 4.5、GPT-5、Gemini 2.5 等最新模型
+  - 📖 [OpenRouter 模型列表](OPENROUTER_MODELS.md)
+
+### 自訂方案
 - 自訂 OpenAI(自訂模式，可自行輸入 POST URL 和 API KEY 使用與 OpenAI 相容的 AI 模型)
 
 # 檔案下載
