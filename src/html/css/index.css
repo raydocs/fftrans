@@ -1,6 +1,6 @@
 body {
   overflow: hidden;
-  background-color: transparent;
+  background: transparent !important;
 }
 
 #div-dialog {
