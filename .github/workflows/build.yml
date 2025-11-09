@@ -54,11 +54,11 @@ jobs:
         run: |
           if (Test-Path "vibeproxy-resources/cli-proxy-api.exe") {
             $size = (Get-Item "vibeproxy-resources/cli-proxy-api.exe").Length
-            Write-Host "✓ CLIProxyAPI binary verified: $([math]::Round($size/1MB, 2)) MB"
-            Write-Host "✓ VibeProxy will be included in the build"
+            Write-Host "CLIProxyAPI binary verified: $([math]::Round($size/1MB, 2)) MB"
+            Write-Host "VibeProxy will be included in the build"
           } else {
-            Write-Host "⚠️ CLIProxyAPI binary not found"
-            Write-Host "⚠️ Build will continue without VibeProxy support"
+            Write-Host "WARNING: CLIProxyAPI binary not found"
+            Write-Host "Build will continue without VibeProxy support"
           }
         shell: powershell
 
@@ -78,7 +78,7 @@ jobs:
           Write-Host "=== Packaging for Windows x64 ==="
           npx electron-builder --win --x64
 
-          Write-Host "✓ Build completed"
+          Write-Host "Build completed successfully"
         shell: powershell
 
       - name: List build artifacts
