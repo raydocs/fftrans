@@ -25,7 +25,7 @@
     "crypto-js": "^4.2.0",
     "decompress": "^4.2.1",
     "nodejs-file-downloader": "^4.13.0",
-    "sharp": "^0.34.3",
+    "sharp": "^0.34.5",
     "temp": "^0.9.4",
     "tesseract.js": "^6.0.1"
   },
@@ -46,6 +46,9 @@
       "statuses-latest.json",
       "structures-global-latest.json",
       "zones-latest.json"
+    ],
+    "asarUnpack": [
+      "**/node_modules/sharp/**/*"
     ],
     "win": {
       "requestedExecutionLevel": "highestAvailable",
