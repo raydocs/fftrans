@@ -155,6 +155,11 @@ function setButton() {
     ipcRenderer.send('execute-command', `explorer "${path}"`);
   };
 
+  // set openrouter api
+  document.getElementById('a-set-openrouter-api').onclick = () => {
+    ipcRenderer.send('execute-command', 'explorer "https://openrouter.ai/"');
+  };
+
   // set gpt api
   document.getElementById('a-set-gpt-api').onclick = async () => {
     const path = await ipcRenderer.invoke('get-root-path', 'src', 'data', 'text', 'readme', 'sub-gpt-api.html');
@@ -715,6 +720,15 @@ function getOptionList() {
     [
       ['input-kimi-model', 'value'],
       ['api', 'kimiModel'],
+    ],
+
+    [
+      ['input-openrouter-api-key', 'value'],
+      ['api', 'openRouterApiKey'],
+    ],
+    [
+      ['input-openrouter-model', 'value'],
+      ['api', 'openRouterModel'],
     ],
 
     [
