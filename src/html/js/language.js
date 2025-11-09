@@ -93,6 +93,7 @@ function getElementTextList() {
         'a-set-gemini-api': ['說明', '说明', 'Guide'],
         'a-set-cohere-api': ['說明', '说明', 'Guide'],
         'a-set-kimi-api': ['說明', '说明', 'Guide'],
+        'a-set-openrouter-api': ['說明', '说明', 'Guide'],
         'a-set-gpt-api': ['說明', '说明', 'Guide'],
         'a-set-llm-api': ['說明', '说明', 'Guide'],
 
@@ -188,6 +189,9 @@ function getElementTextList() {
         'input-kimi-token': ['API Key', 'API金钥', 'API Key'],
         'input-kimi-model': ['模型', '模型', 'Model'],
 
+        'input-openrouter-api-key': ['API Key', 'API金钥', 'API Key'],
+        'input-openrouter-model': ['模型', '模型', 'Model'],
+
         'input-gpt-api-key': ['API Key', 'API金钥', 'API Key'],
         'input-gpt-model': ['模型', '模型', 'Model'],
 
@@ -265,6 +269,7 @@ function getElementTextList() {
         Cohere: ['Cohere', 'Cohere', 'Cohere'],
         Gemini: ['Gemini', 'Gemini', 'Gemini'],
         Kimi: ['Kimi', 'Kimi', 'Kimi'],
+        OpenRouter: ['OpenRouter', 'OpenRouter', 'OpenRouter'],
         'LLM-API': ['自訂OpenAI', '自订OpenAI', 'Custom OpenAI'],
 
         Auto: ['自動偵測', '自动侦测', 'Auto'],
@@ -325,6 +330,7 @@ function getElementTextList() {
         'p-cohere': ['Cohere設定', 'Cohere设定', 'Cohere'],
         'p-chat-gpt': ['ChatGPT設定', 'ChatGPT设定', 'ChatGPT'],
         'p-kimi': ['Kimi設定', 'Kimi设定', 'Kimi'],
+        'p-openrouter': ['OpenRouter設定', 'OpenRouter设定', 'OpenRouter'],
         'p-llm-api': ['自訂OpenAI設定', '自订OpenAI设定', 'Custom OpenAI'],
         'p-ssl-warning': [
           '若您的API不支援SSL驗證，請至【系統設定】關閉SSL驗證',
