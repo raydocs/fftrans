@@ -1,6 +1,6 @@
 'use strict';
 
-const requestModule = require('../system/request-module');
+const OpenAI = require('openai');
 
 const aiFunction = require('./ai-function');
 
@@ -20,36 +20,36 @@ async function exec(option, type) {
 async function translate(text, source, target, type) {
   const config = configModule.getConfig();
   const prompt = aiFunction.createTranslationPrompt(source, target, type);
-  const apiUrl = 'https://api.openai.com/v1/chat/completions';
-  const headers = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${config.api.gptApiKey}`,
-  };
+
+  // Create OpenAI client with API key
+  const openai = new OpenAI({
+    apiKey: config.api.gptApiKey,
+  });
 
   // initialize chat history
   aiFunction.initializeChatHistory(chatHistoryList, prompt, config);
 
-  const payload = {
-    model: config.api.gptModel,
-    messages: [
-      {
-        role: 'system',
-        content: prompt,
-      },
-      ...chatHistoryList[prompt],
-      {
-        role: 'user',
-        content: text,
-      },
-    ],
-    temperature: parseFloat(config.ai.temperature),
-    //top_p: 1,
-  };
+  const messages = [
+    {
+      role: 'system',
+      content: prompt,
+    },
+    ...chatHistoryList[prompt],
+    {
+      role: 'user',
+      content: text,
+    },
+  ];
 
-  // get response
-  const response = await requestModule.post(apiUrl, payload, headers);
-  const responseText = response.data.choices[0].message.content;
-  const totalTokens = response?.data?.usage?.total_tokens;
+  // get response using official OpenAI SDK
+  const response = await openai.chat.completions.create({
+    model: config.api.gptModel,
+    messages: messages,
+    temperature: parseFloat(config.ai.temperature),
+  });
+
+  const responseText = response.choices[0].message.content;
+  const totalTokens = response?.usage?.total_tokens;
 
   // push history
   if (config.ai.useChat && type !== 'name') {
@@ -80,13 +80,13 @@ async function getImageText(imageBase64 = '') {
 
   try {
     const config = configModule.getConfig();
-    const apiUrl = 'https://api.openai.com/v1/chat/completions';
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.api.gptApiKey}`,
-    };
 
-    const payload = {
+    // Create OpenAI client with API key
+    const openai = new OpenAI({
+      apiKey: config.api.gptApiKey,
+    });
+
+    const response = await openai.chat.completions.create({
       model: config.api.gptModel,
       messages: [
         {
@@ -105,10 +105,9 @@ async function getImageText(imageBase64 = '') {
           ],
         },
       ],
-    };
+    });
 
-    const response = await requestModule.post(apiUrl, payload, headers);
-    return response.data.choices[0].message.content;
+    return response.choices[0].message.content;
   } catch (error) {
     console.log(error);
     return '';
@@ -118,10 +117,19 @@ async function getImageText(imageBase64 = '') {
 // get model list
 async function getModelList(apiKey = null) {
   try {
-    const apiUrl = 'https://api.openai.com/v1/models';
-    const response = await requestModule.get(apiUrl, { Authorization: 'Bearer ' + apiKey });
+    // Create OpenAI client with API key
+    const openai = new OpenAI({
+      apiKey: apiKey,
+    });
 
-    let list = response.data.data.map((x) => x.id);
+    const response = await openai.models.list();
+    const list = [];
+
+    // Convert async iterator to array
+    for await (const model of response) {
+      list.push(model.id);
+    }
+
     let modelList = [];
 
     for (let index = 0; index < list.length; index++) {
