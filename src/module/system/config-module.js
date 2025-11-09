@@ -85,6 +85,8 @@ const defaultConfig = {
     factoryAiApiUrl: 'https://api.aiproxy.io/v1/chat/completions',
     factoryAiApiKey: '',
     factoryAiModel: 'gpt-4o-mini',
+    openRouterApiKey: '',
+    openRouterModel: 'openai/gpt-4o-mini',
   },
   ai: {
     useChat: false,
