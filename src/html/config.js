@@ -48,6 +48,9 @@ async function setView() {
   const googleVisionType = document.getElementById('select-google-vision-type').value;
   document.getElementById('div-' + googleVisionType).hidden = false;
 
+  // update vibeproxy status
+  await updateVibeProxyStatus();
+
   // change UI text
   ipcRenderer.send('change-ui-text');
 }
@@ -231,6 +234,56 @@ function setButton() {
   // donate
   document.getElementById('a-donate').onclick = () => {
     ipcRenderer.send('execute-command', 'explorer "https://www.buymeacoffee.com/winw1010"');
+  };
+
+  // vibeproxy start
+  document.getElementById('button-vibeproxy-start').onclick = async () => {
+    const result = await ipcRenderer.invoke('vibeproxy-start');
+    if (result) {
+      ipcRenderer.send('add-notification', 'VibeProxy started');
+    } else {
+      ipcRenderer.send('add-notification', 'Failed to start VibeProxy');
+    }
+    await updateVibeProxyStatus();
+  };
+
+  // vibeproxy stop
+  document.getElementById('button-vibeproxy-stop').onclick = async () => {
+    await ipcRenderer.invoke('vibeproxy-stop');
+    ipcRenderer.send('add-notification', 'VibeProxy stopped');
+    await updateVibeProxyStatus();
+  };
+
+  // vibeproxy restart
+  document.getElementById('button-vibeproxy-restart').onclick = async () => {
+    await ipcRenderer.invoke('vibeproxy-stop');
+    const result = await ipcRenderer.invoke('vibeproxy-start');
+    if (result) {
+      ipcRenderer.send('add-notification', 'VibeProxy restarted');
+    } else {
+      ipcRenderer.send('add-notification', 'Failed to restart VibeProxy');
+    }
+    await updateVibeProxyStatus();
+  };
+
+  // vibeproxy auth buttons
+  const authServices = ['claude', 'codex', 'gemini', 'qwen'];
+  authServices.forEach((service) => {
+    document.getElementById(`button-vibeproxy-auth-${service}`).onclick = async () => {
+      const result = await ipcRenderer.invoke('vibeproxy-auth', service);
+      if (result.success) {
+        ipcRenderer.send('add-notification', result.message);
+      } else {
+        ipcRenderer.send('add-notification', `Failed to authenticate ${service}`);
+      }
+      await updateVibeProxyStatus();
+    };
+  });
+
+  // vibeproxy logs
+  document.getElementById('button-vibeproxy-logs').onclick = async () => {
+    const logs = await ipcRenderer.invoke('vibeproxy-logs');
+    alert(logs.join('\n'));
   };
 
   // default
@@ -440,6 +493,32 @@ function saveOptions(config = {}) {
       }
     }
   });
+}
+
+// update vibeproxy status
+async function updateVibeProxyStatus() {
+  try {
+    const status = await ipcRenderer.invoke('vibeproxy-status');
+
+    // Update server status
+    const statusText = status.server.isRunning
+      ? `✅ Running on port ${status.server.port}`
+      : '❌ Not running';
+    document.getElementById('span-vibeproxy-status').innerText = statusText;
+
+    // Update auth status for each service
+    const services = ['claude', 'codex', 'gemini', 'qwen'];
+    services.forEach((service) => {
+      const authStatus = status.auth[service];
+      let statusText = '❌ Not authenticated';
+      if (authStatus && authStatus.isAuthenticated) {
+        statusText = `✅ ${authStatus.email || 'Authenticated'}`;
+      }
+      document.getElementById(`span-vibeproxy-auth-${service}-status`).innerText = statusText;
+    });
+  } catch (error) {
+    console.error('Failed to update VibeProxy status:', error);
+  }
 }
 
 function getOptionList() {
@@ -706,6 +785,32 @@ function getOptionList() {
     [
       ['input-proxy-password', 'value'],
       ['proxy', 'password'],
+    ],
+
+    // vibeproxy
+    [
+      ['checkbox-vibeproxy-enable', 'checked'],
+      ['vibeproxy', 'enable'],
+    ],
+    [
+      ['checkbox-vibeproxy-autostart', 'checked'],
+      ['vibeproxy', 'autoStart'],
+    ],
+    [
+      ['input-vibeproxy-port', 'value'],
+      ['vibeproxy', 'port'],
+    ],
+    [
+      ['input-vibeproxy-retry', 'value'],
+      ['vibeproxy', 'requestRetry'],
+    ],
+    [
+      ['checkbox-vibeproxy-debug', 'checked'],
+      ['vibeproxy', 'debug'],
+    ],
+    [
+      ['checkbox-vibeproxy-logging', 'checked'],
+      ['vibeproxy', 'loggingToFile'],
     ],
 
     // system
