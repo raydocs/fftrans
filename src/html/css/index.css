@@ -19,11 +19,11 @@ body {
   padding: 1rem 1.2rem;
   line-break: loose;
   color: #ffffff;
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(12px);
+  background: transparent;
+  backdrop-filter: none;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -37,16 +37,16 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
-  opacity: 0.8;
+  height: 0px;
+  background: transparent;
+  opacity: 0;
 }
 
 #div-dialog div:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 48px 0 rgba(99, 102, 241, 0.4);
-  background: rgba(17, 24, 39, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 #div-dialog p,
@@ -75,16 +75,16 @@ body {
 }
 
 #div-dialog::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
   border-radius: 10px;
   margin: 5rem 0;
 }
 
 #div-dialog::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
 }
 
 #div-dialog::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+  background: rgba(255, 255, 255, 0.25);
 }
