@@ -51,6 +51,19 @@ async function setView() {
   // update vibeproxy status
   await updateVibeProxyStatus();
 
+  // auto-start vibeproxy if enabled but not running
+  const vibeproxyEnabled = document.getElementById('checkbox-vibeproxy-enable').checked;
+  if (vibeproxyEnabled) {
+    const status = await ipcRenderer.invoke('vibeproxy-status');
+    if (!status.server.isRunning) {
+      const result = await ipcRenderer.invoke('vibeproxy-start');
+      if (result) {
+        console.log('VibeProxy auto-started');
+      }
+      await updateVibeProxyStatus();
+    }
+  }
+
   // change UI text
   ipcRenderer.send('change-ui-text');
 }
@@ -286,6 +299,25 @@ function setButton() {
     alert(logs.join('\n'));
   };
 
+  // vibeproxy enable checkbox - auto start/stop service
+  document.getElementById('checkbox-vibeproxy-enable').onchange = async (event) => {
+    const isEnabled = event.target.checked;
+    if (isEnabled) {
+      const result = await ipcRenderer.invoke('vibeproxy-start');
+      if (result) {
+        ipcRenderer.send('add-notification', 'VibeProxy 已启动');
+      } else {
+        ipcRenderer.send('add-notification', 'VibeProxy 启动失败');
+        // Revert checkbox if start failed
+        event.target.checked = false;
+      }
+    } else {
+      await ipcRenderer.invoke('vibeproxy-stop');
+      ipcRenderer.send('add-notification', 'VibeProxy 已停止');
+    }
+    await updateVibeProxyStatus();
+  };
+
   // default
   document.getElementById('button-save-default-config').onclick = async () => {
     await saveDefaultConfig();
@@ -508,11 +540,18 @@ async function updateVibeProxyStatus() {
 
     // Update auth status for each service
     const services = ['claude', 'codex', 'gemini', 'qwen'];
+    const serviceNames = {
+      'claude': 'Anthropic Claude',
+      'codex': 'OpenAI Codex',
+      'gemini': 'Google Gemini',
+      'qwen': 'Alibaba Qwen'
+    };
     services.forEach((service) => {
       const authStatus = status.auth[service];
-      let statusText = '❌ Not authenticated';
+      let statusText = `❌ 未认证 (${serviceNames[service]})`;
       if (authStatus && authStatus.isAuthenticated) {
-        statusText = `✅ ${authStatus.email || 'Authenticated'}`;
+        const email = authStatus.email || '已认证';
+        statusText = `✅ ${email}`;
       }
       document.getElementById(`span-vibeproxy-auth-${service}-status`).innerText = statusText;
     });
