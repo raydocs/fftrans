@@ -16,6 +16,65 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Download CLIProxyAPI for VibeProxy
+        run: |
+          Write-Host "=== Downloading CLIProxyAPI for VibeProxy Integration ==="
+
+          $url = "https://github.com/router-for-me/CLIProxyAPI/releases/latest/download/cli-proxy-api-windows-amd64.exe"
+          $output = "vibeproxy-resources/cli-proxy-api.exe"
+
+          Write-Host "Downloading from: $url"
+          Write-Host "Saving to: $output"
+
+          # Create directory if it doesn't exist
+          $dir = Split-Path $output
+          if (-not (Test-Path $dir)) {
+            New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          }
+
+          try {
+            # Download using Invoke-WebRequest
+            Invoke-WebRequest -Uri $url -OutFile $output -UserAgent "Mozilla/5.0" -TimeoutSec 300
+
+            if (Test-Path $output) {
+              $size = (Get-Item $output).Length
+              Write-Host "✓ Downloaded successfully: $([math]::Round($size/1MB, 2)) MB"
+
+              if ($size -lt 1MB) {
+                throw "File too small, download may have failed"
+              }
+            } else {
+              throw "Download failed - file not found"
+            }
+          } catch {
+            Write-Host "⚠️ Invoke-WebRequest failed: $_"
+            Write-Host "Trying alternative method with curl..."
+
+            # Fallback to curl
+            curl.exe -L -o $output -A "Mozilla/5.0" $url
+
+            if (Test-Path $output) {
+              $size = (Get-Item $output).Length
+              Write-Host "✓ Downloaded with curl: $([math]::Round($size/1MB, 2)) MB"
+            } else {
+              Write-Host "✗ All download methods failed"
+              Write-Host "⚠️ Continuing without VibeProxy support"
+            }
+          }
+        shell: powershell
+
+      - name: Verify downloaded file
+        run: |
+          if (Test-Path "vibeproxy-resources/cli-proxy-api.exe") {
+            $size = (Get-Item "vibeproxy-resources/cli-proxy-api.exe").Length
+            Write-Host "✓ CLIProxyAPI binary verified: $([math]::Round($size/1MB, 2)) MB"
+            Write-Host "✓ VibeProxy will be included in the build"
+          } else {
+            Write-Host "⚠️ CLIProxyAPI binary not found"
+            Write-Host "⚠️ Build will continue without VibeProxy support"
+          }
+        shell: powershell
+
       - name: Execute version check script
         id: auto-check
         run: bash .github/workflows/autocheck.sh
@@ -23,9 +82,29 @@ jobs:
       - name: Build and package
         if: steps.auto-check.outputs.status == 'ready'
         run: |
+          Write-Host "=== Installing dependencies ==="
           npm install
+
+          Write-Host "=== Building application ==="
           npm run dist
+
+          Write-Host "=== Packaging for Windows x64 ==="
           npx electron-builder --win --x64
+
+          Write-Host "✓ Build completed"
+        shell: powershell
+
+      - name: List build artifacts
+        if: steps.auto-check.outputs.status == 'ready'
+        run: |
+          Write-Host "=== Build Artifacts ==="
+          if (Test-Path "build") {
+            Get-ChildItem build -Recurse | Where-Object { !$_.PSIsContainer } | ForEach-Object {
+              $size = "$([math]::Round($_.Length/1MB, 2)) MB"
+              Write-Host "$($_.Name) - $size"
+            }
+          }
+        shell: powershell
 
       - name: Create release
         id: create_release

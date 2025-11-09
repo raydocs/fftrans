@@ -1,14 +1,14 @@
 {
   "name": "tataru-assistant",
   "version": "2.8.19",
-  "description": "Tataru Assistant",
+  "description": "Tataru Assistant with VibeProxy Integration",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
-  "repository": "https://github.com/winw1010/tataru-assistant",
+  "repository": "https://github.com/raydocs/tataru",
   "keywords": [],
   "author": "https://github.com/winw1010",
   "license": "MIT",
@@ -22,6 +22,7 @@
   "dependencies": {
     "@google-cloud/vision": "^5.3.3",
     "axios": "^1.11.0",
+    "chokidar": "^3.5.3",
     "crypto-js": "^4.2.0",
     "decompress": "^4.2.1",
     "nodejs-file-downloader": "^4.13.0",
@@ -40,12 +41,18 @@
       "!src/data/img/*.png",
       "eng.traineddata",
       "jpn.traineddata",
+      "jpn_vert.traineddata",
       "actions-latest.json",
       "signatures-global-latest.json",
       "signatures.json",
       "statuses-latest.json",
       "structures-global-latest.json",
-      "zones-latest.json"
+      "zones-latest.json",
+      {
+        "from": "vibeproxy-resources",
+        "to": "vibeproxy",
+        "filter": ["**/*"]
+      }
     ],
     "asarUnpack": [
       "**/node_modules/sharp/**/*",
