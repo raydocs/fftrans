@@ -10,6 +10,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: windows-latest
+    permissions:
+      contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
