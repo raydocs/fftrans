@@ -83,7 +83,7 @@ const defaultConfig = {
     llmApiKey: '',
     llmApiModel: '',
     openRouterApiKey: '',
-    openRouterModel: 'openai/gpt-4o-mini',
+    openRouterModel: 'openrouter/polaris-alpha',
   },
   ai: {
     useChat: false,
