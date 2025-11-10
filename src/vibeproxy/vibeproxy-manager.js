@@ -5,17 +5,16 @@
  */
 
 const path = require('path');
+const fs = require('fs');
 const { app } = require('electron');
 const ServerManager = require('./server-manager');
 const AuthMonitor = require('./auth-monitor');
-const BinaryDownloader = require('./binary-downloader');
 
 class VibeProxyManager {
   constructor() {
     this.serverManager = null;
     this.authMonitor = null;
     this.initialized = false;
-    this.binaryDownloader = new BinaryDownloader();
     this.cliProxyApiPath = null;
     this.resourcesPath = null;
   }
@@ -42,13 +41,25 @@ class VibeProxyManager {
       console.log('[VibeProxy] Binary path:', this.cliProxyApiPath);
       console.log('[VibeProxy] Config path:', configPath);
 
-      // Ensure the binary exists (download if missing)
-      const downloadResult = await this.binaryDownloader.ensureBinary(this.cliProxyApiPath);
-      if (!downloadResult.success) {
-        console.error('[VibeProxy] Failed to ensure binary:', downloadResult.message);
+      // Check if binary exists
+      if (!fs.existsSync(this.cliProxyApiPath)) {
+        console.error('[VibeProxy] CLIProxyAPI binary not found at:', this.cliProxyApiPath);
         return {
           success: false,
-          message: `CLIProxyAPI 不可用: ${downloadResult.message}\n\n请访问 https://github.com/router-for-me/CLIProxyAPI/releases 手动下载`
+          message: 'CLIProxyAPI 二进制文件未找到。请重新安装应用。'
+        };
+      }
+
+      // Verify binary size (should be > 10MB)
+      const stats = fs.statSync(this.cliProxyApiPath);
+      const fileSizeMB = stats.size / 1024 / 1024;
+      console.log(`[VibeProxy] Binary size: ${fileSizeMB.toFixed(2)} MB`);
+
+      if (fileSizeMB < 10) {
+        console.error('[VibeProxy] Binary file is too small, may be corrupted');
+        return {
+          success: false,
+          message: 'CLIProxyAPI 二进制文件可能已损坏。请重新安装应用。'
         };
       }
 
@@ -64,7 +75,7 @@ class VibeProxyManager {
 
       return {
         success: true,
-        message: 'VibeProxy initialized successfully'
+        message: 'VibeProxy 初始化成功'
       };
 
     } catch (error) {
@@ -158,7 +169,6 @@ class VibeProxyManager {
       return false;
     }
 
-    const fs = require('fs');
     return fs.existsSync(this.serverManager.cliProxyApiPath);
   }
 
