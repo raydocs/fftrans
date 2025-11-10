@@ -1,6 +1,6 @@
 {
   "name": "tataru-assistant",
-  "version": "2.8.23",
+  "version": "0.0.1",
   "description": "Tataru Assistant with VibeProxy Integration",
   "main": "src/main.js",
   "scripts": {
