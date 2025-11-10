@@ -48,6 +48,9 @@ const windowModule = require('./window-module');
 // fix entry
 const { addTask } = require('../fix/fix-entry');
 
+// vibeproxy manager
+const vibeProxyManager = require('../../vibeproxy/vibeproxy-manager');
+
 // json entry
 const jsonEntry = require('../fix/json-entry');
 
@@ -75,6 +78,7 @@ function setIPC() {
   setJsonChannel();
   setRequestChannel();
   setTranslateChannel();
+  setVibeProxyChannel();
   setFileChannel();
 }
 
@@ -606,6 +610,121 @@ function setTranslateChannel() {
     return gpt.getModelList(apiKey);
   });
   */
+}
+
+// set vibeproxy channel
+function setVibeProxyChannel() {
+  // Initialize VibeProxy (async, called on app ready)
+  ipcMain.handle('vibeproxy-init', async () => {
+    try {
+      return await vibeProxyManager.initialize();
+    } catch (error) {
+      console.error('[IPC] VibeProxy init error:', error);
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  });
+
+  // Start VibeProxy server
+  ipcMain.handle('vibeproxy-start', async () => {
+    try {
+      // Ensure initialized
+      if (!vibeProxyManager.initialized) {
+        const initResult = await vibeProxyManager.initialize();
+        if (!initResult.success) {
+          return false;
+        }
+      }
+
+      return await vibeProxyManager.start();
+    } catch (error) {
+      console.error('[IPC] VibeProxy start error:', error);
+      return false;
+    }
+  });
+
+  // Stop VibeProxy server
+  ipcMain.handle('vibeproxy-stop', async () => {
+    try {
+      await vibeProxyManager.stop();
+      return true;
+    } catch (error) {
+      console.error('[IPC] VibeProxy stop error:', error);
+      return false;
+    }
+  });
+
+  // Start authentication for a service
+  ipcMain.handle('vibeproxy-auth', async (event, service) => {
+    try {
+      if (!vibeProxyManager.initialized) {
+        const initResult = await vibeProxyManager.initialize();
+        if (!initResult.success) {
+          return {
+            success: false,
+            message: initResult.message
+          };
+        }
+      }
+
+      return await vibeProxyManager.startAuth(service);
+    } catch (error) {
+      console.error('[IPC] VibeProxy auth error:', error);
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  });
+
+  // Get VibeProxy status
+  ipcMain.handle('vibeproxy-status', async () => {
+    try {
+      if (!vibeProxyManager.initialized) {
+        return {
+          server: { isRunning: false, port: 8318 },
+          auth: {
+            claude: { isAuthenticated: false, email: null, type: 'claude' },
+            codex: { isAuthenticated: false, email: null, type: 'codex' },
+            gemini: { isAuthenticated: false, email: null, type: 'gemini' },
+            qwen: { isAuthenticated: false, email: null, type: 'qwen' }
+          }
+        };
+      }
+
+      return {
+        server: vibeProxyManager.getStatus(),
+        auth: vibeProxyManager.getAuthStatuses()
+      };
+    } catch (error) {
+      console.error('[IPC] VibeProxy status error:', error);
+      return {
+        server: { isRunning: false, port: 8318 },
+        auth: {
+          claude: { isAuthenticated: false, email: null, type: 'claude' },
+          codex: { isAuthenticated: false, email: null, type: 'codex' },
+          gemini: { isAuthenticated: false, email: null, type: 'gemini' },
+          qwen: { isAuthenticated: false, email: null, type: 'qwen' }
+        }
+      };
+    }
+  });
+
+  // Get server logs
+  ipcMain.handle('vibeproxy-logs', async () => {
+    try {
+      if (!vibeProxyManager.initialized) {
+        return ['VibeProxy 尚未初始化'];
+      }
+
+      return vibeProxyManager.getLogs();
+    } catch (error) {
+      console.error('[IPC] VibeProxy logs error:', error);
+      return ['获取日志失败: ' + error.message];
+    }
+  });
 }
 
 // set file channel
