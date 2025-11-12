@@ -354,29 +354,37 @@ function setFocusable(value = true) {
 
 // minimize window with focusable fallback for handheld devices
 function minimizeWindow(appWindow) {
-  if (!appWindow) {
+  if (!appWindow || appWindow.isDestroyed()) {
     return;
   }
 
-  let shouldRestoreFocusable = false;
+  const isIndexWindow = appWindow === windowList['index'];
 
-  if (appWindow === windowList['index']) {
-    shouldRestoreFocusable = !appWindow.isDestroyed() && !appWindow.isFocusable();
+  if (isIndexWindow) {
+    const config = configModule.getConfig();
+    const configuredFocusable = Boolean(config.indexWindow?.focusable);
+    const needsFallback = !configuredFocusable || !appWindow.isFocusable();
 
-    if (shouldRestoreFocusable) {
+    if (needsFallback) {
       appWindow.setFocusable(true);
       appWindow.setMinimizable(true);
+
+      appWindow.once('minimize', () => {
+        const latestConfig = configModule.getConfig();
+        setFocusable(Boolean(latestConfig.indexWindow?.focusable));
+      });
+
+      setImmediate(() => {
+        if (!appWindow.isDestroyed()) {
+          appWindow.minimize();
+        }
+      });
+
+      return;
     }
   }
 
   appWindow.minimize();
-
-  if (shouldRestoreFocusable) {
-    appWindow.once('minimize', () => {
-      const config = configModule.getConfig();
-      setFocusable(Boolean(config.indexWindow?.focusable));
-    });
-  }
 }
 
 // restart window
