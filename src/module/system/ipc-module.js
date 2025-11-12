@@ -193,7 +193,11 @@ function setWindowChannel() {
   // minimize window
   ipcMain.on('minimize-window', (event) => {
     try {
-      BrowserWindow.fromWebContents(event.sender).minimize();
+      const targetWindow = BrowserWindow.fromWebContents(event.sender);
+
+      if (targetWindow) {
+        windowModule.minimizeWindow(targetWindow);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -353,7 +357,7 @@ function setCaptureChannel() {
   // minimize all windows
   ipcMain.on('minimize-all-windows', () => {
     windowModule.forEachWindow((myWindow) => {
-      myWindow.minimize();
+      windowModule.minimizeWindow(myWindow);
     });
   });
 

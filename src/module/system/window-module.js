@@ -25,7 +25,7 @@ function createWindow(windowName, data = null) {
     const windowSize = getWindowSize(windowName, config);
 
     // create new window
-    const appWindow = new BrowserWindow({
+    const browserWindowOptions = {
       ...windowSize,
       show: false,
       frame: false,
@@ -38,7 +38,13 @@ function createWindow(windowName, data = null) {
         sandbox: true,
         preload: fileModule.getAppPath(`src/html/${windowName}.js`),
       },
-    });
+    };
+
+    if (windowName === 'index') {
+      browserWindowOptions.minimizable = true;
+    }
+
+    const appWindow = new BrowserWindow(browserWindowOptions);
 
     // fix title bar (workaround)
     fixTitleBar(appWindow);
@@ -344,6 +350,95 @@ function setFocusable(value = true) {
   indexWindow?.setMinimizable(true);
 }
 
+// minimize window with focusable fallback for handheld devices
+function minimizeWindow(appWindow) {
+  if (!appWindow || appWindow.isDestroyed()) {
+    return;
+  }
+
+  const isIndexWindow = appWindow === windowList['index'];
+
+  if (isIndexWindow) {
+    const config = configModule.getConfig();
+    const configuredFocusable = Boolean(config.indexWindow?.focusable);
+    const needsFallback = !configuredFocusable || !appWindow.isFocusable();
+
+    if (needsFallback) {
+      appWindow.setFocusable(true);
+      appWindow.setMinimizable(true);
+
+      let reverted = false;
+      let fallbackTimeout;
+
+      function revertFocusable() {
+        if (reverted) {
+          return;
+        }
+
+        reverted = true;
+        const latestConfig = configModule.getConfig();
+        setFocusable(Boolean(latestConfig.indexWindow?.focusable));
+      }
+
+      function attemptMinimize() {
+        if (!appWindow.isDestroyed() && !appWindow.isMinimized()) {
+          appWindow.minimize();
+        }
+      }
+
+      function cleanupListeners() {
+        appWindow.removeListener('focus', onFocus);
+        appWindow.removeListener('minimize', onMinimize);
+        appWindow.removeListener('closed', onClosed);
+      }
+
+      function onMinimize() {
+        clearTimeout(fallbackTimeout);
+        cleanupListeners();
+        revertFocusable();
+      }
+
+      function onClosed() {
+        clearTimeout(fallbackTimeout);
+        cleanupListeners();
+        revertFocusable();
+      }
+
+      function fallback() {
+        cleanupListeners();
+        attemptMinimize();
+        revertFocusable();
+      }
+
+      function scheduleFallback() {
+        clearTimeout(fallbackTimeout);
+        fallbackTimeout = setTimeout(fallback, 300);
+      }
+
+      function onFocus() {
+        attemptMinimize();
+        scheduleFallback();
+      }
+
+      appWindow.once('focus', onFocus);
+      appWindow.once('minimize', onMinimize);
+      appWindow.once('closed', onClosed);
+
+      scheduleFallback();
+
+      setImmediate(() => {
+        if (!appWindow.isDestroyed()) {
+          appWindow.focus({ steal: true });
+        }
+      });
+
+      return;
+    }
+  }
+
+  appWindow.minimize();
+}
+
 // restart window
 function restartWindow(windowName, data) {
   try {
@@ -439,6 +534,7 @@ module.exports = {
 
   setWindow,
   getWindow,
+  minimizeWindow,
   send,
   sendIndex,
   forEachWindow,
