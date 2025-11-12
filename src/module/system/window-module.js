@@ -25,7 +25,7 @@ function createWindow(windowName, data = null) {
     const windowSize = getWindowSize(windowName, config);
 
     // create new window
-    const appWindow = new BrowserWindow({
+    const browserWindowOptions = {
       ...windowSize,
       show: false,
       frame: false,
@@ -38,7 +38,13 @@ function createWindow(windowName, data = null) {
         sandbox: true,
         preload: fileModule.getAppPath(`src/html/${windowName}.js`),
       },
-    });
+    };
+
+    if (windowName === 'index') {
+      browserWindowOptions.minimizable = true;
+    }
+
+    const appWindow = new BrowserWindow(browserWindowOptions);
 
     // fix title bar (workaround)
     fixTitleBar(appWindow);
@@ -49,8 +55,10 @@ function createWindow(windowName, data = null) {
     // set always on top
     appWindow.setAlwaysOnTop(true, 'screen-saver');
 
-    // set minimizable
-    appWindow.setMinimizable(false);
+    // ensure the overlay can always be minimized, even when it's not focusable on handheld devices
+    if (windowName === 'index') {
+      appWindow.setMinimizable(true);
+    }
 
     // show window
     appWindow.on('ready-to-show', () => {
@@ -339,7 +347,36 @@ function boundsPositionCheck(bounds) {
 
 // set focusable
 function setFocusable(value = true) {
-  windowList['index']?.setFocusable(value);
+  const indexWindow = windowList['index'];
+  indexWindow?.setFocusable(value);
+  indexWindow?.setMinimizable(true);
+}
+
+// minimize window with focusable fallback for handheld devices
+function minimizeWindow(appWindow) {
+  if (!appWindow) {
+    return;
+  }
+
+  let shouldRestoreFocusable = false;
+
+  if (appWindow === windowList['index']) {
+    shouldRestoreFocusable = !appWindow.isDestroyed() && !appWindow.isFocusable();
+
+    if (shouldRestoreFocusable) {
+      appWindow.setFocusable(true);
+      appWindow.setMinimizable(true);
+    }
+  }
+
+  appWindow.minimize();
+
+  if (shouldRestoreFocusable) {
+    appWindow.once('minimize', () => {
+      const config = configModule.getConfig();
+      setFocusable(Boolean(config.indexWindow?.focusable));
+    });
+  }
 }
 
 // restart window
@@ -437,6 +474,7 @@ module.exports = {
 
   setWindow,
   getWindow,
+  minimizeWindow,
   send,
   sendIndex,
   forEachWindow,

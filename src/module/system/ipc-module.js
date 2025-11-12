@@ -193,7 +193,11 @@ function setWindowChannel() {
   // minimize window
   ipcMain.on('minimize-window', (event) => {
     try {
-      BrowserWindow.fromWebContents(event.sender).minimize();
+      const targetWindow = BrowserWindow.fromWebContents(event.sender);
+
+      if (targetWindow) {
+        windowModule.minimizeWindow(targetWindow);
+      }
     } catch (error) {
       console.log(error);
     }
