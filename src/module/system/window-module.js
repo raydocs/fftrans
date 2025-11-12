@@ -56,9 +56,7 @@ function createWindow(windowName, data = null) {
     appWindow.setAlwaysOnTop(true, 'screen-saver');
 
     // ensure the overlay can always be minimized, even when it's not focusable on handheld devices
-    if (windowName === 'index') {
-      appWindow.setMinimizable(true);
-    }
+    appWindow.setMinimizable(true);
 
     // show window
     appWindow.on('ready-to-show', () => {
@@ -369,14 +367,68 @@ function minimizeWindow(appWindow) {
       appWindow.setFocusable(true);
       appWindow.setMinimizable(true);
 
-      appWindow.once('minimize', () => {
+      let reverted = false;
+      let fallbackTimeout;
+
+      function revertFocusable() {
+        if (reverted) {
+          return;
+        }
+
+        reverted = true;
         const latestConfig = configModule.getConfig();
         setFocusable(Boolean(latestConfig.indexWindow?.focusable));
-      });
+      }
+
+      function attemptMinimize() {
+        if (!appWindow.isDestroyed() && !appWindow.isMinimized()) {
+          appWindow.minimize();
+        }
+      }
+
+      function cleanupListeners() {
+        appWindow.removeListener('focus', onFocus);
+        appWindow.removeListener('minimize', onMinimize);
+        appWindow.removeListener('closed', onClosed);
+      }
+
+      function onMinimize() {
+        clearTimeout(fallbackTimeout);
+        cleanupListeners();
+        revertFocusable();
+      }
+
+      function onClosed() {
+        clearTimeout(fallbackTimeout);
+        cleanupListeners();
+        revertFocusable();
+      }
+
+      function fallback() {
+        cleanupListeners();
+        attemptMinimize();
+        revertFocusable();
+      }
+
+      function scheduleFallback() {
+        clearTimeout(fallbackTimeout);
+        fallbackTimeout = setTimeout(fallback, 300);
+      }
+
+      function onFocus() {
+        attemptMinimize();
+        scheduleFallback();
+      }
+
+      appWindow.once('focus', onFocus);
+      appWindow.once('minimize', onMinimize);
+      appWindow.once('closed', onClosed);
+
+      scheduleFallback();
 
       setImmediate(() => {
         if (!appWindow.isDestroyed()) {
-          appWindow.minimize();
+          appWindow.focus({ steal: true });
         }
       });
 

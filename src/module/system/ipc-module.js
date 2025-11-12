@@ -357,7 +357,7 @@ function setCaptureChannel() {
   // minimize all windows
   ipcMain.on('minimize-all-windows', () => {
     windowModule.forEachWindow((myWindow) => {
-      myWindow.minimize();
+      windowModule.minimizeWindow(myWindow);
     });
   });
 
