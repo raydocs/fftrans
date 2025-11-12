@@ -25,7 +25,7 @@ function createWindow(windowName, data = null) {
     const windowSize = getWindowSize(windowName, config);
 
     // create new window
-    const appWindow = new BrowserWindow({
+    const browserWindowOptions = {
       ...windowSize,
       show: false,
       frame: false,
@@ -38,7 +38,13 @@ function createWindow(windowName, data = null) {
         sandbox: true,
         preload: fileModule.getAppPath(`src/html/${windowName}.js`),
       },
-    });
+    };
+
+    if (windowName === 'index') {
+      browserWindowOptions.minimizable = true;
+    }
+
+    const appWindow = new BrowserWindow(browserWindowOptions);
 
     // fix title bar (workaround)
     fixTitleBar(appWindow);
@@ -49,8 +55,12 @@ function createWindow(windowName, data = null) {
     // set always on top
     appWindow.setAlwaysOnTop(true, 'screen-saver');
 
-    // set minimizable
-    appWindow.setMinimizable(false);
+    // ensure the overlay can always be minimized, even when it's not focusable on handheld devices
+    if (windowName === 'index') {
+      appWindow.setMinimizable(true);
+    } else {
+      appWindow.setMinimizable(false);
+    }
 
     // show window
     appWindow.on('ready-to-show', () => {
@@ -339,7 +349,130 @@ function boundsPositionCheck(bounds) {
 
 // set focusable
 function setFocusable(value = true) {
-  windowList['index']?.setFocusable(value);
+  const indexWindow = windowList['index'];
+  indexWindow?.setFocusable(value);
+  indexWindow?.setMinimizable(true);
+}
+
+// minimize window with focusable fallback for handheld devices
+function minimizeWindow(appWindow) {
+  if (!appWindow || appWindow.isDestroyed()) {
+    return;
+  }
+
+  const isIndexWindow = appWindow === windowList['index'];
+
+  if (isIndexWindow) {
+    const config = configModule.getConfig();
+    const configuredFocusable = Boolean(config.indexWindow?.focusable);
+    const needsFallback = !configuredFocusable || !appWindow.isFocusable();
+
+    if (needsFallback) {
+      appWindow.setFocusable(true);
+      appWindow.setMinimizable(true);
+
+      let reverted = false;
+      let fallbackTimeout;
+      let retryCount = 0;
+      const maxRetries = 5;
+      const retryDelay = 120;
+
+      function focusWindow(targetWindow) {
+        if (!targetWindow || targetWindow.isDestroyed()) {
+          return;
+        }
+
+        try {
+          targetWindow.focus();
+        } catch (error) {
+          error;
+        }
+
+        try {
+          targetWindow.focus({ steal: true });
+        } catch (error) {
+          error;
+        }
+      }
+
+      function revertFocusable() {
+        if (reverted) {
+          return;
+        }
+
+        reverted = true;
+        const latestConfig = configModule.getConfig();
+        setFocusable(Boolean(latestConfig.indexWindow?.focusable));
+      }
+
+      function clearFallback() {
+        clearTimeout(fallbackTimeout);
+        appWindow.removeListener('minimize', onMinimize);
+        appWindow.removeListener('closed', onClosed);
+      }
+
+      function finish() {
+        clearFallback();
+        revertFocusable();
+      }
+
+      function onMinimize() {
+        finish();
+      }
+
+      function onClosed() {
+        finish();
+      }
+
+      function performMinimize() {
+        if (appWindow.isDestroyed()) {
+          finish();
+          return false;
+        }
+
+        if (appWindow.isMinimized()) {
+          finish();
+          return false;
+        }
+
+        retryCount += 1;
+        focusWindow(appWindow);
+        appWindow.minimize();
+        return true;
+      }
+
+      function scheduleRetry() {
+        clearTimeout(fallbackTimeout);
+
+        fallbackTimeout = setTimeout(() => {
+          const attempted = performMinimize();
+
+          if (attempted && retryCount < maxRetries) {
+            scheduleRetry();
+          } else if (!reverted && (retryCount >= maxRetries || !attempted)) {
+            fallbackTimeout = setTimeout(finish, retryDelay);
+          }
+        }, retryDelay);
+      }
+
+      appWindow.once('minimize', onMinimize);
+      appWindow.once('closed', onClosed);
+
+      setImmediate(() => {
+        const attempted = performMinimize();
+
+        if (attempted && retryCount < maxRetries) {
+          scheduleRetry();
+        } else if (!reverted && (!attempted || retryCount >= maxRetries)) {
+          fallbackTimeout = setTimeout(finish, retryDelay);
+        }
+      });
+
+      return;
+    }
+  }
+
+  appWindow.minimize();
 }
 
 // restart window
@@ -437,6 +570,7 @@ module.exports = {
 
   setWindow,
   getWindow,
+  minimizeWindow,
   send,
   sendIndex,
   forEachWindow,
