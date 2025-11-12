@@ -49,8 +49,8 @@ function createWindow(windowName, data = null) {
     // set always on top
     appWindow.setAlwaysOnTop(true, 'screen-saver');
 
-    // set minimizable
-    appWindow.setMinimizable(false);
+    // ensure the overlay can always be minimized, even when it's not focusable on handheld devices
+    appWindow.setMinimizable(true);
 
     // show window
     appWindow.on('ready-to-show', () => {
@@ -339,7 +339,9 @@ function boundsPositionCheck(bounds) {
 
 // set focusable
 function setFocusable(value = true) {
-  windowList['index']?.setFocusable(value);
+  const indexWindow = windowList['index'];
+  indexWindow?.setFocusable(value);
+  indexWindow?.setMinimizable(true);
 }
 
 // restart window
