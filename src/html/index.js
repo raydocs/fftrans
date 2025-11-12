@@ -245,12 +245,8 @@ function setButton() {
   };
 
   // minimize
-  document.getElementById('img-button-minimize').onclick = async () => {
-    const config = await ipcRenderer.invoke('get-config');
-
-    if (config.indexWindow.focusable) {
-      ipcRenderer.send('minimize-window');
-    }
+  document.getElementById('img-button-minimize').onclick = () => {
+    ipcRenderer.send('minimize-window');
   };
 
   // close
