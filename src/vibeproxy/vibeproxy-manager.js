@@ -9,6 +9,7 @@ const fs = require('fs');
 const { app } = require('electron');
 const ServerManager = require('./server-manager');
 const AuthMonitor = require('./auth-monitor');
+const configModule = require('../module/system/config-module');
 
 class VibeProxyManager {
   constructor() {
@@ -63,8 +64,26 @@ class VibeProxyManager {
         };
       }
 
-      // Initialize server manager
-      this.serverManager = new ServerManager(this.cliProxyApiPath, configPath);
+      // Read configuration from config module
+      const config = configModule.getConfig();
+      const vibeProxyConfig = config.vibeproxy || {};
+
+      console.log('[VibeProxy] Configuration:', {
+        port: vibeProxyConfig.port,
+        debug: vibeProxyConfig.debug,
+        loggingToFile: vibeProxyConfig.loggingToFile,
+        requestRetry: vibeProxyConfig.requestRetry
+      });
+
+      // Initialize server manager with configuration
+      const options = {
+        port: parseInt(vibeProxyConfig.port) || 8318,
+        debug: vibeProxyConfig.debug || false,
+        loggingToFile: vibeProxyConfig.loggingToFile || false,
+        requestRetry: parseInt(vibeProxyConfig.requestRetry) || 3
+      };
+
+      this.serverManager = new ServerManager(this.cliProxyApiPath, configPath, options);
 
       // Initialize auth monitor
       this.authMonitor = new AuthMonitor();

@@ -3,12 +3,18 @@ const fs = require('fs');
 const path = require('path');
 
 class ServerManager {
-  constructor(cliProxyApiPath, configPath) {
+  constructor(cliProxyApiPath, configPath, options = {}) {
     this.cliProxyApiPath = cliProxyApiPath;
     this.configPath = configPath;
     this.process = null;
     this.isRunning = false;
-    this.port = 8318;
+
+    // Use options from config or defaults
+    this.port = options.port || 8318;
+    this.debug = options.debug || false;
+    this.loggingToFile = options.loggingToFile || false;
+    this.requestRetry = options.requestRetry || 3;
+
     this.logs = [];
     this.maxLogs = 1000;
   }
@@ -36,9 +42,33 @@ class ServerManager {
       try {
         this.addLog('[Server] Starting CLIProxyAPI server...');
 
-        this.process = spawn(this.cliProxyApiPath, [
-          '--config', this.configPath
-        ], {
+        // Build command line arguments based on configuration
+        const args = ['--config', this.configPath];
+
+        // Add optional parameters from config
+        if (this.port && this.port !== 8318) {
+          args.push('--port', this.port.toString());
+          this.addLog(`[Server] Using custom port: ${this.port}`);
+        }
+
+        if (this.debug) {
+          args.push('--debug');
+          this.addLog('[Server] Debug mode enabled');
+        }
+
+        if (this.loggingToFile) {
+          args.push('--logging-to-file');
+          this.addLog('[Server] Logging to file enabled');
+        }
+
+        if (this.requestRetry && this.requestRetry !== 3) {
+          args.push('--request-retry', this.requestRetry.toString());
+          this.addLog(`[Server] Request retry count: ${this.requestRetry}`);
+        }
+
+        this.addLog(`[Server] Launch command: cli-proxy-api.exe ${args.join(' ')}`);
+
+        this.process = spawn(this.cliProxyApiPath, args, {
           windowsHide: true, // 隐藏控制台窗口
           env: process.env
         });

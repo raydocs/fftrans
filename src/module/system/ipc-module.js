@@ -621,9 +621,16 @@ function setVibeProxyChannel() {
   // Initialize VibeProxy (async, called on app ready)
   ipcMain.handle('vibeproxy-init', async () => {
     try {
-      return await vibeProxyManager.initialize();
+      const result = await vibeProxyManager.initialize();
+      if (!result.success) {
+        // Show error notification to user
+        dialogModule.addNotification(`VibeProxy 初始化失败: ${result.message}`);
+      }
+      return result;
     } catch (error) {
       console.error('[IPC] VibeProxy init error:', error);
+      const errorMsg = `VibeProxy 初始化错误: ${error.message}`;
+      dialogModule.addNotification(errorMsg);
       return {
         success: false,
         message: error.message
@@ -638,13 +645,19 @@ function setVibeProxyChannel() {
       if (!vibeProxyManager.initialized) {
         const initResult = await vibeProxyManager.initialize();
         if (!initResult.success) {
+          dialogModule.addNotification(`VibeProxy 启动失败: ${initResult.message}`);
           return false;
         }
       }
 
-      return await vibeProxyManager.start();
+      const result = await vibeProxyManager.start();
+      if (!result) {
+        dialogModule.addNotification('VibeProxy 服务启动失败，请查看日志了解详情');
+      }
+      return result;
     } catch (error) {
       console.error('[IPC] VibeProxy start error:', error);
+      dialogModule.addNotification(`VibeProxy 启动错误: ${error.message}`);
       return false;
     }
   });
@@ -666,6 +679,7 @@ function setVibeProxyChannel() {
       if (!vibeProxyManager.initialized) {
         const initResult = await vibeProxyManager.initialize();
         if (!initResult.success) {
+          dialogModule.addNotification(`VibeProxy 认证失败: ${initResult.message}`);
           return {
             success: false,
             message: initResult.message
@@ -673,9 +687,14 @@ function setVibeProxyChannel() {
         }
       }
 
-      return await vibeProxyManager.startAuth(service);
+      const result = await vibeProxyManager.startAuth(service);
+      if (!result.success) {
+        dialogModule.addNotification(`${service} 认证失败: ${result.message}`);
+      }
+      return result;
     } catch (error) {
       console.error('[IPC] VibeProxy auth error:', error);
+      dialogModule.addNotification(`VibeProxy 认证错误: ${error.message}`);
       return {
         success: false,
         message: error.message
