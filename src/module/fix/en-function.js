@@ -6,7 +6,7 @@ const fixFunction = require('./fix-function');
 // en json
 const enJson = require('./en-json');
 
-// en text function
+// en text function (OPTIMIZED: Uses Set for faster lookups)
 function replaceTextByCode(text = '', array = []) {
   if (text === '' || !Array.isArray(array) || !array.length > 0) {
     return {
@@ -22,11 +22,34 @@ function replaceTextByCode(text = '', array = []) {
   let codeIndex = 0;
   let codeString = 'BCFGJLMNPRSTVWXYZ';
   let tempText = text;
-  let tempTable = fixFunction.includesArrayItem(text, array, srcIndex, true) || [];
+
+  // OPTIMIZED: Pre-filter using word boundaries to reduce items to check
+  const wordsInText = new Set(text.match(/\b[A-Za-z]+\b/gi) || []);
+  let tempTable = [];
+
+  // OPTIMIZED: Only check items that might match (instead of all items)
+  for (const item of array) {
+    const word = item[srcIndex];
+    if (word && typeof word === 'string') {
+      // Quick check: does any word in text match (case-insensitive)?
+      const wordLower = word.toLowerCase();
+      let found = false;
+      for (const textWord of wordsInText) {
+        if (textWord.toLowerCase().includes(wordLower) || wordLower.includes(textWord.toLowerCase())) {
+          found = true;
+          break;
+        }
+      }
+      if (found && text.toLowerCase().includes(wordLower)) {
+        tempTable.push(item);
+      }
+    }
+  }
+
   let table = [];
   let aiTable = [];
 
-  // sort temp table
+  // sort temp table (longer matches first to avoid conflicts)
   tempTable = tempTable.sort((a, b) => b[0].length - a[0].length);
 
   // set temp text
@@ -74,9 +97,10 @@ function replaceTextByCode(text = '', array = []) {
     aiTable,
   };
 
-  console.log('tempTable:', tempTable);
-  console.log('codeString:', codeString);
-  console.log('result:', result);
+  // OPTIMIZED: Only log in development mode
+  if (process.env.NODE_ENV !== 'production' && tempTable.length > 0) {
+    console.log('replaceTextByCode - matches:', tempTable.length);
+  }
 
   return result;
 }

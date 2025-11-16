@@ -6,6 +6,9 @@ const dialogModule = require('./dialog-module');
 // engine module
 const engineModule = require('./engine-module');
 
+// translation cache
+const { globalCache: translationCache } = require('./translation-cache');
+
 // translator
 const baidu = require('../translator/baidu');
 const youdao = require('../translator/youdao');
@@ -34,11 +37,94 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
       return text;
     }
 
-    // translate
+    // ✨ Check cache first (OPTIMIZED: simplified parameters)
+    const cacheKey = `${text}:${JSON.stringify(table)}:${translation.to}`;
+    const cached = translationCache.get(cacheKey, translation.engine);
+
+    if (cached) {
+      // Cache hit - return immediately
+      return cached;
+    }
+
+    // Cache miss - perform translation
     result = await translate2(text, translation, type);
 
     // zh convert
-    return zhConvert(clearCode(result, table), translation.to);
+    const finalResult = zhConvert(clearCode(result, table), translation.to);
+
+    // ✨ Store in cache (OPTIMIZED: simplified parameters)
+    translationCache.set(cacheKey, translation.engine, finalResult);
+
+    return finalResult;
+  } catch (error) {
+    console.log(error);
+    result = '' + error;
+  }
+
+  return result;
+}
+
+// translate with streaming (supports OpenRouter, GPT, Gemini)
+async function translateStream(text = '', translation = {}, table = [], type = 'sentence', onChunk) {
+  let result = '';
+
+  try {
+    // clear newline
+    text = text.replace(/[\r\n]/g, '');
+
+    // check text
+    if (text === '' || translation.from === translation.to) {
+      return text;
+    }
+
+    // Check if engine supports streaming
+    const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini'];
+
+    if (streamingSupportedEngines.includes(translation.engine)) {
+      const option = engineModule.getTranslateOption(text, translation.engine, translation);
+
+      if (option) {
+        console.log(`\r\nEngine: ${translation.engine} (Streaming)`);
+
+        // Select appropriate streaming function based on engine
+        let streamFunction;
+        switch (translation.engine) {
+          case 'OpenRouter':
+            streamFunction = openRouter.translateStream;
+            break;
+          case 'GPT':
+            streamFunction = gpt.translateStream;
+            break;
+          case 'Gemini':
+            streamFunction = gemini.translateStream;
+            break;
+          default:
+            // Fallback to regular translation
+            return await translate(text, translation, table, type);
+        }
+
+        // Call stream translation with chunk callback
+        result = await streamFunction(
+          option.text,
+          option.from,
+          option.to,
+          type,
+          (chunk) => {
+            // Process and send each chunk
+            const processed = zhConvert(clearCode(chunk, table), translation.to);
+            if (onChunk) {
+              onChunk(processed);
+            }
+          }
+        );
+
+        // zh convert final result
+        return zhConvert(clearCode(result, table), translation.to);
+      }
+    } else {
+      // Fall back to regular translate for non-streaming engines
+      return await translate(text, translation, table, type);
+    }
   } catch (error) {
     console.log(error);
     result = '' + error;
@@ -194,6 +280,8 @@ function fullToHalf(str = '') {
 // module exports
 module.exports = {
   translate,
+  translateStream,
   getTranslation,
   zhConvert,
+  translationCache,  // Export cache for statistics
 };

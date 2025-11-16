@@ -21,6 +21,9 @@ const windowModule = require('./window-module');
 // ipc module
 const ipcModule = require('./ipc-module');
 
+// translation cache
+const { globalCache } = require('./translation-cache');
+
 // start app
 function startApp() {
   // directory check
@@ -35,6 +38,9 @@ function startApp() {
   // detect user language
   detectUserLanguage();
 
+  // 🆕 Preload translation cache with common phrases
+  preloadCache();
+
   // set IPC
   ipcModule.setIPC();
 
@@ -45,6 +51,27 @@ function startApp() {
   ipcMain.on('set-global-shortcut', () => {
     setGlobalShortcut();
   });
+}
+
+// 🆕 Preload cache with common phrases for instant translation
+function preloadCache() {
+  try {
+    const config = configModule.getConfig();
+    const engine = config.translation?.engine || 'OpenRouter';
+
+    // Load common phrases dictionary
+    const commonPhrasesPath = fileModule.getRootPath('src', 'data', 'text', 'cache', 'common-phrases-en-chs.json');
+
+    if (fileModule.exists(commonPhrasesPath)) {
+      const commonPhrases = require(commonPhrasesPath);
+      const count = globalCache.preload(commonPhrases, engine);
+      console.log(`🚀 Cache preloaded with ${count} common phrases for faster translation`);
+    } else {
+      console.log('ℹ️  Common phrases file not found, skipping cache preload');
+    }
+  } catch (error) {
+    console.error('⚠️  Cache preload failed:', error.message);
+  }
 }
 
 // write log

@@ -45,6 +45,9 @@ async function setView() {
 
   await readConfig();
 
+  // Initialize prompt preset selector based on current value
+  initializePromptPreset();
+
   const googleVisionType = document.getElementById('select-google-vision-type').value;
   document.getElementById('div-' + googleVisionType).hidden = false;
 
@@ -66,6 +69,32 @@ async function setView() {
 
   // change UI text
   ipcRenderer.send('change-ui-text');
+}
+
+// Initialize prompt preset selector
+function initializePromptPreset() {
+  const promptPresets = {
+    default: '',
+    game: 'You are a professional game translator. Translate the ${source} dialogue into natural ${target}, preserving character personality and game terminology. Keep character names untranslated. Provide only the translation without explanations.',
+    story: 'Translate the following ${source} text into ${target}, maintaining the original tone, emotion, and cultural nuances. Keep game-specific terms and character names in their original form. Output only the translation.',
+    simple: '${source} to ${target}. No explanation.',
+  };
+
+  const selectPromptPreset = document.getElementById('select-prompt-preset');
+  const textareaPrompt = document.getElementById('textarea-ai-custom-translation-prompt');
+  const currentValue = textareaPrompt.value.trim();
+
+  // Determine which preset matches the current value
+  let matchedPreset = 'custom';
+  for (const [key, value] of Object.entries(promptPresets)) {
+    if (currentValue === value) {
+      matchedPreset = key;
+      break;
+    }
+  }
+
+  // Set the selector to the matched preset
+  selectPromptPreset.value = matchedPreset;
 }
 
 // set event
@@ -101,6 +130,44 @@ function setEvent() {
     }
 
     document.getElementById('div-' + googleVisionType).hidden = false;
+  };
+
+  // Prompt preset selector
+  const promptPresets = {
+    default: '',
+    game: 'You are a professional game translator. Translate the ${source} dialogue into natural ${target}, preserving character personality and game terminology. Keep character names untranslated. Provide only the translation without explanations.',
+    story: 'Translate the following ${source} text into ${target}, maintaining the original tone, emotion, and cultural nuances. Keep game-specific terms and character names in their original form. Output only the translation.',
+    simple: '${source} to ${target}. No explanation.',
+    custom: ''
+  };
+
+  const selectPromptPreset = document.getElementById('select-prompt-preset');
+  const textareaPrompt = document.getElementById('textarea-ai-custom-translation-prompt');
+
+  // Handle preset selection
+  selectPromptPreset.onchange = () => {
+    const selectedPreset = selectPromptPreset.value;
+    if (selectedPreset !== 'custom') {
+      textareaPrompt.value = promptPresets[selectedPreset];
+    }
+  };
+
+  // Auto-switch to "custom" when user manually edits the textarea
+  textareaPrompt.oninput = () => {
+    const currentValue = textareaPrompt.value.trim();
+    let matchedPreset = 'custom';
+
+    // Check if current value matches any preset
+    for (const [key, value] of Object.entries(promptPresets)) {
+      if (currentValue === value) {
+        matchedPreset = key;
+        break;
+      }
+    }
+
+    if (selectPromptPreset.value !== matchedPreset) {
+      selectPromptPreset.value = matchedPreset;
+    }
   };
 }
 
@@ -221,32 +288,9 @@ function setButton() {
     ipcRenderer.send('execute-command', `explorer "${path}"`);
   };
 
-  // bug report
-  document.getElementById('a-bug-report').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://forms.gle/1iX2Gq4G1itCy3UH9"');
-  };
-
-  // view response
-  document.getElementById('a-view-response').onclick = () => {
-    ipcRenderer.send(
-      'execute-command',
-      'explorer "https://docs.google.com/spreadsheets/d/1unaPwKFwJAQ9iSnNJ063BAjET5bRGybp5fxxvcG-Wr8/edit?usp=sharing"'
-    );
-  };
-
   // github
   document.getElementById('a-github').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://github.com/winw1010/tataru-assistant"');
-  };
-
-  // author
-  document.getElementById('a-author').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://home.gamer.com.tw/artwork.php?sn=5323128"');
-  };
-
-  // donate
-  document.getElementById('a-donate').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://www.buymeacoffee.com/winw1010"');
+    ipcRenderer.send('execute-command', 'explorer "https://github.com/raydocs/fftrans"');
   };
 
   // vibeproxy start
@@ -794,6 +838,10 @@ function getOptionList() {
     [
       ['input-ai-temperature', 'value'],
       ['ai', 'temperature'],
+    ],
+    [
+      ['checkbox-ai-streaming', 'checked'],
+      ['ai', 'useStreaming'],
     ],
     [
       ['textarea-ai-custom-translation-prompt', 'value'],

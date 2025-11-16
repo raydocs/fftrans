@@ -1,86 +1,112 @@
-# Tataru Assistant 是什麼?
+# FFTrans 是什么?
 
-**Tataru Assistant** 為 FFXIV 國際版的即時劇情字幕翻譯程式，主要功能如下
+**FFTrans** (Final Fantasy Translator) 是 FFXIV 国际版的即时剧情字幕翻译程序，主要功能如下：
 
-- 即時翻譯對話文字
+- 即时翻译对话文字
 
-- 即時翻譯過場字幕
+- 即时翻译过场字幕
 
-- 螢幕文字擷取翻譯功能
+- 屏幕文字截取翻译功能
 
-- (僅支援中文翻譯)根據[**對照表**](https://github.com/winw1010/tataru-assistant-text)修正翻譯結果，例如將**タタル**修正為**塔塔露**
+- (仅支持中文翻译)根据[**对照表**](https://github.com/winw1010/tataru-assistant-text)修正翻译结果，例如将 **タタル** 修正为 **塔塔露**
 
-- (全語言)自訂翻譯
+- (全语言)自定义翻译
 
-- 翻譯查詢器
+- 翻译查询器
 
-# Tataru Assistant 的翻譯方式
+# FFTrans 的翻译方式
 
-## 線上翻譯機
+## 在线翻译引擎
 
-翻譯能力一般，但基本上無使用限制
+翻译能力一般，但基本上无使用限制
 
-- 有道翻譯
+- 有道翻译
 
-- 百度翻譯
+- 百度翻译
 
-- 彩雲小譯
+- 彩云小译
 
 - Papago Naver
 
 - DeepL
 
-## AI 翻譯
+- Google 翻译
 
-翻譯能力較佳，可正確翻譯較艱深的句子，需申請 API key 才能使用，目前支援以下方案
+## AI 翻译
 
-### 單一模型方案
+翻译能力较佳，可正确翻译较艰深的句子，需申请 API key 才能使用，目前支持以下方案：
+
+### 单一模型方案
 - Gemini
 - ChatGPT
 - Cohere
 - Kimi
 
-### AI 聚合平台（推薦）
-- **OpenRouter** - 統一接口訪問 100+ AI 模型，支援 Claude 4.5、GPT-5、Gemini 2.5 等最新模型
+### AI 聚合平台（推荐）
+- **OpenRouter** - 统一接口访问 100+ AI 模型，支持 Claude 4.5、GPT-5、Gemini 2.5 等最新模型
   - 📖 [OpenRouter 模型列表](OPENROUTER_MODELS.md)
-  - ✅ [驗證報告](OPENROUTER_VERIFICATION.md)
+  - ✅ [验证报告](OPENROUTER_VERIFICATION.md)
 
-### 自訂方案
-- 自訂 OpenAI(自訂模式，可自行輸入 POST URL 和 API KEY 使用與 OpenAI 相容的 AI 模型)
+### VibeProxy（免费使用 AI）
+- **内置 VibeProxy** - 无需 API key，通过 OAuth 授权直接使用 Claude、ChatGPT、Gemini 等 AI 服务
+  - 支持 Claude、ChatGPT、Gemini、通义千问
+  - 自动管理认证令牌
+  - 一键启动，开箱即用
 
-# 檔案下載
+### 自定义方案
+- 自定义 OpenAI（自定义模式，可自行输入 POST URL 和 API KEY 使用与 OpenAI 兼容的 AI 模型）
 
-- [Tataru Assistant 安裝檔](https://github.com/winw1010/tataru-assistant/releases/latest/download/Tataru_Assistant_Setup.exe)
+# 文件下载
 
-- [.NET Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer) (執行 Tataru Assistant 的必要元件)
+- [FFTrans 安装包](https://github.com/raydocs/tataru/releases/latest/download/Tataru_Assistant_Setup.exe)
 
-# 安裝步驟
+- [.NET Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer) (运行 FFTrans 的必要组件)
 
-1. 下載「Tataru Assistant 安裝檔」和「.NET Framework 4.8」
+# 安装步骤
 
-2. 執行「ndp48-web.exe」安裝 .NET Framework 4.8 (執行 Tataru Assistant 的必要元件)
+1. 下载「FFTrans 安装包」和「.NET Framework 4.8」
 
-3. 執行「Tataru Assistant Setup.exe」安裝 Tataru Assistant ，若顯示「Windows 已保護您的電腦」的訊息，請點選「其他資訊」，再點選下方的「仍要執行」
+2. 执行「ndp48-web.exe」安装 .NET Framework 4.8（运行 FFTrans 的必要组件）
 
-4. 點選視窗上的齒輪圖示開啟 Tataru Assistant 的設定視窗，切換到【翻譯設定】設置你的遊戲語言和翻譯語言，設定完畢後按儲存即可使用
+3. 执行「Tataru_Assistant_Setup.exe」安装 FFTrans，若显示「Windows 已保护你的电脑」的消息，请点击「更多信息」，再点击下方的「仍要运行」
 
-5. 若安裝後無法自動翻譯，請至【設定】>【系統設定】，點選【修復字幕讀取器】，修復後重新開機即可
+4. 点击窗口上的齿轮图标打开 FFTrans 的设置窗口，切换到【翻译设置】设置你的游戏语言和翻译语言，设定完毕后按保存即可使用
 
-# 原始碼
+5. 若安装后无法自动翻译，请至【设置】>【系统设置】，点击【修复字幕读取器】，修复后重新启动即可
 
-- [原始碼使用說明](https://github.com/winw1010/tataru-assistant/blob/main/doc/README_SOURCE.md)
+# 源代码
 
-# Credits
+- [源代码使用说明](https://github.com/raydocs/tataru/blob/main/doc/README_SOURCE.md)
 
-- [FFXIVAPP/sharlayan](https://github.com/FFXIVAPP/sharlayan)
-- [Electron](https://www.electronjs.org/)
-- [@google-cloud/vision](https://github.com/googleapis/nodejs-vision)
-- [axios](https://github.com/axios/axios)
-- [crypto-js](https://github.com/brix/crypto-js)
-- [sharp](https://github.com/lovell/sharp)
-- [temp](https://github.com/bruce/node-temp)
-- [tesseract.js](https://github.com/naptha/tesseract.js#tesseractjs)
+# 致谢
 
-# Support
+- [FFXIVAPP/sharlayan](https://github.com/FFXIVAPP/sharlayan) - FFXIV 内存读取库
+- [Electron](https://www.electronjs.org/) - 跨平台桌面应用框架
+- [@google-cloud/vision](https://github.com/googleapis/nodejs-vision) - Google Cloud Vision OCR
+- [axios](https://github.com/axios/axios) - HTTP 客户端
+- [crypto-js](https://github.com/brix/crypto-js) - 加密库
+- [sharp](https://github.com/lovell/sharp) - 图像处理库
+- [tesseract.js](https://github.com/naptha/tesseract.js) - OCR 文字识别
+- [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) - VibeProxy OAuth 代理
+- [winw1010/tataru-assistant](https://github.com/winw1010/tataru-assistant) - 原始项目
 
-[<img src="https://github.com/winw1010/tataru-assistant/blob/main/src/html/img/bmc/bmc-button.png" alt="Buy me a coffee" width="200"/>](https://www.buymeacoffee.com/winw1010)
+# 项目信息
+
+- **作者**: [raydocs](https://github.com/raydocs)
+- **版本**: 0.0.2
+- **项目名称**: FFTrans (Final Fantasy Translator)
+- **原始项目**: Tataru Assistant by [winw1010](https://github.com/winw1010)
+- **许可证**: MIT License
+- **仓库地址**: https://github.com/raydocs/tataru
+
+# 更新日志
+
+## 0.0.2
+- 集成 VibeProxy，支持免 API key 使用 AI 翻译
+- 更新文档为简体中文
+- 优化 OCR 识别准确率
+- 新增更多翻译引擎支持
+
+## 0.0.1
+- 初始版本
+- 基于 Tataru Assistant 进行二次开发

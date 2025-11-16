@@ -50,18 +50,18 @@ main {
 }
 
 .form-check-input:checked {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
   border-color: transparent;
-  box-shadow: 0 0 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.4);
 }
 
 .form-check-input:focus {
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.5);
 }
 
 .form-check-input:checked:focus {
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3), 0 0 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3), 0 0 12px rgba(255, 107, 107, 0.4);
 }
 
 /* 优化按钮样式 */

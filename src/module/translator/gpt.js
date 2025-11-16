@@ -16,7 +16,7 @@ async function exec(option, type) {
   return response;
 }
 
-// translate
+// translate (non-streaming)
 async function translate(text, source, target, type) {
   const config = configModule.getConfig();
   const prompt = aiFunction.createTranslationPrompt(source, target, type);
@@ -70,6 +70,76 @@ async function translate(text, source, target, type) {
   console.log('Prompt:', prompt);
 
   return responseText;
+}
+
+// translate with streaming
+async function translateStream(text, source, target, type, onChunk) {
+  const config = configModule.getConfig();
+  const prompt = aiFunction.createTranslationPrompt(source, target, type);
+
+  // Create OpenAI client with API key
+  const openai = new OpenAI({
+    apiKey: config.api.gptApiKey,
+  });
+
+  // initialize chat history
+  aiFunction.initializeChatHistory(chatHistoryList, prompt, config);
+
+  const messages = [
+    {
+      role: 'system',
+      content: prompt,
+    },
+    ...chatHistoryList[prompt],
+    {
+      role: 'user',
+      content: text,
+    },
+  ];
+
+  // get streaming response using official OpenAI SDK
+  const stream = await openai.chat.completions.create({
+    model: config.api.gptModel,
+    messages: messages,
+    temperature: parseFloat(config.ai.temperature),
+    stream: true,  // Enable streaming
+  });
+
+  let fullText = '';
+
+  // Process stream chunks
+  for await (const chunk of stream) {
+    const delta = chunk.choices[0]?.delta?.content;
+
+    if (delta) {
+      fullText += delta;
+      // Call the chunk callback to update UI in real-time
+      if (onChunk) {
+        onChunk(fullText);
+      }
+    }
+  }
+
+  // push history
+  if (config.ai.useChat && type !== 'name') {
+    chatHistoryList[prompt].push(
+      {
+        role: 'user',
+        content: text,
+      },
+      {
+        role: 'assistant',
+        content: fullText,
+      }
+    );
+  }
+
+  // log
+  console.log('Streaming completed. Total length:', fullText.length);
+  console.log('Prompt:', prompt);
+  console.log('Model:', config.api.gptModel);
+
+  return fullText;
 }
 
 // get image text
@@ -150,6 +220,8 @@ async function getModelList(apiKey = null) {
 // module exports
 module.exports = {
   exec,
+  translate,
+  translateStream,
   getImageText,
   getModelList,
 };

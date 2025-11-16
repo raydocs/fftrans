@@ -17,8 +17,8 @@ const userArray = {};
 
 // load
 function load(targetLanguage) {
-  const srcIndex = languageIndex[languageEnum.en];
-  const rplIndex = languageIndex[targetLanguage];
+  // OPTIMIZED: Simplified for English → Simplified Chinese only
+  // No need for srcIndex/rplIndex with new 2-column dictionary format
   const isChinese = fixTargetList.includes(targetLanguage);
 
   // user array
@@ -41,19 +41,19 @@ function load(targetLanguage) {
   // non AI
   chArray.nonAI = [];
 
-  // chinese
+  // chinese (OPTIMIZED: Now using 2-column format directly)
   if (isChinese) {
     const ch = targetLanguage === languageEnum.zht ? 'cht' : 'chs';
 
     // ch
-    chArray.overwrite = jsonFunction.readOverwriteEN(rplIndex - 1);
+    chArray.overwrite = jsonFunction.readOverwriteEN(2);  // Still using old index for overwrite files
     chArray.afterTranslation = jsonFunction.readText(jsonFunction.getTextPath('ch', `after-translation-${ch}.json`));
 
-    // main
-    chArray.main = jsonFunction.readMain(srcIndex, rplIndex);
+    // main (OPTIMIZED: Direct load, no mapping needed for 2-column format)
+    chArray.main = jsonFunction.readMain(0, 1);
 
-    // non AI
-    chArray.nonAI = jsonFunction.readNonAI(srcIndex, rplIndex);
+    // non AI (OPTIMIZED: Direct load)
+    chArray.nonAI = jsonFunction.readNonAI(0, 1);
   }
 
   // overwrite

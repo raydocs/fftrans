@@ -98,11 +98,7 @@ function getElementTextList() {
         'a-set-llm-api': ['說明', '说明', 'Guide'],
 
         'a-readme': ['使用說明書', '使用说明书', 'User Guide'],
-        'a-bug-report': ['問題回報', '问题回报', 'Bug Report'],
-        'a-view-response': ['查看回報表單', '查看回报表单', 'View Response'],
-        'a-translation-report': ['回報翻譯錯誤', '回报翻译错误', 'Translation Report'],
         'a-github': ['GitHub', 'GitHub', 'GitHub'],
-        'a-author': ['訪問作者', '访问作者', 'Author'],
       },
       button: {
         // config
@@ -211,10 +207,22 @@ function getElementTextList() {
         'input-ai-chat-enable': ['使用多輪對話', '使用多轮对话', 'Multi-Turn Conversation'],
         'input-ai-chat-length': ['對話長度', '对话长度', 'Turn Length'],
         'input-ai-temperature': ['溫度', '温度', 'Temperature'],
+        'checkbox-ai-streaming': ['啟用流式響應 (OpenRouter/GPT/Gemini)', '启用流式响应 (OpenRouter/GPT/Gemini)', 'Enable Streaming (OpenRouter/GPT/Gemini)'],
         'textarea-ai-custom-translation-prompt': [
           '自訂翻譯Prompt(System Role)',
           '自订翻译Prompt(System Role)',
           'Custom Translation Prompt(System Role)',
+        ],
+        'label-prompt-preset': ['Prompt預設', 'Prompt预设', 'Prompt Preset'],
+        'option-prompt-default': ['使用預設', '使用预设', 'Use Default'],
+        'option-prompt-game': ['遊戲對話（自然）', '游戏对话（自然）', 'Game Dialogue (Natural)'],
+        'option-prompt-story': ['劇情翻譯（保留情感）', '剧情翻译（保留情感）', 'Story (Preserve Emotion)'],
+        'option-prompt-simple': ['簡潔翻譯（最快）', '简洁翻译（最快）', 'Simple (Fastest)'],
+        'option-prompt-custom': ['自訂', '自定义', 'Custom'],
+        'p-prompt-tip': [
+          '留空使用預設prompt，或選擇上方預設模板',
+          '留空使用预设prompt，或选择上方预设模板',
+          'Keep blank for default prompt, or select a preset above'
         ],
 
         'input-proxy-enable': ['使用Proxy', '使用Proxy', 'Enable Proxy'],
@@ -374,9 +382,9 @@ function getElementTextList() {
         // config
         'span-channel-comment': ['滾動滑鼠中鍵可以捲動頻道清單', '滚动鼠标中键可以捲动频道清单', 'Use middle mouse button to sroll the page'],
         'span-author': [
-          '作者: 夜雪 (巴哈姆特電玩資訊站 winw1010)',
-          '作者: 夜雪 (巴哈姆特电玩资讯站 winw1010)',
-          'Author: winw1010 in www.gamer.com.tw',
+          '作者: raydocs',
+          '作者: raydocs',
+          'Author: raydocs',
         ],
       },
       title: {

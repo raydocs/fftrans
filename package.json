@@ -1,7 +1,7 @@
 {
-  "name": "tataru-assistant",
-  "version": "0.0.1",
-  "description": "Tataru Assistant with VibeProxy Integration",
+  "name": "fftrans",
+  "version": "0.0.2",
+  "description": "FFTrans - Final Fantasy Translator with VibeProxy Integration",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -9,8 +9,8 @@
     "dist": "electron-builder"
   },
   "repository": "https://github.com/raydocs/tataru",
-  "keywords": [],
-  "author": "https://github.com/winw1010",
+  "keywords": ["ffxiv", "translator", "final-fantasy", "translation", "vibeproxy"],
+  "author": "raydocs (https://github.com/raydocs)",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.20.0",
@@ -24,10 +24,12 @@
     "axios": "^1.11.0",
     "chokidar": "^3.5.3",
     "crypto-js": "^4.2.0",
+    "csv-parser": "^3.2.0",
     "decompress": "^4.2.1",
     "nodejs-file-downloader": "^4.13.0",
     "openai": "^6.8.1",
     "sharp": "^0.34.5",
+    "string-similarity": "^4.0.4",
     "temp": "^0.9.4",
     "tesseract.js": "^6.0.1"
   },

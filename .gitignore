@@ -1,3 +1,56 @@
-build
-node_modules
+# Build output
+build/
+dist/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Backup files
+*-backup-*/
+*.bak
+*.backup
+
+# Test files
+test-*.js
+
+# Cache
+.cache/
+*.cache
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Image files (keep in Git LFS if needed)
 src/data/img/*.png
+
+# Large data files (if needed, use Git LFS)
+# *.json (commented out - some JSON files are needed)

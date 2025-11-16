@@ -90,6 +90,7 @@ const defaultConfig = {
     chatLength: '0',
     temperature: '0.7',
     customTranslationPrompt: '',
+    useStreaming: true,  // Enable streaming for faster perceived response (OpenRouter only)
   },
   proxy: {
     enable: false,

@@ -4,6 +4,10 @@
 // some OS can't request with net of Electron
 const axios = require('axios');
 
+// http/https for keep-alive connection pooling
+const http = require('http');
+const https = require('https');
+
 // config module
 const configModule = require('./config-module');
 
@@ -11,6 +15,22 @@ const configModule = require('./config-module');
 // Additionally, setting the Connection header to the value upgrade is also disallowed.
 // const restrictedHeaders = ['Content-Length', 'Host', 'Trailer', 'Te', 'Upgrade', 'Cookie2', 'Keep-Alive', 'Transfer-Encoding'];
 const restrictedHeaders = ['content-length', 'host', 'trailer', 'te', 'upgrade', 'cookie2', 'keep-alive', 'transfer-encoding', 'connection'];
+
+// HTTP/HTTPS agents with keep-alive for connection pooling
+// This significantly reduces latency by reusing TCP connections
+const httpAgent = new http.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,  // Keep connection alive for 30 seconds
+  maxSockets: 10,          // Max concurrent connections per host
+  maxFreeSockets: 5        // Max idle connections to keep open
+});
+
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+  maxSockets: 10,
+  maxFreeSockets: 5
+});
 
 // sec-ch-ua
 let scu = '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"';
@@ -167,6 +187,8 @@ function getOptions(headers = {}) {
   const options = {
     headers: clearHeaders(headers),
     timeout: Math.max(requestTimeout, parseInt(config.translation.timeout) * 1000),
+    httpAgent: httpAgent,   // Use persistent HTTP connection pool
+    httpsAgent: httpsAgent, // Use persistent HTTPS connection pool
   };
 
   if (config.proxy.enable) {

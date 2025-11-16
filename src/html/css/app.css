@@ -10,12 +10,12 @@ footer {
   user-select: none;
   position: absolute;
   z-index: 10;
-  backdrop-filter: blur(10px);
-  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: none;
+  background: transparent;
   border-radius: 12px;
   margin: 8px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: none;
+  border: none;
   transition: all 0.3s ease;
 }
 
@@ -33,8 +33,8 @@ footer {
 
 header:hover,
 footer:hover {
-  background: rgba(17, 24, 39, 0.85);
-  box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.5);
+  background: transparent;
+  box-shadow: none;
 }
 
 ::-webkit-scrollbar {
@@ -48,13 +48,13 @@ footer:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #667eea, #764ba2);
+  background: linear-gradient(180deg, #ff9a76, #ff6b6b);
   border-radius: 10px;
   transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #764ba2, #667eea);
+  background: linear-gradient(180deg, #ff6b6b, #ff9a76);
 }
 
 .drop-shadow {
@@ -81,7 +81,7 @@ footer:hover {
   right: 0;
   bottom: 0;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.4));
+  background: linear-gradient(135deg, rgba(255, 154, 118, 0.4), rgba(255, 107, 107, 0.4));
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: -1;
@@ -90,7 +90,7 @@ footer:hover {
 .img-button:hover {
   opacity: 1;
   transform: translateY(-2px) scale(1.05);
-  filter: drop-shadow(0 6px 16px rgba(99, 102, 241, 0.5));
+  filter: drop-shadow(0 6px 16px rgba(255, 107, 107, 0.5));
 }
 
 .img-button:hover::before {

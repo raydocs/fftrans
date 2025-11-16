@@ -39,12 +39,13 @@ function readText(path = '', sort = true, map = false, srcIndex = 0, rplIndex = 
       throw path + ' is not an array.';
     }
 
-    // check length of array of main
-    if (path.includes('\\data\\text\\main\\')) {
+    // OPTIMIZED: Check length of array (now 2 columns: [English, Simplified Chinese])
+    if (path.includes('\\data\\text\\main\\') || path.includes('/data/text/main/')) {
       for (let index = array.length - 1; index >= 0; index--) {
         const element = array[index];
 
-        if (element.length !== 4) {
+        // Allow 2-column format (new optimized format) or 4-column (legacy, if any remain)
+        if (element.length !== 2 && element.length !== 4) {
           console.log('\r\nIncorrect data:', element);
           console.log('Path:', path);
           array.splice(index, 1);
@@ -52,8 +53,8 @@ function readText(path = '', sort = true, map = false, srcIndex = 0, rplIndex = 
       }
     }
 
-    // map array
-    if (map) {
+    // OPTIMIZED: Map array only if legacy 4-column format detected
+    if (map && array.length > 0 && array[0].length === 4) {
       array = mapArray(array, srcIndex, rplIndex);
     }
 

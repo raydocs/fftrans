@@ -14,7 +14,6 @@ const translateModule = require('../system/translate-module');
 
 // fix module
 const enFix = require('./en-fix');
-const jpFix = require('./jp-fix');
 
 // npc channel
 const npcChannel = ['003D', '0044', '2AB9'];
@@ -89,42 +88,45 @@ async function entry() {
   // get true language
   const trueLanguage = getLanguage(dialogData);
 
-  // JP/EN => fix translation
-  if (config.translation.fix && fixSourceList.includes(trueLanguage)) {
-    // JP fix
-    if (trueLanguage === languageEnum.ja) {
-      if (jpFix.skipTranslation(dialogData)) {
-        console.log('Skip translation');
-        dialogModule.removeDialog(dialogData.id);
-        return;
-      }
-
-      dialogModule.updateDialog(dialogData);
-      dialogData.translation.from = languageEnum.ja;
-      await jpFix.start(dialogData);
+  // EN fix translation (Japanese support removed for performance)
+  if (config.translation.fix && trueLanguage === languageEnum.en) {
+    if (enFix.skipTranslation(dialogData)) {
+      console.log('Skip translation');
+      dialogModule.removeDialog(dialogData.id);
+      return;
     }
-    // EN fix
-    else {
-      if (enFix.skipTranslation(dialogData)) {
-        console.log('Skip translation');
-        dialogModule.removeDialog(dialogData.id);
-        return;
-      }
 
-      dialogModule.updateDialog(dialogData);
-      dialogData.translation.from = languageEnum.en;
-      await enFix.start(dialogData);
-    }
+    dialogModule.updateDialog(dialogData);
+    dialogData.translation.from = languageEnum.en;
+    await enFix.start(dialogData);
   }
   // normal translation
   else {
+    const config = configModule.getConfig();
+    const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini'];
+    const useStreaming = config.ai?.useStreaming !== false && streamingSupportedEngines.includes(dialogData.translation.engine);
+
     // translate name
     if (npcChannel.includes(dialogData.code)) {
       dialogData.translatedName = await translateModule.translate(dialogData.name, dialogData.translation, [], 'name');
     }
 
-    // translate text
-    dialogData.translatedText = await translateModule.translate(dialogData.text, dialogData.translation);
+    // translate text (with streaming support for OpenRouter, GPT, Gemini)
+    if (useStreaming) {
+      dialogData.translatedText = await translateModule.translateStream(
+        dialogData.text,
+        dialogData.translation,
+        [],
+        'sentence',
+        (chunk) => {
+          // Update dialog in real-time as chunks arrive
+          dialogData.translatedText = chunk;
+          dialogModule.updateDialog(dialogData);
+        }
+      );
+    } else {
+      dialogData.translatedText = await translateModule.translate(dialogData.text, dialogData.translation);
+    }
 
     // set audio text
     dialogData.audioText = dialogData.text;

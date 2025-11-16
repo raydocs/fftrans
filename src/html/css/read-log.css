@@ -25,13 +25,13 @@ main {
 
 .log-entry:hover {
   background: rgba(17, 24, 39, 0.75);
-  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.3);
-  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 6px 24px rgba(255, 107, 107, 0.3);
+  border-color: rgba(255, 154, 118, 0.3);
   transform: translateX(4px);
 }
 
 .log-time {
-  color: rgba(102, 126, 234, 0.9);
+  color: rgba(255, 154, 118, 0.9);
   font-size: 0.85rem;
   font-weight: 500;
 }
