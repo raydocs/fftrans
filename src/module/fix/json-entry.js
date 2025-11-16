@@ -15,8 +15,8 @@ const decompress = require('decompress');
 // en json
 const enJson = require('./en-json');
 
-// jp json
-const jpJson = require('./jp-json');
+// jp json (removed - no longer used)
+// const jpJson = require('./jp-json');
 
 // fix entry
 const fixEntry = require('./fix-entry');
@@ -165,7 +165,7 @@ function loadJSON() {
   const config = configModule.getConfig();
   const targetLanguage = config.translation.to;
   enJson.load(targetLanguage);
-  jpJson.load(targetLanguage);
+  // jpJson.load(targetLanguage); // Removed - JP json no longer used
   dialogModule.addNotification('LOAD_COMPLETED');
   fixEntry.setRunning(true);
 
@@ -176,10 +176,11 @@ function loadJSON() {
   }
 }
 
-// get array
+// get array (JP json removed, return empty array)
 function getUserArray(arrayName = '') {
-  let array = jpJson.getUserArray()[arrayName];
-  return array || [];
+  // let array = jpJson.getUserArray()[arrayName];
+  // return array || [];
+  return []; // JP dictionaries removed, always return empty array
 }
 
 // module exports
