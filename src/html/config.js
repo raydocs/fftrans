@@ -169,6 +169,22 @@ function setEvent() {
       selectPromptPreset.value = matchedPreset;
     }
   };
+
+  // Sync TTS engine selectors (window page and translation page)
+  const ttsEngineWindow = document.getElementById('select-tts-engine');
+  const ttsEngineTranslation = document.getElementById('select-tts-engine-translation');
+
+  if (ttsEngineWindow && ttsEngineTranslation) {
+    // When window page selector changes, update translation page
+    ttsEngineWindow.onchange = () => {
+      ttsEngineTranslation.value = ttsEngineWindow.value;
+    };
+
+    // When translation page selector changes, update window page
+    ttsEngineTranslation.onchange = () => {
+      ttsEngineWindow.value = ttsEngineTranslation.value;
+    };
+  }
 }
 
 // set button
@@ -1097,9 +1113,15 @@ function getOptionList() {
       ['api', 'elevenlabs', 'modelId'],
     ],
 
-    // TTS Engine
+    // TTS Engine (window page)
     [
       ['select-tts-engine', 'value'],
+      ['indexWindow', 'ttsEngine'],
+    ],
+
+    // TTS Engine (translation page - same config)
+    [
+      ['select-tts-engine-translation', 'value'],
       ['indexWindow', 'ttsEngine'],
     ],
 
