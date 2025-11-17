@@ -51,22 +51,6 @@ async function setView() {
   const googleVisionType = document.getElementById('select-google-vision-type').value;
   document.getElementById('div-' + googleVisionType).hidden = false;
 
-  // update vibeproxy status
-  await updateVibeProxyStatus();
-
-  // auto-start vibeproxy if enabled but not running
-  const vibeproxyEnabled = document.getElementById('checkbox-vibeproxy-enable').checked;
-  if (vibeproxyEnabled) {
-    const status = await ipcRenderer.invoke('vibeproxy-status');
-    if (!status.server.isRunning) {
-      const result = await ipcRenderer.invoke('vibeproxy-start');
-      if (result) {
-        console.log('VibeProxy auto-started');
-      }
-      await updateVibeProxyStatus();
-    }
-  }
-
   // change UI text
   ipcRenderer.send('change-ui-text');
 }

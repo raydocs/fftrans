@@ -20,9 +20,6 @@ const appModule = require('./module/system/app-module');
 // window module
 const windowModule = require('./module/system/window-module');
 
-// vibeproxy manager
-const vibeProxyManager = require('./vibeproxy/vibeproxy-manager');
-
 // on ready
 app.on('ready', () => {
   appModule.startApp();
@@ -32,15 +29,6 @@ app.on('ready', () => {
 // on window all closed
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
-});
-
-// on before quit - cleanup VibeProxy
-app.on('before-quit', async (event) => {
-  if (vibeProxyManager.initialized) {
-    event.preventDefault();
-    await vibeProxyManager.cleanup();
-    app.exit(0);
-  }
 });
 
 // on activate

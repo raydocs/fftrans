@@ -111,14 +111,6 @@ const defaultConfig = {
     username: '',
     password: '',
   },
-  vibeproxy: {
-    enable: false,
-    autoStart: false,
-    port: '8318',
-    requestRetry: '3',
-    debug: false,
-    loggingToFile: false,
-  },
   system: {
     firstTime: true,
     appLanguage: '',
