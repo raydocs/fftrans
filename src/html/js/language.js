@@ -114,10 +114,6 @@ function getElementTextList() {
         'button-fix-reader': ['修復字幕讀取器', '修復字幕读取器', 'Fix Chat Reader'],
         'button-version-check': ['檢查更新', '检查更新', 'Check For Updates'],
 
-        'button-vibeproxy-start': ['啟動', '启动', 'Start'],
-        'button-vibeproxy-stop': ['停止', '停止', 'Stop'],
-        'button-vibeproxy-restart': ['重啟', '重启', 'Restart'],
-        'button-vibeproxy-logs': ['查看日誌', '查看日志', 'View Logs'],
 
         // capture
         'button-screenshot': ['All', 'All', 'All'],
@@ -232,16 +228,6 @@ function getElementTextList() {
         'input-proxy-username': ['Username', 'Username', 'Username'],
         'input-proxy-password': ['Password', 'Password', 'Password'],
 
-        'checkbox-vibeproxy-enable': ['啟用VibeProxy', '启用VibeProxy', 'Enable VibeProxy'],
-        'checkbox-vibeproxy-autostart': ['自動啟動', '自动启动', 'Auto Start'],
-        'input-vibeproxy-port': ['端口', '端口', 'Port'],
-        'input-vibeproxy-retry': ['請求重試次數', '请求重试次数', 'Request Retry'],
-        'checkbox-vibeproxy-debug': ['調試模式', '调试模式', 'Debug Mode'],
-        'checkbox-vibeproxy-logging': ['文件日誌', '文件日志', 'File Logging'],
-        'button-vibeproxy-auth-claude': ['認證', '认证', 'Authenticate'],
-        'button-vibeproxy-auth-codex': ['認證', '认证', 'Authenticate'],
-        'button-vibeproxy-auth-gemini': ['認證', '认证', 'Authenticate'],
-        'button-vibeproxy-auth-qwen': ['認證', '认证', 'Authenticate'],
 
         // capture
         'checkbox-split': ['換行切割', '换行切割', 'Split New Line'],
@@ -274,7 +260,6 @@ function getElementTextList() {
         '#option-api': ['#API', '#API', '#API'],
         'div-api': ['API設定', 'API设定', 'API'],
         'div-ai': ['AI設定', 'AI设定', 'AI Settings'],
-        'div-vibeproxy': ['VibeProxy設定', 'VibeProxy设定', 'VibeProxy'],
         '#option-system': ['#系統', '#系统', '#System'],
         'div-system': ['系統設定', '系统设定', 'System'],
         'div-proxy': ['Proxy設定', 'Proxy设定', 'Proxy'],
@@ -362,13 +347,7 @@ function getElementTextList() {
           '若您的API不支援SSL验证，请至【系统设定】关闭SSL验证',
           'Set SSL certificate off in "System Config" if your API can\'t access ChatGPT',
         ],
-        'p-vibeproxy-intro': [
-          'VibeProxy 可讓您使用 OAuth 認證存取 AI 服務，無需 API Key',
-          'VibeProxy 可让您使用 OAuth 认证存取 AI 服务，无需 API Key',
-          'VibeProxy allows you to access AI services using OAuth without API Keys',
         ],
-        'p-vibeproxy-server-control': ['伺服器控制', '服务器控制', 'Server Control'],
-        'p-vibeproxy-auth': ['服務認證', '服务认证', 'Service Authentication'],
       },
       span: {
         // window title

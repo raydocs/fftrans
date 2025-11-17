@@ -1,7 +1,7 @@
 {
   "name": "fftrans",
   "version": "0.0.3",
-  "description": "FFTrans - Final Fantasy Translator with VibeProxy Integration",
+  "description": "FFTrans - Final Fantasy XIV Real-time Translation Assistant",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -9,7 +9,7 @@
     "dist": "electron-builder"
   },
   "repository": "https://github.com/raydocs/tataru",
-  "keywords": ["ffxiv", "translator", "final-fantasy", "translation", "vibeproxy"],
+  "keywords": ["ffxiv", "translator", "final-fantasy", "translation", "tts"],
   "author": "raydocs (https://github.com/raydocs)",
   "license": "MIT",
   "devDependencies": {
@@ -50,14 +50,7 @@
       "signatures.json",
       "statuses-latest.json",
       "structures-global-latest.json",
-      "zones-latest.json",
-      {
-        "from": "vibeproxy-resources",
-        "to": "vibeproxy",
-        "filter": [
-          "**/*"
-        ]
-      }
+      "zones-latest.json"
     ],
     "asarUnpack": [
       "**/node_modules/sharp/**/*",

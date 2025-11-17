@@ -293,74 +293,6 @@ function setButton() {
     ipcRenderer.send('execute-command', 'explorer "https://github.com/raydocs/fftrans"');
   };
 
-  // vibeproxy start
-  document.getElementById('button-vibeproxy-start').onclick = async () => {
-    const result = await ipcRenderer.invoke('vibeproxy-start');
-    if (result) {
-      ipcRenderer.send('add-notification', 'VibeProxy started');
-    } else {
-      ipcRenderer.send('add-notification', 'Failed to start VibeProxy');
-    }
-    await updateVibeProxyStatus();
-  };
-
-  // vibeproxy stop
-  document.getElementById('button-vibeproxy-stop').onclick = async () => {
-    await ipcRenderer.invoke('vibeproxy-stop');
-    ipcRenderer.send('add-notification', 'VibeProxy stopped');
-    await updateVibeProxyStatus();
-  };
-
-  // vibeproxy restart
-  document.getElementById('button-vibeproxy-restart').onclick = async () => {
-    await ipcRenderer.invoke('vibeproxy-stop');
-    const result = await ipcRenderer.invoke('vibeproxy-start');
-    if (result) {
-      ipcRenderer.send('add-notification', 'VibeProxy restarted');
-    } else {
-      ipcRenderer.send('add-notification', 'Failed to restart VibeProxy');
-    }
-    await updateVibeProxyStatus();
-  };
-
-  // vibeproxy auth buttons
-  const authServices = ['claude', 'codex', 'gemini', 'qwen'];
-  authServices.forEach((service) => {
-    document.getElementById(`button-vibeproxy-auth-${service}`).onclick = async () => {
-      const result = await ipcRenderer.invoke('vibeproxy-auth', service);
-      if (result.success) {
-        ipcRenderer.send('add-notification', result.message);
-      } else {
-        ipcRenderer.send('add-notification', `Failed to authenticate ${service}`);
-      }
-      await updateVibeProxyStatus();
-    };
-  });
-
-  // vibeproxy logs
-  document.getElementById('button-vibeproxy-logs').onclick = async () => {
-    const logs = await ipcRenderer.invoke('vibeproxy-logs');
-    alert(logs.join('\n'));
-  };
-
-  // vibeproxy enable checkbox - auto start/stop service
-  document.getElementById('checkbox-vibeproxy-enable').onchange = async (event) => {
-    const isEnabled = event.target.checked;
-    if (isEnabled) {
-      const result = await ipcRenderer.invoke('vibeproxy-start');
-      if (result) {
-        ipcRenderer.send('add-notification', 'VibeProxy 已启动');
-      } else {
-        ipcRenderer.send('add-notification', 'VibeProxy 启动失败');
-        // Revert checkbox if start failed
-        event.target.checked = false;
-      }
-    } else {
-      await ipcRenderer.invoke('vibeproxy-stop');
-      ipcRenderer.send('add-notification', 'VibeProxy 已停止');
-    }
-    await updateVibeProxyStatus();
-  };
 
   // default
   document.getElementById('button-save-default-config').onclick = async () => {
@@ -813,38 +745,6 @@ function saveOptions(config = {}) {
   });
 }
 
-// update vibeproxy status
-async function updateVibeProxyStatus() {
-  try {
-    const status = await ipcRenderer.invoke('vibeproxy-status');
-
-    // Update server status
-    const statusText = status.server.isRunning
-      ? `✅ Running on port ${status.server.port}`
-      : '❌ Not running';
-    document.getElementById('span-vibeproxy-status').innerText = statusText;
-
-    // Update auth status for each service
-    const services = ['claude', 'codex', 'gemini', 'qwen'];
-    const serviceNames = {
-      'claude': 'Anthropic Claude',
-      'codex': 'OpenAI Codex',
-      'gemini': 'Google Gemini',
-      'qwen': 'Alibaba Qwen'
-    };
-    services.forEach((service) => {
-      const authStatus = status.auth[service];
-      let statusText = `❌ 未认证 (${serviceNames[service]})`;
-      if (authStatus && authStatus.isAuthenticated) {
-        const email = authStatus.email || '已认证';
-        statusText = `✅ ${email}`;
-      }
-      document.getElementById(`span-vibeproxy-auth-${service}-status`).innerText = statusText;
-    });
-  } catch (error) {
-    console.error('Failed to update VibeProxy status:', error);
-  }
-}
 
 function getOptionList() {
   return [
@@ -1156,31 +1056,6 @@ function getOptionList() {
       ['proxy', 'password'],
     ],
 
-    // vibeproxy
-    [
-      ['checkbox-vibeproxy-enable', 'checked'],
-      ['vibeproxy', 'enable'],
-    ],
-    [
-      ['checkbox-vibeproxy-autostart', 'checked'],
-      ['vibeproxy', 'autoStart'],
-    ],
-    [
-      ['input-vibeproxy-port', 'value'],
-      ['vibeproxy', 'port'],
-    ],
-    [
-      ['input-vibeproxy-retry', 'value'],
-      ['vibeproxy', 'requestRetry'],
-    ],
-    [
-      ['checkbox-vibeproxy-debug', 'checked'],
-      ['vibeproxy', 'debug'],
-    ],
-    [
-      ['checkbox-vibeproxy-logging', 'checked'],
-      ['vibeproxy', 'loggingToFile'],
-    ],
 
     // system
     [
