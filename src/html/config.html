@@ -406,6 +406,22 @@
 
         <br />
 
+        <!-- TTS engine selection (translation page) -->
+        <div class="row align-items-center">
+          <div class="col">
+            <label for="select-tts-engine-translation">语音引擎 (TTS)</label>
+          </div>
+          <div class="col-6">
+            <select class="form-select" id="select-tts-engine-translation">
+              <option value="google">Google TTS</option>
+              <option value="elevenlabs">ElevenLabs Reader</option>
+              <option value="speechify">Speechify</option>
+            </select>
+          </div>
+        </div>
+
+        <br />
+
         <!-- translation timeout -->
         <div class="row align-items-center">
           <div class="col">
@@ -836,8 +852,8 @@
           </div>
           <div class="col-auto">
             <select class="form-select" id="select-speechify-audio-format">
-              <option value="ogg" selected>OGG</option>
-              <option value="mp3">MP3</option>
+              <option value="mp3" selected>MP3 - 推荐⭐</option>
+              <option value="ogg">OGG</option>
               <option value="wav">WAV</option>
             </select>
           </div>

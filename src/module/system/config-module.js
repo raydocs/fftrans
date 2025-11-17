@@ -88,7 +88,7 @@ const defaultConfig = {
     speechify: {
       bearerToken: '',
       voiceId: 'gwyneth',
-      audioFormat: 'ogg',
+      audioFormat: 'mp3',
     },
     elevenlabs: {
       bearerToken: '',
