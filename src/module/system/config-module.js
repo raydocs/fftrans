@@ -31,6 +31,7 @@ const defaultConfig = {
     lock: false,
     speech: false,
     speechSpeed: '1',
+    ttsEngine: 'google', // 'google' or 'speechify'
   },
   dialog: {
     weight: 'normal',
@@ -63,9 +64,9 @@ const defaultConfig = {
     replace: true,
     engine: 'Youdao',
     engineAlternate: 'Youdao',
-    from: 'Japanese',
+    from: 'English',
     fromPlayer: 'Auto',
-    to: 'Traditional-Chinese',
+    to: 'Simplified-Chinese',
     timeout: '10',
   },
   api: {
@@ -84,6 +85,16 @@ const defaultConfig = {
     llmApiModel: '',
     openRouterApiKey: '',
     openRouterModel: 'openrouter/polaris-alpha',
+    speechify: {
+      bearerToken: '',
+      voiceId: 'gwyneth',
+      audioFormat: 'ogg',
+    },
+    elevenlabs: {
+      bearerToken: '',
+      voiceId: 'nPczCjzI2devNBz1zQrb',  // Brian - default voice
+      modelId: 'eleven_turbo_v2_5',
+    },
   },
   ai: {
     useChat: false,
@@ -353,6 +364,9 @@ function fixConfig2(config) {
 function setAppLanguage() {
   const config = getConfig();
   const locale = app.getSystemLocale(); //Intl.DateTimeFormat().resolvedOptions().locale;
+
+  // 默认源语言为英文
+  config.translation.from = engineModule.languageEnum.en;
 
   if (/zh-(TW|HK|MO|CHT|Hant)/i.test(locale)) {
     config.translation.to = engineModule.languageEnum.zht;

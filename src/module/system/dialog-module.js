@@ -18,6 +18,12 @@ const notificationModule = require('./notification-module');
 // google tts
 const googleTTS = require('../translator/google-tts');
 
+// speechify tts
+const speechifyTTS = require('../translator/speechify-tts');
+
+// elevenlabs tts
+const elevenLabsTTS = require('../translator/elevenlabs-tts');
+
 // window module
 const windowModule = require('./window-module');
 
@@ -149,8 +155,42 @@ function saveDialog(dialogData) {
 
     // speech text at first time
     if (!log[item.id] && npcChannel.includes(dialogData.code) && dialogData.audioText !== '') {
-      const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-      windowModule.sendIndex('add-to-playlist', urlList);
+      const currentConfig = configModule.getConfig();
+      const ttsEngine = currentConfig.indexWindow.ttsEngine || 'google';
+
+      if (ttsEngine === 'speechify') {
+        // Use Speechify TTS
+        speechifyTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
+          .then(urlList => {
+            if (urlList && urlList.length > 0) {
+              windowModule.sendIndex('add-to-playlist', urlList);
+            }
+          })
+          .catch(error => {
+            console.error('[Dialog Module] Speechify TTS error:', error);
+            // Fallback to Google TTS
+            const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
+            windowModule.sendIndex('add-to-playlist', urlList);
+          });
+      } else if (ttsEngine === 'elevenlabs') {
+        // Use ElevenLabs TTS
+        elevenLabsTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
+          .then(urlList => {
+            if (urlList && urlList.length > 0) {
+              windowModule.sendIndex('add-to-playlist', urlList);
+            }
+          })
+          .catch(error => {
+            console.error('[Dialog Module] ElevenLabs TTS error:', error);
+            // Fallback to Google TTS
+            const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
+            windowModule.sendIndex('add-to-playlist', urlList);
+          });
+      } else {
+        // Use Google TTS (default)
+        const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
+        windowModule.sendIndex('add-to-playlist', urlList);
+      }
     }
 
     // update log

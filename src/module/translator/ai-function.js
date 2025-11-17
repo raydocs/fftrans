@@ -16,7 +16,7 @@ const role = source && target ? `${source}-${target} translator` : 'translator';
 
 const configModule = require('../system/config-module');
 
-function createTranslationPrompt(source = 'Japanese', target = 'Chinese', type = 'sentence') {
+function createTranslationPrompt(source = 'English', target = 'Chinese', type = 'sentence') {
   const customPrompt = configModule.getConfig().ai.customTranslationPrompt?.trim();
 
   if (customPrompt) {

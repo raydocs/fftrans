@@ -40,6 +40,24 @@ main {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* 修复下拉菜单选项文字颜色问题 */
+.form-select option {
+  background-color: #2b2b2b;
+  color: #ffffff;
+  padding: 8px;
+}
+
+.form-select option:hover {
+  background-color: #3b3b3b;
+}
+
+.form-select optgroup {
+  background-color: #1b1b1b;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 4px;
+}
+
 /* 优化开关样式 */
 .form-check-input {
   width: 3rem;

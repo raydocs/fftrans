@@ -371,6 +371,225 @@ function setButton() {
   document.getElementById('button-save-config').onclick = async () => {
     await saveConfig();
   };
+
+  // Speechify: Open configuration guide
+  document.getElementById('a-open-speechify-guide').onclick = async () => {
+    const path = await ipcRenderer.invoke('get-root-path', 'SPEECHIFY_INTEGRATION_GUIDE.md');
+    ipcRenderer.send('execute-command', `explorer "${path}"`);
+  };
+
+  // Speechify: Test configuration
+  document.getElementById('btn-test-speechify').onclick = async () => {
+    const button = document.getElementById('btn-test-speechify');
+    const originalText = button.innerText;
+
+    button.disabled = true;
+    button.innerText = '测试中...';
+
+    try {
+      // Save current config first
+      const config = await ipcRenderer.invoke('get-config');
+      saveOptions(config);
+      await ipcRenderer.invoke('set-config', config);
+
+      // Test configuration
+      const result = await ipcRenderer.invoke('test-speechify-config');
+
+      if (result.success) {
+        alert(`✅ 测试成功！\n\n音频 URL: ${result.audioUrl || '已生成'}`);
+      } else {
+        alert(`❌ 测试失败\n\n错误信息: ${result.message}`);
+      }
+    } catch (error) {
+      alert(`❌ 测试出错\n\n${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.innerText = originalText;
+    }
+  };
+
+  // Speechify: Preview voice
+  document.getElementById('btn-preview-voice').onclick = async () => {
+    const button = document.getElementById('btn-preview-voice');
+    const voiceSelect = document.getElementById('select-speechify-voice-id');
+    const selectedVoice = voiceSelect.value;
+    const originalText = button.innerText;
+
+    // Voice descriptions for preview
+    const voiceDescriptions = {
+      gwyneth: 'Gwyneth Paltrow - 名人语音',
+      joanna: 'Joanna - 清晰自然的女声',
+      olivia: 'Olivia - 适合游戏对话的女声',
+      ivy: 'Ivy - 标准女声',
+      salli: 'Salli - 标准女声',
+      kimberly: 'Kimberly - 标准女声',
+      emma: 'Emma - 标准女声',
+      amy: 'Amy - 标准女声',
+      nicole: 'Nicole - 标准女声',
+      aria: 'Aria - 标准女声',
+      snoop: 'Snoop Dogg - 名人语音，独特风格',
+      mrbeast: 'MrBeast - 名人语音，年轻活力',
+      matthew: 'Matthew - 适合游戏旁白的男声',
+      henry: 'Henry - 标准男声',
+      justin: 'Justin - 标准男声',
+      joey: 'Joey - 标准男声',
+      stephen: 'Stephen - 标准男声',
+      brian: 'Brian - 标准男声',
+      russell: 'Russell - 标准男声'
+    };
+
+    try {
+      // Get current bearer token
+      const bearerTokenInput = document.getElementById('input-speechify-bearer-token');
+      const bearerToken = bearerTokenInput.value.trim();
+
+      if (!bearerToken) {
+        alert('❌ 请先填写 Bearer Token');
+        return;
+      }
+
+      button.disabled = true;
+      button.innerText = '🎧 生成中...';
+
+      // Preview text
+      const previewText = `Welcome to Final Fantasy XIV! This is ${voiceDescriptions[selectedVoice] || selectedVoice}. I hope you enjoy this voice!`;
+
+      // Create a temporary config for preview
+      const previewConfig = {
+        bearerToken: bearerToken,
+        voiceId: selectedVoice,
+        audioFormat: 'ogg'
+      };
+
+      // Call preview API (we'll need to add this IPC handler)
+      const result = await ipcRenderer.invoke('preview-speechify-voice', {
+        text: previewText,
+        config: previewConfig
+      });
+
+      if (result.success) {
+        // Play the audio
+        const audio = new Audio(result.audioUrl);
+        audio.play();
+
+        button.innerText = '🎧 播放中...';
+
+        audio.onended = () => {
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+
+        audio.onerror = () => {
+          alert('❌ 音频播放失败');
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+      } else {
+        alert(`❌ 语音生成失败\n\n错误信息: ${result.message}`);
+      }
+    } catch (error) {
+      alert(`❌ 试听出错\n\n${error.message}`);
+      button.disabled = false;
+      button.innerText = originalText;
+    }
+  };
+
+  // ElevenLabs: Test configuration
+  document.getElementById('btn-test-elevenlabs').onclick = async () => {
+    const button = document.getElementById('btn-test-elevenlabs');
+    const originalText = button.innerText;
+
+    button.disabled = true;
+    button.innerText = '测试中...';
+
+    try {
+      // Save current config first
+      const config = await ipcRenderer.invoke('get-config');
+      saveOptions(config);
+      await ipcRenderer.invoke('set-config', config);
+
+      // Test configuration
+      const result = await ipcRenderer.invoke('test-elevenlabs-config');
+
+      if (result.success) {
+        alert(`✅ 测试成功！\n\n音频 URL: ${result.audioUrl || '已生成'}`);
+      } else {
+        alert(`❌ 测试失败\n\n错误信息: ${result.message}`);
+      }
+    } catch (error) {
+      alert(`❌ 测试出错\n\n${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.innerText = originalText;
+    }
+  };
+
+  // ElevenLabs: Preview voice
+  document.getElementById('btn-preview-elevenlabs-voice').onclick = async () => {
+    const button = document.getElementById('btn-preview-elevenlabs-voice');
+    const voiceSelect = document.getElementById('select-elevenlabs-voice-id');
+    const selectedVoice = voiceSelect.value;
+    const originalText = button.innerText;
+
+    try {
+      // Get current bearer token
+      const bearerTokenInput = document.getElementById('input-elevenlabs-bearer-token');
+      const bearerToken = bearerTokenInput.value.trim();
+
+      if (!bearerToken) {
+        alert('❌ 请先填写 Bearer Token');
+        return;
+      }
+
+      button.disabled = true;
+      button.innerText = '🎧 生成中...';
+
+      // Preview text
+      const voiceName = voiceSelect.options[voiceSelect.selectedIndex].text;
+      const previewText = `Welcome to Final Fantasy XIV! This is ${voiceName}. I hope you enjoy this voice!`;
+
+      // Create a temporary config for preview
+      const modelSelect = document.getElementById('select-elevenlabs-model');
+      const previewConfig = {
+        bearerToken: bearerToken,
+        voiceId: selectedVoice,
+        modelId: modelSelect.value
+      };
+
+      // Call preview API
+      const result = await ipcRenderer.invoke('preview-elevenlabs-voice', {
+        text: previewText,
+        config: previewConfig
+      });
+
+      if (result.success) {
+        // Play the audio
+        const audio = new Audio(result.audioUrl);
+        audio.play();
+
+        button.innerText = '🎧 播放中...';
+
+        audio.onended = () => {
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+
+        audio.onerror = () => {
+          alert('❌ 音频播放失败');
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+      } else {
+        alert(`❌ 语音生成失败\n\n错误信息: ${result.message}`);
+        button.disabled = false;
+        button.innerText = originalText;
+      }
+    } catch (error) {
+      alert(`❌ 试听出错\n\n${error.message}`);
+      button.disabled = false;
+      button.innerText = originalText;
+    }
+  };
 }
 
 // read config
@@ -537,17 +756,28 @@ function readOptions(config = {}) {
   getOptionList().forEach((value) => {
     const elementId = value[0][0];
     const elementProperty = value[0][1];
-    const configIndex1 = value[1][0];
-    const configIndex2 = value[1][1];
+    const configPath = value[1];
     const valueFunction = value[2];
 
-    let configValue = config[configIndex1][configIndex2];
+    // Support nested config paths of any depth
+    let configValue = config;
+    for (let i = 0; i < configPath.length; i++) {
+      if (configValue && typeof configValue === 'object') {
+        configValue = configValue[configPath[i]];
+      } else {
+        configValue = undefined;
+        break;
+      }
+    }
+
     if (valueFunction) {
       configValue = valueFunction(configValue);
     }
 
     try {
-      document.getElementById(elementId)[elementProperty] = configValue;
+      if (configValue !== undefined) {
+        document.getElementById(elementId)[elementProperty] = configValue;
+      }
     } catch (error) {
       console.log(error);
     }
@@ -558,15 +788,27 @@ function saveOptions(config = {}) {
   getOptionList().forEach((value) => {
     const elementId = value[0][0];
     const elementProperty = value[0][1];
-    const configIndex1 = value[1][0];
-    const configIndex2 = value[1][1];
+    const configPath = value[1];
 
-    if (configIndex2 !== 'backgroundColor') {
-      try {
-        config[configIndex1][configIndex2] = document.getElementById(elementId)[elementProperty];
-      } catch (error) {
-        console.log(error);
+    // Skip backgroundColor
+    if (configPath[configPath.length - 1] === 'backgroundColor') {
+      return;
+    }
+
+    try {
+      const elementValue = document.getElementById(elementId)[elementProperty];
+
+      // Support nested config paths of any depth
+      let current = config;
+      for (let i = 0; i < configPath.length - 1; i++) {
+        if (!current[configPath[i]]) {
+          current[configPath[i]] = {};
+        }
+        current = current[configPath[i]];
       }
+      current[configPath[configPath.length - 1]] = elementValue;
+    } catch (error) {
+      console.log(error);
     }
   });
 }
@@ -825,6 +1067,40 @@ function getOptionList() {
     [
       ['input-llm-model', 'value'],
       ['api', 'llmApiModel'],
+    ],
+
+    // Speechify TTS
+    [
+      ['input-speechify-bearer-token', 'value'],
+      ['api', 'speechify', 'bearerToken'],
+    ],
+    [
+      ['select-speechify-voice-id', 'value'],
+      ['api', 'speechify', 'voiceId'],
+    ],
+    [
+      ['select-speechify-audio-format', 'value'],
+      ['api', 'speechify', 'audioFormat'],
+    ],
+
+    // ElevenLabs TTS
+    [
+      ['input-elevenlabs-bearer-token', 'value'],
+      ['api', 'elevenlabs', 'bearerToken'],
+    ],
+    [
+      ['select-elevenlabs-voice-id', 'value'],
+      ['api', 'elevenlabs', 'voiceId'],
+    ],
+    [
+      ['select-elevenlabs-model', 'value'],
+      ['api', 'elevenlabs', 'modelId'],
+    ],
+
+    // TTS Engine
+    [
+      ['select-tts-engine', 'value'],
+      ['indexWindow', 'ttsEngine'],
     ],
 
     [

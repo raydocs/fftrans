@@ -3,17 +3,17 @@
 // all language list
 const allLanguageList = ['Japanese', 'English', 'Traditional-Chinese', 'Simplified-Chinese', 'Korean', 'Russian', 'Italian'];
 
-// source list
-const sourceList = ['Japanese', 'English'];
+// source list (只支持英文源语言)
+const sourceList = ['English'];
 
-// player source list
-const playerSourceList = ['Auto', 'Japanese', 'English'];
+// player source list (只支持英文和自动检测)
+const playerSourceList = ['Auto', 'English'];
 
 // target list
 const targetList = allLanguageList;
 
-// fix source list
-const fixSourceList = ['Japanese', 'English'];
+// fix source list (只支持英文)
+const fixSourceList = ['English'];
 
 // fix target list
 const fixTargetList = ['Traditional-Chinese', 'Simplified-Chinese'];

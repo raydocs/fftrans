@@ -16,7 +16,7 @@ const punctuations = {
 };
 
 // get audio url
-function getAudioUrl(text = '', from = 'Japanese') {
+function getAudioUrl(text = '', from = 'English') {
   let textArray = splitText(text);
   let urlArray = [];
 
@@ -39,7 +39,8 @@ function splitText(text = '') {
   let startIndex = 0;
   let textArray = [text];
 
-  while (textArray[startIndex].length >= 200) {
+  // 添加安全检查，与 Speechify/ElevenLabs 保持一致
+  while (textArray[startIndex] && textArray[startIndex].length >= 200) {
     const result = splitText2(textArray[startIndex]);
 
     textArray[startIndex] = result[0].trim();
@@ -48,7 +49,8 @@ function splitText(text = '') {
     startIndex++;
   }
 
-  return textArray;
+  // 过滤空字符串，与 Speechify/ElevenLabs 保持一致
+  return textArray.filter(t => t.length > 0);
 }
 
 // split text 2

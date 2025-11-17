@@ -89,13 +89,8 @@ async function tesseractOCR(captureData) {
   let text = '';
 
   try {
-    // set worker
-    let worker = null;
-    if (captureData.from === engineModule.languageEnum.ja) {
-      worker = await createWorker(['jpn', 'jpn_vert']);
-    } /*else if (config.translation.from === engineModule.languageEnum.en)*/ else {
-      worker = await createWorker('eng');
-    }
+    // set worker - 只使用英文OCR引擎
+    const worker = await createWorker('eng');
 
     // recognize text
     const ret = await worker.recognize(captureData.imagePath);
@@ -120,39 +115,8 @@ function fixText(captureData) {
 
   console.log(text);
 
-  // fix new line
+  // fix new line - 简化为仅英文处理
   text = text.replaceAll('\n\n', '\n');
-
-  // fix jp
-  if (captureData.from === engineModule.languageEnum.ja) {
-    text = text
-      .replaceAll(' ', '')
-      .replaceAll('...', '…')
-      .replaceAll('..', '…')
-      .replaceAll('･･･', '…')
-      .replaceAll('･･', '…')
-      .replaceAll('･', '・')
-      .replaceAll('・・・', '…')
-      .replaceAll('・・', '…')
-      .replaceAll('､', '、')
-      .replaceAll('?', '？')
-      .replaceAll('!', '！')
-      .replaceAll('~', '～')
-      .replaceAll(':', '：')
-      .replaceAll('=', '＝')
-      .replaceAll('『', '「')
-      .replaceAll('』', '」');
-  }
-
-  // fix tesseract
-  text = text
-    .replaceAll('`', '「')
-    .replaceAll(/(?<![ァ-ヺー])・(?![ァ-ヺー])/gi, '、')
-    .replaceAll('ガンプレイカー', 'ガンブレイカー')
-    .replaceAll('ガンプブレイカー', 'ガンブレイカー')
-    .replaceAll(/間の(?=使徒|戦士|巫女|世界)/gi, '闇の')
-    .replaceAll(/(?<=機工|飛空|整備|道|戦|闘|兵)(填|土)/gi, '士')
-    .replaceAll(/倫成/gi, '賛成');
 
   return text;
 }
@@ -174,11 +138,8 @@ async function translateImageText(captureData) {
       textArray.push(text);
     }
   } else {
-    if (captureData.from === engineModule.languageEnum.ja) {
-      textArray.push(captureData.text.replace(/[\r\n]/g, ''));
-    } else {
-      textArray.push(captureData.text.replace(/[\r\n]/g, ' ').replaceAll('  ', ' '));
-    }
+    // 英文处理：将换行符替换为空格
+    textArray.push(captureData.text.replace(/[\r\n]/g, ' ').replaceAll('  ', ' '));
   }
 
   // delete images

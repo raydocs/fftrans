@@ -1,6 +1,6 @@
 {
   "name": "fftrans",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "FFTrans - Final Fantasy Translator with VibeProxy Integration",
   "main": "src/main.js",
   "scripts": {

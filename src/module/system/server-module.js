@@ -43,19 +43,8 @@ function translateData(dialogData) {
   dialogData.id = null;
   dialogData.timestamp = null;
 
-  // fix new line
-  if (config.translation.from === engineModule.languageEnum.ja) {
-    dialogData.text = dialogData.text.replaceAll('[r]', ' ');
-    /*
-    if (dialogData.type.includes('CUTSCENE')) {
-      dialogData.text = dialogData.text.replaceAll('[r]', '、').replace(/(?<=[…、。？！])、/gi, '');
-    } else {
-      dialogData.text = dialogData.text.replaceAll('[r]', '');
-    }
-    */
-  } else {
-    dialogData.text = dialogData.text.replaceAll('[r]', ' ');
-  }
+  // fix new line - 统一处理英文文本
+  dialogData.text = dialogData.text.replaceAll('[r]', ' ');
 
   // set translation
   dialogData.translation = config.translation;
