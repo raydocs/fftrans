@@ -59,6 +59,27 @@
 
       <br />
 
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <label for="select-tts-engine">语音引擎:</label>
+        </div>
+        <div class="col-auto">
+          <select class="form-select" id="select-tts-engine">
+            <option value="google">Google TTS</option>
+            <option value="elevenlabs">ElevenLabs Reader</option>
+            <option value="speechify">Speechify</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="button-play-audio" class="btn btn-primary">🔊 播放语音</button>
+        </div>
+        <div class="col-auto">
+          <button id="button-download-audio" class="btn btn-secondary">💾 下载音频</button>
+        </div>
+      </div>
+
+      <br />
+
       <div class="row">
         <div class="col">
           <div id="div-audio"></div>

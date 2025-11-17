@@ -618,6 +618,17 @@ function setTranslateChannel() {
     return googleTTS.getAudioUrl(text, from);
   });
 
+  // elevenlabs tts
+  ipcMain.handle('elevenlabs-tts', async (event, text, from) => {
+    const elevenLabsTTS = require('../translator/elevenlabs-tts');
+    return await elevenLabsTTS.getAudioUrl(text, from);
+  });
+
+  // speechify tts
+  ipcMain.handle('speechify-tts', async (event, text, from) => {
+    return await speechifyTTS.getAudioUrl(text, from);
+  });
+
   // translation cache statistics
   ipcMain.handle('cache-get-stats', () => {
     return translateModule.translationCache.getStats();

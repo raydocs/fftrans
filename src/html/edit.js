@@ -9,6 +9,9 @@ const allLanguageList = ['Japanese', 'English', 'Traditional-Chinese', 'Simplifi
 // target log
 let targetLog = null;
 
+// current audio URLs
+let currentAudioUrls = [];
+
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
   setIPC();
@@ -45,6 +48,10 @@ async function setView() {
 
   document.getElementById('checkbox-replace').checked = config.translation.replace;
 
+  // Set TTS engine from config
+  const ttsEngine = config.indexWindow.ttsEngine || 'google';
+  document.getElementById('select-tts-engine').value = ttsEngine;
+
   // change UI text
   ipcRenderer.send('change-ui-text');
 }
@@ -65,6 +72,22 @@ function setEvent() {
 
 // set button
 function setButton() {
+  // play audio
+  document.getElementById('button-play-audio').onclick = async () => {
+    await playAudio();
+  };
+
+  // download audio
+  document.getElementById('button-download-audio').onclick = async () => {
+    await downloadAudio();
+  };
+
+  // TTS engine change
+  document.getElementById('select-tts-engine').onchange = async () => {
+    const engine = document.getElementById('select-tts-engine').value;
+    await ipcRenderer.invoke('set-tts-engine', engine);
+  };
+
   // restart
   document.getElementById('button-restart-translate').onclick = async () => {
     const config = await ipcRenderer.invoke('get-config');
@@ -183,33 +206,118 @@ async function readLog(id = '') {
   }
 }
 
-// show audio
-async function showAudio() {
+// play audio
+async function playAudio() {
+  if (!targetLog) {
+    return;
+  }
+
   const text = targetLog.audio_text || targetLog.text;
+  if (text === '') {
+    return;
+  }
 
-  if (text !== '') {
-    try {
-      const urlList = await ipcRenderer.invoke('google-tts', text, targetLog.translation.from);
-      console.log('TTS url:', urlList);
+  const ttsEngine = document.getElementById('select-tts-engine').value;
+  const fromLang = targetLog.translation.from;
 
-      let innerHTML = '';
-      for (let index = 0; index < urlList.length; index++) {
-        const url = urlList[index];
+  document.getElementById('div-audio').innerHTML = '<p>⏳ 正在生成语音...</p>';
 
-        innerHTML += `
-                    <audio controls preload="metadata">
-                        <source src="${url}" type="audio/ogg">
-                        <source src="${url}" type="audio/mpeg">
-                    </audio>
-                    <br>
-                `;
+  try {
+    let urlList = [];
+
+    // Call different TTS engines based on selection
+    switch (ttsEngine) {
+      case 'google':
+        urlList = await ipcRenderer.invoke('google-tts', text, fromLang);
+        break;
+      case 'elevenlabs':
+        urlList = await ipcRenderer.invoke('elevenlabs-tts', text, fromLang);
+        break;
+      case 'speechify':
+        urlList = await ipcRenderer.invoke('speechify-tts', text, fromLang);
+        break;
+      default:
+        urlList = await ipcRenderer.invoke('google-tts', text, fromLang);
+    }
+
+    console.log(`[${ttsEngine}] TTS urls:`, urlList);
+
+    // Store for download
+    currentAudioUrls = urlList;
+
+    // Display audio players
+    let innerHTML = '';
+    for (let index = 0; index < urlList.length; index++) {
+      const url = urlList[index];
+
+      innerHTML += `
+                <audio controls preload="metadata" autoplay="${index === 0}">
+                    <source src="${url}" type="audio/ogg">
+                    <source src="${url}" type="audio/mpeg">
+                </audio>
+                <br>
+            `;
+    }
+
+    document.getElementById('div-audio').innerHTML = innerHTML;
+  } catch (error) {
+    console.error('Error generating audio:', error);
+    document.getElementById('div-audio').innerHTML = `<p style="color: red;">❌ 生成语音失败: ${error.message}</p>`;
+  }
+}
+
+// download audio
+async function downloadAudio() {
+  if (currentAudioUrls.length === 0) {
+    alert('请先点击"播放语音"生成音频');
+    return;
+  }
+
+  const ttsEngine = document.getElementById('select-tts-engine').value;
+  const timestamp = Date.now();
+
+  try {
+    for (let index = 0; index < currentAudioUrls.length; index++) {
+      const url = currentAudioUrls[index];
+
+      // Create hidden link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Determine file extension
+      let ext = 'mp3';
+      if (url.includes('data:audio/ogg')) {
+        ext = 'ogg';
+      } else if (url.includes('elevenlabs')) {
+        ext = 'mp3';
       }
 
-      document.getElementById('div-audio').innerHTML = innerHTML;
-    } catch (error) {
-      console.log(error);
+      // Create filename with dialogue info
+      const nameInfo = targetLog.name ? `${targetLog.name.substring(0, 10)}_` : '';
+      const textInfo = (targetLog.text || '').substring(0, 20).replace(/[^a-zA-Z0-9]/g, '_');
+      link.download = `${ttsEngine}_${nameInfo}${textInfo}_part${index + 1}_${timestamp}.${ext}`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Small delay between downloads
+      if (index < currentAudioUrls.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
+
+    ipcRenderer.send('add-notification', `已下载 ${currentAudioUrls.length} 个音频文件`);
+  } catch (error) {
+    console.error('Download error:', error);
+    alert(`下载失败: ${error.message}`);
   }
+}
+
+// show audio (called automatically when log loads)
+async function showAudio() {
+  // Auto-play with default TTS engine when log loads
+  await playAudio();
 }
 
 // show text
