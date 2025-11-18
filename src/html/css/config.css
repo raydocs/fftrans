@@ -19,8 +19,8 @@ main {
 .form-select,
 .form-control,
 .form-check-input {
-  background: transparent;
-  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
   border-radius: 10px;
@@ -29,7 +29,7 @@ main {
 
 .form-select:focus,
 .form-control:focus {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
   outline: none;
@@ -89,30 +89,30 @@ main {
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: none;
+  backdrop-filter: blur(10px);
 }
 
 .btn-primary {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: none;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: none;
-  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, #ff7b7b 0%, #fe6a7f 100%);
 }
 
 .btn-secondary {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.15);
 }
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 /* 优化标签样式 */
@@ -130,18 +130,19 @@ main {
 /* 配置页面容器 */
 .config-page {
   padding: 1rem;
-  background: transparent;
-  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 1rem;
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .config-page:hover {
-  background: transparent;
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* 行间距优化 */
@@ -151,20 +152,21 @@ main {
 
 /* 优化滚动条 */
 main::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 main::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   margin: 8rem 0 3rem 0;
 }
 
 main::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
+  transition: background 0.3s ease;
 }
 
 main::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.3);
 }

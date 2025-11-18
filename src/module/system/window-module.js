@@ -30,7 +30,7 @@ function createWindow(windowName, data = null) {
       show: false,
       frame: false,
       roundedCorners: false,
-      transparent: true,
+      transparent: windowName === 'index' || windowName === 'capture', // Only index and capture windows are transparent
       fullscreenable: false,
       webPreferences: {
         contextIsolation: true,
@@ -42,6 +42,11 @@ function createWindow(windowName, data = null) {
 
     if (windowName === 'index') {
       browserWindowOptions.minimizable = true;
+    }
+
+    // Set background color for non-transparent windows
+    if (windowName !== 'index' && windowName !== 'capture') {
+      browserWindowOptions.backgroundColor = '#1a1a1a';
     }
 
     const appWindow = new BrowserWindow(browserWindowOptions);
