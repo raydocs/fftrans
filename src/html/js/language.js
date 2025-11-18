@@ -1,6 +1,12 @@
 'use strict';
 
-// on change UI text
+// Expose setText globally so config.js can call it directly
+window.tataru_setText = function(appLanguage) {
+  console.log('🎯 language.js: tataru_setText called with language:', appLanguage);
+  setText(appLanguage);
+};
+
+// Also keep the event listener as backup
 document.addEventListener('change-ui-text', (e) => {
   console.log('🎯 language.js: change-ui-text event received!', e.detail);
   const config = e.detail;
@@ -200,6 +206,7 @@ function getElementTextList() {
         'input-llm-api-url': ['API URL', 'API URL', 'API URL'],
 
         'select-app-language': ['語言(Language)', '语言(Language)', 'Language'],
+        'select-theme': ['介面主題', '界面主题', 'Theme'],
         'checkbox-auto-download-json': ['啟動時下載翻譯對照表', '启动时下载翻译对照表', 'Download Table When Started'],
         'checkbox-ssl-certificate': ['SSL驗證', 'SSL验证', 'SSL Certificate'],
 
@@ -349,7 +356,6 @@ function getElementTextList() {
           '若您的API不支援SSL驗證，請至【系統設定】關閉SSL驗證',
           '若您的API不支援SSL验证，请至【系统设定】关闭SSL验证',
           'Set SSL certificate off in "System Config" if your API can\'t access ChatGPT',
-        ],
         ],
       },
       span: {

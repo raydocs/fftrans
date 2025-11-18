@@ -14,6 +14,9 @@
     />
     -->
 
+    <!-- theme variables (must be first) -->
+    <link rel="stylesheet" href="css/theme.css" />
+
     <!-- bootstrap -->
     <link rel="stylesheet" href="css/bootstrap.min.css" />
 
@@ -1049,6 +1052,21 @@
 
         <br />
 
+        <!-- select theme -->
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <label for="select-theme"></label>
+          </div>
+          <div class="col-auto">
+            <select class="form-select" id="select-theme">
+              <option value="dark" selected>深色主題 (Dark)</option>
+              <option value="light">淺色主題 (Light)</option>
+            </select>
+          </div>
+        </div>
+
+        <br />
+
         <!-- shortcut -->
         <div class="row">
           <div class="col">
@@ -1233,7 +1251,10 @@
     </main>
 
     <!-- renderer -->
+    <script src="./js/theme.js"></script>
     <script src="./js/drag.js"></script>
     <script src="./js/language.js"></script>
+
+    <!-- Note: config.js is loaded as preload script in window-module.js -->
   </body>
 </html>

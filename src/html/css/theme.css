@@ -1,0 +1,138 @@
+/*
+ * Theme Variables System
+ * Supports dark and light themes via data-theme attribute
+ */
+
+/* ================================================
+   DEFAULT THEME (DARK)
+   ================================================ */
+:root {
+  /* Background Colors */
+  --bg-primary: #1a1a1a;                    /* Main background */
+  --bg-secondary: rgba(255, 255, 255, 0.03); /* Secondary surfaces */
+  --bg-elevated: rgba(255, 255, 255, 0.05);  /* Elevated cards/panels */
+  --bg-hover: rgba(255, 255, 255, 0.08);     /* Hover state background */
+
+  /* Text Colors */
+  --text-primary: rgba(255, 255, 255, 0.95); /* Primary text */
+  --text-secondary: rgba(255, 255, 255, 0.7); /* Secondary text */
+  --text-disabled: rgba(255, 255, 255, 0.4);  /* Disabled text */
+  --text-accent: #ffffff;                     /* Accent text (pure white) */
+
+  /* Border Colors */
+  --border-color: rgba(255, 255, 255, 0.15);  /* Standard borders */
+  --border-subtle: rgba(255, 255, 255, 0.1);  /* Subtle borders */
+  --border-focus: rgba(255, 107, 107, 0.5);   /* Focus state border */
+
+  /* Accent Colors (gradients - same for both themes) */
+  --accent-gradient-start: #ff6b6b;           /* Primary gradient start */
+  --accent-gradient-end: #ee5a6f;             /* Primary gradient end */
+  --accent-secondary: #ff9a76;                /* Secondary accent (orange) */
+  --accent-tertiary: #ffd93d;                 /* Tertiary accent (yellow) */
+
+  /* Shadow Colors */
+  --shadow-color: rgba(0, 0, 0, 0.3);         /* Standard shadow */
+  --shadow-heavy: rgba(0, 0, 0, 0.5);         /* Heavy shadow */
+  --shadow-light: rgba(0, 0, 0, 0.1);         /* Light shadow */
+  --shadow-accent: rgba(255, 107, 107, 0.3);  /* Accent shadow */
+
+  /* Form Elements */
+  --form-bg: rgba(255, 255, 255, 0.05);       /* Form background */
+  --form-hover: rgba(255, 255, 255, 0.1);     /* Form hover */
+  --form-focus: rgba(255, 255, 255, 0.15);    /* Form focus */
+  --form-border: rgba(255, 255, 255, 0.15);   /* Form border */
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2); /* Scrollbar thumb */
+  --scrollbar-track: rgba(0, 0, 0, 0.2);       /* Scrollbar track */
+  --scrollbar-hover: rgba(255, 255, 255, 0.3); /* Scrollbar thumb hover */
+
+  /* Special Elements */
+  --overlay-bg: rgba(0, 0, 0, 0.8);            /* Modal/overlay background */
+  --divider-color: rgba(255, 255, 255, 0.1);   /* HR dividers */
+  --success-color: #4caf50;                    /* Success state */
+  --warning-color: #ff9800;                    /* Warning state */
+  --error-color: #f44336;                      /* Error state */
+  --info-color: #2196f3;                       /* Info state */
+}
+
+/* ================================================
+   LIGHT THEME OVERRIDE
+   ================================================ */
+[data-theme="light"] {
+  /* Background Colors */
+  --bg-primary: #f5f5f5;                      /* Light gray background */
+  --bg-secondary: rgba(0, 0, 0, 0.03);        /* Subtle dark tint */
+  --bg-elevated: rgba(0, 0, 0, 0.05);         /* Slightly darker for elevation */
+  --bg-hover: rgba(0, 0, 0, 0.08);            /* Hover state */
+
+  /* Text Colors */
+  --text-primary: rgba(0, 0, 0, 0.87);        /* Material Design standard */
+  --text-secondary: rgba(0, 0, 0, 0.6);       /* Secondary text */
+  --text-disabled: rgba(0, 0, 0, 0.38);       /* Disabled text */
+  --text-accent: #000000;                     /* Pure black for accent */
+
+  /* Border Colors */
+  --border-color: rgba(0, 0, 0, 0.15);        /* Standard borders */
+  --border-subtle: rgba(0, 0, 0, 0.08);       /* Subtle borders */
+  --border-focus: rgba(255, 107, 107, 0.6);   /* Focus state (slightly stronger) */
+
+  /* Accent Colors - SAME as dark theme */
+  /* Gradient colors work well on both backgrounds */
+
+  /* Shadow Colors */
+  --shadow-color: rgba(0, 0, 0, 0.1);         /* Lighter shadow */
+  --shadow-heavy: rgba(0, 0, 0, 0.2);         /* Medium shadow */
+  --shadow-light: rgba(0, 0, 0, 0.05);        /* Very light shadow */
+  --shadow-accent: rgba(255, 107, 107, 0.2);  /* Lighter accent shadow */
+
+  /* Form Elements */
+  --form-bg: rgba(0, 0, 0, 0.04);             /* Light form background */
+  --form-hover: rgba(0, 0, 0, 0.08);          /* Form hover */
+  --form-focus: rgba(0, 0, 0, 0.12);          /* Form focus */
+  --form-border: rgba(0, 0, 0, 0.15);         /* Form border */
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(0, 0, 0, 0.3);      /* Darker thumb for visibility */
+  --scrollbar-track: rgba(0, 0, 0, 0.05);     /* Light track */
+  --scrollbar-hover: rgba(0, 0, 0, 0.4);      /* Darker on hover */
+
+  /* Special Elements */
+  --overlay-bg: rgba(0, 0, 0, 0.5);           /* Lighter overlay */
+  --divider-color: rgba(0, 0, 0, 0.1);        /* Visible dividers */
+  /* Success/Warning/Error/Info colors remain the same - they're universal */
+}
+
+/* ================================================
+   HELPER CLASSES (Optional)
+   ================================================ */
+
+/* Apply theme transition to all elements (opt-in) */
+.theme-transition,
+.theme-transition * {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* Quick utility classes */
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-elevated {
+  background-color: var(--bg-elevated);
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.border-subtle {
+  border-color: var(--border-subtle);
+}

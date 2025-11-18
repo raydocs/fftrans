@@ -13,12 +13,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // set IPC
 function setIPC() {
-  console.log('🔧 config.js: setIPC called, setting up listeners');
   // change UI text
   ipcRenderer.on('change-ui-text', async () => {
-    console.log('📨 config.js: Received change-ui-text IPC event');
     const config = await ipcRenderer.invoke('get-config');
-    console.log('📨 config.js: Got config, dispatching custom event', config);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 
@@ -55,9 +52,10 @@ async function setView() {
   document.getElementById('div-' + googleVisionType).hidden = false;
 
   // change UI text
-  console.log('🚀 config.js: Sending change-ui-text IPC event');
-  ipcRenderer.send('change-ui-text');
-  console.log('🚀 config.js: change-ui-text event sent!');
+  setTimeout(async () => {
+    const config = await ipcRenderer.invoke('get-config');
+    document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
+  }, 500);
 }
 
 // Initialize prompt preset selector
@@ -92,6 +90,18 @@ function setEvent() {
   document.addEventListener('move-window', (e) => {
     ipcRenderer.send('move-window', e.detail, false);
   });
+
+  // Theme selector - apply theme change immediately and notify all windows
+  document.getElementById('select-theme').onchange = () => {
+    const theme = document.getElementById('select-theme').value;
+
+    // Apply theme to current window
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-bs-theme', theme);
+
+    // Notify all other windows
+    ipcRenderer.send('apply-theme-to-all-windows', theme);
+  };
 
   // background color
   setOnInputEvent('input-background-color', 'span-background-color');
@@ -1066,6 +1076,10 @@ function getOptionList() {
     [
       ['select-app-language', 'value'],
       ['system', 'appLanguage'],
+    ],
+    [
+      ['select-theme', 'value'],
+      ['system', 'theme'],
     ],
     [
       ['checkbox-auto-download-json', 'checked'],

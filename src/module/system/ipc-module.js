@@ -106,6 +106,23 @@ function setSystemChannel() {
     return configModule.getConfig();
   });
 
+  // get theme
+  ipcMain.handle('get-theme', () => {
+    const config = configModule.getConfig();
+    return config.system.theme || 'dark';
+  });
+
+  // apply theme to all windows
+  ipcMain.on('apply-theme-to-all-windows', (event, theme) => {
+    const { BrowserWindow } = require('electron');
+    const allWindows = BrowserWindow.getAllWindows();
+    allWindows.forEach((win) => {
+      if (!win.isDestroyed()) {
+        win.webContents.send('set-theme', theme);
+      }
+    });
+  });
+
   // set default config
   ipcMain.handle('set-default-config', () => {
     configModule.setDefaultConfig();

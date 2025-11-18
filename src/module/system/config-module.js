@@ -116,6 +116,7 @@ const defaultConfig = {
     appLanguage: '',
     autoDownloadJson: true,
     sslCertificate: true,
+    theme: 'dark',
   },
 };
 
