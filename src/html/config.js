@@ -13,9 +13,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // set IPC
 function setIPC() {
+  console.log('🔧 config.js: setIPC called, setting up listeners');
   // change UI text
   ipcRenderer.on('change-ui-text', async () => {
+    console.log('📨 config.js: Received change-ui-text IPC event');
     const config = await ipcRenderer.invoke('get-config');
+    console.log('📨 config.js: Got config, dispatching custom event', config);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 
@@ -52,7 +55,9 @@ async function setView() {
   document.getElementById('div-' + googleVisionType).hidden = false;
 
   // change UI text
+  console.log('🚀 config.js: Sending change-ui-text IPC event');
   ipcRenderer.send('change-ui-text');
+  console.log('🚀 config.js: change-ui-text event sent!');
 }
 
 // Initialize prompt preset selector

@@ -2,18 +2,21 @@
 
 // on change UI text
 document.addEventListener('change-ui-text', (e) => {
+  console.log('🎯 language.js: change-ui-text event received!', e.detail);
   const config = e.detail;
   setText(config.system.appLanguage);
 });
 
 // set text
 function setText(appLanguage) {
+  console.log('🎯 language.js: setText called with language:', appLanguage);
   // get element text list
   const elementTextList = getElementTextList();
   const propertyNames = Object.keys(elementTextList);
 
   // get text index
   const textIndex = getTextIndex(appLanguage);
+  console.log('🎯 language.js: textIndex =', textIndex);
 
   // set title
   // const title = document.getElementsByTagName('title').item(0);
