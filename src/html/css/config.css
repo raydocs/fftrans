@@ -2,6 +2,8 @@ body {
   overflow: hidden;
   -webkit-user-select: none;
   user-select: none;
+  color: #ffffff;
+  background-color: #1a1a1a;
 }
 
 main {
@@ -13,6 +15,7 @@ main {
   height: 100vh;
   padding-left: 1rem;
   padding-right: 1rem;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 /* 优化表单样式 */
@@ -118,7 +121,7 @@ main {
 /* 优化标签样式 */
 .form-check-label,
 .form-label {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 400;
   transition: color 0.3s ease;
 }

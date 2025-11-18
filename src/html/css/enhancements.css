@@ -404,10 +404,20 @@ option:checked {
 
 /* Artistic section headers */
 h1, h2, h3, h4, h5, h6 {
+  color: #ff9a76; /* Fallback color for browsers that don't support background-clip */
   background: linear-gradient(135deg, #ff9a76, #ff6b6b);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 600;
   letter-spacing: 0.5px;
+}
+
+/* Fallback for browsers that don't support background-clip: text */
+@supports not (background-clip: text) or not (-webkit-background-clip: text) {
+  h1, h2, h3, h4, h5, h6 {
+    -webkit-text-fill-color: #ff9a76;
+    color: #ff9a76;
+    background: none;
+  }
 }
