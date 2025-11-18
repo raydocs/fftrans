@@ -27,14 +27,21 @@ const oldName = 'Tataru Helper Node';
 
 // directory check
 function directoryCheck() {
-  const subPath = ['', appName, appName + '\\config', appName + '\\image', appName + '\\log', appName + '\\text'];
+  const subPath = [
+    '',
+    appName,
+    path.join(appName, 'config'),
+    path.join(appName, 'image'),
+    path.join(appName, 'log'),
+    path.join(appName, 'text')
+  ];
 
   subPath.forEach((value) => {
     try {
       const dir = getPath(documentsPath, value);
 
       if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
+        fs.mkdirSync(dir, { recursive: true });
       }
     } catch (error) {
       console.log(error);

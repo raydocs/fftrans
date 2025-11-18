@@ -40,6 +40,10 @@ temp/
 # Test files
 test-*.js
 
+# Temporary extraction files
+speechify-*.json
+*-extraction.json
+
 # Cache
 .cache/
 *.cache
