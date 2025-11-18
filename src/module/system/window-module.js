@@ -33,9 +33,9 @@ function createWindow(windowName, data = null) {
       transparent: windowName === 'index' || windowName === 'capture', // Only index and capture windows are transparent
       fullscreenable: false,
       webPreferences: {
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: true,
+        contextIsolation: false,
+        nodeIntegration: true,
+        sandbox: false,
         preload: fileModule.getAppPath(`src/html/${windowName}.js`),
       },
     };
