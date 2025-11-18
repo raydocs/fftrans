@@ -1,0 +1,105 @@
+{
+  "count": 19,
+  "voices": [
+    {
+      "id": "gwyneth",
+      "name": "gwyneth",
+      "status": "available"
+    },
+    {
+      "id": "henry",
+      "name": "henry",
+      "status": "available"
+    },
+    {
+      "id": "olivia",
+      "name": "olivia",
+      "status": "available"
+    },
+    {
+      "id": "snoop",
+      "name": "snoop",
+      "status": "available"
+    },
+    {
+      "id": "mrbeast",
+      "name": "mrbeast",
+      "status": "available"
+    },
+    {
+      "id": "matthew",
+      "name": "matthew",
+      "status": "available"
+    },
+    {
+      "id": "joanna",
+      "name": "joanna",
+      "status": "available"
+    },
+    {
+      "id": "ivy",
+      "name": "ivy",
+      "status": "available"
+    },
+    {
+      "id": "salli",
+      "name": "salli",
+      "status": "available"
+    },
+    {
+      "id": "kimberly",
+      "name": "kimberly",
+      "status": "available"
+    },
+    {
+      "id": "justin",
+      "name": "justin",
+      "status": "available"
+    },
+    {
+      "id": "joey",
+      "name": "joey",
+      "status": "available"
+    },
+    {
+      "id": "stephen",
+      "name": "stephen",
+      "status": "available"
+    },
+    {
+      "id": "emma",
+      "name": "emma",
+      "status": "available"
+    },
+    {
+      "id": "brian",
+      "name": "brian",
+      "status": "available"
+    },
+    {
+      "id": "amy",
+      "name": "amy",
+      "status": "available"
+    },
+    {
+      "id": "russell",
+      "name": "russell",
+      "status": "available"
+    },
+    {
+      "id": "nicole",
+      "name": "nicole",
+      "status": "available"
+    },
+    {
+      "id": "aria",
+      "name": "aria",
+      "status": "available"
+    }
+  ],
+  "usage": "使用 voiceId 在 Tataru Assistant 配置中选择语音",
+  "example": {
+    "voiceId": "gwyneth",
+    "description": "默认高质量女声"
+  }
+}
