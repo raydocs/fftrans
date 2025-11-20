@@ -1,6 +1,9 @@
 name: Manual Build
 on:
-  workflow_dispatch:
+  # workflow_dispatch disabled
+  push:
+    branches:
+      - disabled
 
 permissions:
   contents: write
