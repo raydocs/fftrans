@@ -1,6 +1,6 @@
 {
   "name": "fftrans",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "FFTrans - Final Fantasy XIV Real-time Translation Assistant",
   "main": "src/main.js",
   "scripts": {
@@ -9,7 +9,13 @@
     "dist": "electron-builder"
   },
   "repository": "https://github.com/raydocs/tataru",
-  "keywords": ["ffxiv", "translator", "final-fantasy", "translation", "tts"],
+  "keywords": [
+    "ffxiv",
+    "translator",
+    "final-fantasy",
+    "translation",
+    "tts"
+  ],
   "author": "raydocs (https://github.com/raydocs)",
   "license": "MIT",
   "devDependencies": {

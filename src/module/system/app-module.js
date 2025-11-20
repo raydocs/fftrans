@@ -19,7 +19,7 @@ const chatCodeModule = require('./chat-code-module');
 const windowModule = require('./window-module');
 
 // ipc module
-const ipcModule = require('./ipc-module');
+const ipcModule = require('../ipc/index');
 
 // translation cache
 const { globalCache } = require('./translation-cache');

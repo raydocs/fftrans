@@ -1,7 +1,7 @@
 'use strict';
 
 // Expose setText globally so config.js can call it directly
-window.tataru_setText = function(appLanguage) {
+window.tataru_setText = function (appLanguage) {
   console.log('🎯 language.js: tataru_setText called with language:', appLanguage);
   setText(appLanguage);
 };
@@ -430,6 +430,23 @@ function getElementTextList() {
     },
     title: {
       img: {
+        // index
+        'img-button-drag': ['拖曳', '拖曳', 'Drag'],
+        'img-button-config': ['設定', '设定', 'Config'],
+        'img-button-capture': ['螢幕截圖翻譯', '萤幕截图翻译', 'Screenshot Translation'],
+        'img-button-through': ['滑鼠穿透', '鼠标穿透', 'Mouse Pass'],
+        'img-button-update': ['下載最新版本', '下载最新版本', 'Download The Latest Version'],
+        'img-button-minimize': ['縮小', '缩小', 'Minimize'],
+        'img-button-close': ['關閉', '关闭', 'Close'],
+
+        'img-button-speech': ['朗讀文字', '朗读文字', 'Text To Speech'],
+        'img-button-custom': ['自訂翻譯', '自订翻译', 'Custom Word'],
+        'img-button-dictionary': ['翻譯查詢', '翻译查询', 'Translate'],
+        'img-button-read-log': ['讀取對話紀錄', '读取对话纪录', 'Read Chat Log'],
+        'img-button-backspace': ['刪除最後一句', '删除最后一句', 'Delete Last'],
+        'img-button-clear': ['刪除全部對話', '删除全部对话', 'Delete All'],
+      },
+      button: {
         // index
         'img-button-drag': ['拖曳', '拖曳', 'Drag'],
         'img-button-config': ['設定', '设定', 'Config'],
