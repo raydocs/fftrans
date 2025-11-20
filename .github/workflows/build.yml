@@ -1,7 +1,5 @@
 name: Build and deploy Tataru Assistant
 on:
-  schedule:
-    - cron: '0 */2 * * *'
   push:
     branches:
       - main
