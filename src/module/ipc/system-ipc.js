@@ -1,12 +1,14 @@
 'use strict';
 
 const { app, ipcMain } = require('electron');
+const path = require('path');
 const configModule = require('../system/config-module');
 const sharlayanModule = require('../system/sharlayan-module');
 const chatCodeModule = require('../system/chat-code-module');
 const windowModule = require('../system/window-module');
 const dialogModule = require('../system/dialog-module');
-const childProcess = require('child_process');
+const { execFile } = require('child_process');
+const Logger = require('../../utils/logger');
 
 const appVersion = app.getVersion();
 
@@ -64,7 +66,7 @@ function setSystemChannel() {
       const defaultConfigBounds = windowModule.getWindowSize('config', defaultConfig);
       windowModule.getWindow('config').setContentBounds(defaultConfigBounds);
     } catch (error) {
-      console.log(error);
+      Logger.error('system-ipc', 'Failed to reset window bounds', error);
     }
 
     return defaultConfig;
@@ -94,13 +96,29 @@ function setSystemChannel() {
 
   // fix reader
   ipcMain.on('fix-reader', (event) => {
-    childProcess.exec('secedit /configure /cfg %windir%\\inf\\defltbase.inf /db defltbase.sdb /verbose', (error) => {
+    // Use execFile instead of exec to prevent command injection
+    const command = 'secedit';
+    const args = [
+      '/configure',
+      '/cfg',
+      path.join(process.env.WINDIR || 'C:\\Windows', 'inf', 'defltbase.inf'),
+      '/db',
+      'defltbase.sdb',
+      '/verbose'
+    ];
+
+    execFile(command, args, (error) => {
       let message = '';
 
       if (error && error.code === 740) {
         message = 'You must run Tataru Assistant as administrator. (Error 740)';
+        Logger.warn('system-ipc', 'Fix reader requires administrator privileges');
+      } else if (error) {
+        message = 'Failed to fix reader. Check logs for details.';
+        Logger.error('system-ipc', 'Fix reader command failed', error);
       } else {
         message = 'Completed.';
+        Logger.info('system-ipc', 'Reader fix completed successfully');
       }
 
       dialogModule.showInfo(event.sender, message);

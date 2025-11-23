@@ -6,6 +6,9 @@ const windowModule = require('../system/window-module');
 const textDetectModule = require('../system/text-detect-module');
 const fileModule = require('../system/file-module');
 const dialogModule = require('../system/dialog-module');
+const Logger = require('../../utils/logger');
+const Validator = require('../../utils/validator');
+const { IPC_CHANNELS, NOTIFICATIONS } = require('../../constants');
 
 function setCaptureChannel() {
     // get screen bounds
@@ -44,7 +47,7 @@ function setCaptureChannel() {
     });
 
     // set google credential
-    ipcMain.on('set-google-credential', () => {
+    ipcMain.on(IPC_CHANNELS.SET_GOOGLE_CREDENTIAL, () => {
         dialog
             .showOpenDialog({
                 defaultPath: fileModule.getDownloadsPath(),
@@ -52,17 +55,32 @@ function setCaptureChannel() {
             })
             .then((value) => {
                 if (!value.canceled && value.filePaths.length > 0 && value.filePaths[0].length > 0) {
-                    let data = fileModule.read(value.filePaths[0], 'json');
+                    const filePath = value.filePaths[0];
+
+                    // Validate file path for security
+                    const pathValidation = Validator.validateFilePath(filePath, ['.json']);
+                    if (!pathValidation.valid) {
+                        Logger.error('capture-ipc', 'Invalid file path selected', pathValidation.error);
+                        dialogModule.addNotification(NOTIFICATIONS.INVALID_PATH);
+                        return;
+                    }
+
+                    let data = fileModule.read(filePath, 'json');
 
                     if (data) {
                         fileModule.write(fileModule.getUserDataPath('config', 'google-vision-credential.json'), data, 'json');
-                        dialogModule.addNotification('GOOGLE_CREDENTIAL_SAVED');
+                        dialogModule.addNotification(NOTIFICATIONS.GOOGLE_CREDENTIAL_SAVED);
+                        Logger.info('capture-ipc', 'Google credential saved successfully');
                     } else {
-                        dialogModule.addNotification('INCORRECT_FILE');
+                        dialogModule.addNotification(NOTIFICATIONS.INCORRECT_FILE);
+                        Logger.warn('capture-ipc', 'Invalid JSON file selected');
                     }
                 }
             })
-            .catch(console.log);
+            .catch((error) => {
+                Logger.error('capture-ipc', 'Failed to set Google credential', error);
+                dialogModule.addNotification(NOTIFICATIONS.GOOGLE_CREDENTIAL_ERROR);
+            });
     });
 }
 

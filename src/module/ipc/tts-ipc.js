@@ -3,19 +3,19 @@
 const { ipcMain } = require('electron');
 const configModule = require('../system/config-module');
 const speechifyTTS = require('../translator/speechify-tts');
+const elevenLabsTTS = require('../translator/elevenlabs-tts');
+const { IPCResponse } = require('../../utils/ipc-response');
+const Logger = require('../../utils/logger');
 
 function setTTSChannel() {
     // Test Speechify configuration
     ipcMain.handle('test-speechify-config', async () => {
         try {
             const result = await speechifyTTS.testConfiguration();
-            return result;
+            return IPCResponse.success(result);
         } catch (error) {
-            return {
-                success: false,
-                message: error.message,
-                error: error.toString(),
-            };
+            Logger.error('tts-ipc', 'Failed to test Speechify config', error);
+            return IPCResponse.error(error);
         }
     });
 
@@ -54,49 +54,32 @@ function setTTSChannel() {
     ipcMain.handle('preview-speechify-voice', async (event, { text, config }) => {
         try {
             const audioUrl = await speechifyTTS.synthesizeSpeech(text, 'en', config);
-            return {
-                success: true,
-                audioUrl: audioUrl
-            };
+            return IPCResponse.success({ audioUrl });
         } catch (error) {
-            return {
-                success: false,
-                message: error.message,
-                error: error.toString()
-            };
+            Logger.error('tts-ipc', 'Failed to preview Speechify voice', error);
+            return IPCResponse.error(error);
         }
     });
 
     // Test ElevenLabs configuration
     ipcMain.handle('test-elevenlabs-config', async () => {
         try {
-            const elevenLabsTTS = require('../translator/elevenlabs-tts');
             const result = await elevenLabsTTS.testConfiguration();
-            return result;
+            return IPCResponse.success(result);
         } catch (error) {
-            return {
-                success: false,
-                message: error.message,
-                error: error.toString(),
-            };
+            Logger.error('tts-ipc', 'Failed to test ElevenLabs config', error);
+            return IPCResponse.error(error);
         }
     });
 
     // Preview ElevenLabs voice
     ipcMain.handle('preview-elevenlabs-voice', async (event, { text, config }) => {
         try {
-            const elevenLabsTTS = require('../translator/elevenlabs-tts');
             const audioUrl = await elevenLabsTTS.synthesizeSpeech(text, 'en', config);
-            return {
-                success: true,
-                audioUrl: audioUrl
-            };
+            return IPCResponse.success({ audioUrl });
         } catch (error) {
-            return {
-                success: false,
-                message: error.message,
-                error: error.toString()
-            };
+            Logger.error('tts-ipc', 'Failed to preview ElevenLabs voice', error);
+            return IPCResponse.error(error);
         }
     });
 }

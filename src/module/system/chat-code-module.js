@@ -5,8 +5,10 @@
 // file module
 const fileModule = require('./file-module');
 
-// chat code location
-const chatCodeLocation = fileModule.getUserDataPath('config', 'chat-code.json');
+// Lazily resolve chat code path to avoid accessing app paths before Electron is ready
+function getChatCodeLocation() {
+  return fileModule.getUserDataPath('config', 'chat-code.json');
+}
 
 // default chat code
 const defaultChatCode = [
@@ -227,7 +229,7 @@ let currentChatCode = getDefaultChatCode();
 
 // load chat code
 function loadChatCode() {
-  currentChatCode = fileModule.read(chatCodeLocation, 'json') || [];
+  currentChatCode = fileModule.read(getChatCodeLocation(), 'json') || [];
 
   if (defaultChatCode.length !== currentChatCode.length) {
     currentChatCode = getDefaultChatCode();
@@ -240,7 +242,7 @@ function loadChatCode() {
 // save chat code
 function saveChatCode() {
   try {
-    fileModule.write(chatCodeLocation, currentChatCode, 'json');
+    fileModule.write(getChatCodeLocation(), currentChatCode, 'json');
   } catch (error) {
     console.log(error);
   }

@@ -1,0 +1,60 @@
+/* Shared CSS Variables for entire application */
+:root {
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.2rem;
+    --spacing-lg: 1.8rem;
+    --spacing-xl: 5rem;
+
+    /* Colors - Background */
+    --color-bg-transparent: rgba(30, 30, 30, 0.4);
+    --color-bg-dark: #1a1a1a;
+    --color-bg-hover: transparent;
+    --color-bg-white: #ffffff;
+
+    /* Colors - Border */
+    --color-border-subtle: rgba(255, 255, 255, 0.05);
+    --color-border-light: rgba(255, 255, 255, 0.08);
+    --color-border-medium: rgba(255, 255, 255, 0.1);
+    --color-border-hover: rgba(255, 154, 118, 0.5);
+    --color-border-danger: rgba(239, 68, 68, 0.5);
+
+    /* Colors - Text */
+    --color-text-primary: #ffffff;
+    --color-text-muted: rgba(255, 255, 255, 0.85);
+    --color-text-shadow: rgba(0, 0, 0, 0.5);
+    --color-text-dark: #333;
+
+    /* Colors - Scrollbar */
+    --color-scrollbar: rgba(255, 255, 255, 0.15);
+    --color-scrollbar-hover: rgba(255, 255, 255, 0.25);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, rgba(255, 154, 118, 0.6), rgba(255, 107, 107, 0.6));
+    --gradient-danger: linear-gradient(135deg, rgba(239, 68, 68, 0.7), rgba(220, 38, 38, 0.7));
+
+    /* Effects */
+    --blur-sm: 4px;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-md: 0 8px 20px rgba(255, 107, 107, 0.3);
+    --shadow-danger: 0 8px 20px rgba(239, 68, 68, 0.4);
+    --shadow-text: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-text-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+    /* Transitions */
+    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-ease: 0.3s ease;
+    --transition-fast: 0.2s ease;
+    --transition-slide: 0.4s ease-out;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+
+    /* Sizes */
+    --icon-size: 16px;
+    --button-size: 1.8rem;
+    --scrollbar-width: 6px;
+}

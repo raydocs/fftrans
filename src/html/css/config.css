@@ -27,7 +27,11 @@ main {
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   border-radius: 10px;
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    color 0.3s ease;
 }
 
 .form-select:focus,
@@ -90,7 +94,12 @@ main {
   border-radius: 10px;
   padding: 0.5rem 1.5rem;
   font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
 }
@@ -139,7 +148,10 @@ main {
   border: 1px solid var(--border-subtle);
   margin-bottom: 1rem;
   box-shadow: 0 4px 12px var(--shadow-color);
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .config-page:hover {

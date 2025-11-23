@@ -1,3 +1,61 @@
+/* CSS Variables for maintainability and theming */
+:root {
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.2rem;
+  --spacing-lg: 1.8rem;
+  --spacing-xl: 5rem;
+
+  /* Colors - Background */
+  --color-bg-transparent: rgba(30, 30, 30, 0.4);
+  --color-bg-dark: #1a1a1a;
+  --color-bg-hover: transparent;
+
+  /* Colors - Border */
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-light: rgba(255, 255, 255, 0.08);
+  --color-border-medium: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 154, 118, 0.5);
+  --color-border-danger: rgba(239, 68, 68, 0.5);
+
+  /* Colors - Text */
+  --color-text-primary: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.85);
+  --color-text-shadow: rgba(0, 0, 0, 0.5);
+
+  /* Colors - Scrollbar */
+  --color-scrollbar: rgba(255, 255, 255, 0.15);
+  --color-scrollbar-hover: rgba(255, 255, 255, 0.25);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, rgba(255, 154, 118, 0.6), rgba(255, 107, 107, 0.6));
+  --gradient-danger: linear-gradient(135deg, rgba(239, 68, 68, 0.7), rgba(220, 38, 38, 0.7));
+
+  /* Effects */
+  --blur-sm: 4px;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 8px 20px rgba(255, 107, 107, 0.3);
+  --shadow-danger: 0 8px 20px rgba(239, 68, 68, 0.4);
+  --shadow-text: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-text-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+  /* Transitions */
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-ease: 0.3s ease;
+  --transition-slide: 0.4s ease-out;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Sizes */
+  --icon-size: 16px;
+  --button-size: 1.8rem;
+  --scrollbar-width: 6px;
+}
+
 body {
   overflow: hidden;
   background-color: transparent;
@@ -7,27 +65,29 @@ body {
   scroll-behavior: smooth;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem 1.2rem;
-  padding-top: 5rem;
-  padding-bottom: 5rem;
+  padding: var(--spacing-sm) var(--spacing-md);
+  padding-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
   width: 100vw;
   height: 100vh;
 }
 
 #div-dialog div {
-  margin-bottom: 1rem;
-  padding: 1rem 1.2rem;
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   line-break: loose;
-  color: #ffffff;
-  background: transparent;
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
   backdrop-filter: none;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
   box-shadow: none;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: slideInUp 0.4s ease-out;
+  transition: transform var(--transition-smooth),
+    box-shadow var(--transition-smooth),
+    border-color var(--transition-smooth);
+  animation: slideInUp var(--transition-slide);
 }
 
 /* 渐变边框效果 */
@@ -45,13 +105,13 @@ body {
 #div-dialog div:hover {
   transform: translateY(-2px);
   box-shadow: none;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-medium);
 }
 
 #div-dialog p,
 #div-dialog span {
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 2px 8px var(--color-text-shadow));
   line-height: 1.8;
   font-weight: 400;
   letter-spacing: 0.3px;
@@ -72,40 +132,42 @@ body {
 
 /* 优化滚动条样式 */
 #div-dialog::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-width);
 }
 
 #div-dialog::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 10px;
-  margin: 5rem 0;
+  border-radius: var(--radius-md);
+  margin: var(--spacing-xl) 0;
 }
 
 #div-dialog::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  background: var(--color-scrollbar);
+  border-radius: var(--radius-md);
 }
 
 #div-dialog::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-scrollbar-hover);
 }
 
 /* Button Styles */
 .btn-icon {
-  background: rgba(30, 30, 30, 0.4);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.85);
-  width: 1.8rem;
-  height: 1.8rem;
+  background: var(--color-bg-transparent);
+  backdrop-filter: blur(var(--blur-sm));
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-muted);
+  width: var(--button-size);
+  height: var(--button-size);
   padding: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--transition-smooth),
+    border-color var(--transition-smooth),
+    box-shadow var(--transition-smooth);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -118,26 +180,27 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 154, 118, 0.6), rgba(255, 107, 107, 0.6));
+  background: var(--gradient-primary);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-ease);
   z-index: 0;
 }
 
 .btn-icon svg {
   position: relative;
   z-index: 1;
-  width: 16px;
-  height: 16px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: transform 0.3s ease;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  filter: drop-shadow(0 2px 4px var(--shadow-text));
+  transition: transform var(--transition-ease);
 }
 
 .btn-icon:hover {
-  border-color: rgba(255, 154, 118, 0.5);
-  color: #ffffff;
+  border-color: var(--color-border-hover);
+  color: var(--color-text-primary);
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+  box-shadow: var(--shadow-md);
+  will-change: transform, box-shadow;
 }
 
 .btn-icon:hover::before {
@@ -150,12 +213,12 @@ body {
 
 /* Danger buttons (Close, Clear, Backspace) */
 .btn-icon-danger:hover {
-  border-color: rgba(239, 68, 68, 0.5);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+  border-color: var(--color-border-danger);
+  box-shadow: var(--shadow-danger);
 }
 
 .btn-icon-danger::before {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.7), rgba(220, 38, 38, 0.7));
+  background: var(--gradient-danger);
 }
 
 /* Header/Footer Layout */
@@ -165,8 +228,8 @@ footer {
   left: 0;
   right: 0;
   z-index: 1000;
-  transition: opacity 0.3s ease;
-  padding: 8px;
+  transition: opacity var(--transition-ease);
+  padding: var(--spacing-xs);
 }
 
 header {

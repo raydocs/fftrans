@@ -12,6 +12,9 @@ const chatCodeModule = require('./chat-code-module');
 // file module
 const fileModule = require('./file-module');
 
+// utils
+const Logger = require('../../utils/logger');
+
 // window list
 let windowList = {};
 
@@ -143,7 +146,7 @@ function createWindow(windowName, data = null) {
     // save window
     setWindow(windowName, appWindow);
   } catch (error) {
-    console.log(error);
+    Logger.error('window-module', `Failed to create window: ${windowName}`, error);
   }
 }
 
@@ -481,7 +484,7 @@ function sendIndex(channel, ...args) {
 }
 
 // for each window
-function forEachWindow(callback = () => {}) {
+function forEachWindow(callback = () => { }) {
   const windowNames = Object.keys(windowList);
   windowNames.forEach((windowName) => {
     try {

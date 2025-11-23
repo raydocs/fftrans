@@ -9,8 +9,10 @@ const fileModule = require('./file-module');
 // engine module
 const engineModule = require('./engine-module');
 
-// config location
-const configLocation = fileModule.getUserDataPath('config', 'config.json');
+// Lazily resolve config location to avoid touching app paths before Electron is ready
+function getConfigLocation() {
+  return fileModule.getUserDataPath('config', 'config.json');
+}
 
 // default config
 const defaultConfig = {
@@ -126,7 +128,7 @@ let currentConfig = getDefaultConfig();
 // load config
 function loadConfig() {
   try {
-    currentConfig = fileModule.read(configLocation, 'json');
+    currentConfig = fileModule.read(getConfigLocation(), 'json');
 
     // fix old bug
     if (
@@ -197,7 +199,7 @@ function loadConfig() {
 // save config
 function saveConfig() {
   try {
-    fileModule.write(configLocation, currentConfig, 'json');
+    fileModule.write(getConfigLocation(), currentConfig, 'json');
   } catch (error) {
     console.log(error);
   }

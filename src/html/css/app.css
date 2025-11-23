@@ -16,7 +16,9 @@ footer {
   margin: 8px;
   box-shadow: none;
   border: none;
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 header {
@@ -50,7 +52,7 @@ footer:hover {
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #ff9a76, #ff6b6b);
   border-radius: 10px;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -68,7 +70,10 @@ footer:hover {
   width: 2.2rem;
   height: 2.2rem;
   border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
   position: relative;
 }

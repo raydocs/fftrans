@@ -30,8 +30,10 @@ const windowModule = require('./window-module');
 // npc channel
 const npcChannel = ['003D', '0044', '2AB9'];
 
-// log location
-const logLocation = fileModule.getUserDataPath('log');
+// Lazily resolve log directory to avoid early app path access
+function getLogLocation() {
+  return fileModule.getUserDataPath('log');
+}
 
 // dialog timeout
 let hideDialogTimeout = null;
@@ -140,7 +142,7 @@ function saveDialog(dialogData) {
       translation: dialogData.translation,
     };
 
-    const filePath = fileModule.getPath(logLocation, createLogName(item.timestamp));
+    const filePath = fileModule.getPath(getLogLocation(), createLogName(item.timestamp));
     let log = {};
 
     // read/create log file

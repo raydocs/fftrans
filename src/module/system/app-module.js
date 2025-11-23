@@ -1,7 +1,8 @@
 'use strict';
 
 // child process
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
+const path = require('path');
 
 // electron
 const { globalShortcut, ipcMain } = require('electron');
@@ -23,6 +24,10 @@ const ipcModule = require('../ipc/index');
 
 // translation cache
 const { globalCache } = require('./translation-cache');
+
+// utils
+const Logger = require('../../utils/logger');
+const { FILE_NAMES } = require('../../constants');
 
 // start app
 function startApp() {
@@ -60,17 +65,17 @@ function preloadCache() {
     const engine = config.translation?.engine || 'OpenRouter';
 
     // Load common phrases dictionary
-    const commonPhrasesPath = fileModule.getRootPath('src', 'data', 'text', 'cache', 'common-phrases-en-chs.json');
+    const commonPhrasesPath = fileModule.getRootPath('src', 'data', 'text', 'cache', FILE_NAMES.COMMON_PHRASES);
 
     if (fileModule.exists(commonPhrasesPath)) {
       const commonPhrases = require(commonPhrasesPath);
       const count = globalCache.preload(commonPhrases, engine);
-      console.log(`🚀 Cache preloaded with ${count} common phrases for faster translation`);
+      Logger.info('app-module', `Cache preloaded with ${count} common phrases for faster translation`);
     } else {
-      console.log('ℹ️  Common phrases file not found, skipping cache preload');
+      Logger.info('app-module', 'Common phrases file not found, skipping cache preload');
     }
   } catch (error) {
-    console.error('⚠️  Cache preload failed:', error.message);
+    Logger.error('app-module', 'Cache preload failed', error);
   }
 }
 
@@ -102,7 +107,13 @@ function registerGlobalShortcut() {
   globalShortcut.unregisterAll();
 
   globalShortcut.register('CommandOrControl+F9', () => {
-    exec(`explorer "${fileModule.getRootPath('src', 'data', 'text', 'readme', 'index.html')}"`);
+    const readmePath = fileModule.getRootPath('src', 'data', 'text', 'readme', 'index.html');
+    // Use execFile for security
+    execFile('explorer', [readmePath], (error) => {
+      if (error) {
+        Logger.error('app-module', 'Failed to open readme', error);
+      }
+    });
   });
 
   globalShortcut.register('CommandOrControl+F10', () => {

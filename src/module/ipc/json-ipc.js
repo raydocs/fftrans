@@ -4,9 +4,39 @@ const { ipcMain } = require('electron');
 const jsonEntry = require('../fix/json-entry');
 const jsonFunction = require('../fix/json-function');
 const dialogModule = require('../system/dialog-module');
+const Logger = require('../../utils/logger');
+const Validator = require('../../utils/validator');
+const { CUSTOM_TYPES, FILE_NAMES, REGEX_PATTERNS, NOTIFICATIONS } = require('../../constants');
 
-// No kanji
-const regNoKanji = /^[^\u3100-\u312F\u3400-\u4DBF\u4E00-\u9FFF]+$/;
+/**
+ * Get filename for custom type
+ * @param {string} type - Custom type
+ * @returns {string} Filename
+ */
+function getFileNameForType(type) {
+    const fileMap = {
+        [CUSTOM_TYPES.CUSTOM_SOURCE]: FILE_NAMES.CUSTOM_SOURCE,
+        [CUSTOM_TYPES.CUSTOM_OVERWRITE]: FILE_NAMES.CUSTOM_OVERWRITE,
+        [CUSTOM_TYPES.PLAYER]: FILE_NAMES.PLAYER_NAME,
+        [CUSTOM_TYPES.RETAINER]: FILE_NAMES.PLAYER_NAME,
+    };
+    return fileMap[type] || FILE_NAMES.CUSTOM_TARGET;
+}
+
+/**
+ * Prepare text before saving (add # for short non-kanji text)
+ * @param {string} textBefore - Original text
+ * @param {string} type - Custom type
+ * @returns {string} Processed text
+ */
+function prepareTextBefore(textBefore, type) {
+    if (type !== CUSTOM_TYPES.CUSTOM_OVERWRITE &&
+        textBefore.length < 3 &&
+        REGEX_PATTERNS.NO_KANJI.test(textBefore)) {
+        return textBefore + '#';
+    }
+    return textBefore;
+}
 
 function setJsonChannel() {
     // initialize json
@@ -28,7 +58,8 @@ function setJsonChannel() {
     ipcMain.on('delete-temp', () => {
         jsonFunction.deleteTemp();
         jsonEntry.loadJSON();
-        dialogModule.addNotification('TEMP_DELETED');
+        dialogModule.addNotification(NOTIFICATIONS.TEMP_DELETED);
+        Logger.info('json-ipc', 'Temp data deleted successfully');
     });
 
     // get array
@@ -39,54 +70,62 @@ function setJsonChannel() {
 
     // save user custom
     ipcMain.on('save-user-custom', (event, textBefore = '', textAfter = '', type = '') => {
-        let fileName = '';
-        let textBefore2 = textBefore;
-        let array = [];
-
-        if (type !== 'custom-overwrite' && textBefore2.length < 3 && regNoKanji.test(textBefore2)) textBefore2 += '#';
-
-        if (type === 'custom-source') {
-            fileName = 'custom-source.json';
-            array.push([textBefore2, textAfter]);
-        } else if (type === 'custom-overwrite') {
-            fileName = 'custom-overwrite.json';
-            array.push([textBefore2, textAfter]);
-        } else if (type === 'player' || type === 'retainer') {
-            fileName = 'player-name.json';
-            array.push([textBefore2, textAfter, type]);
-        } else {
-            fileName = 'custom-target.json';
-            array.push([textBefore2, textAfter, type]);
+        // Validate inputs
+        if (!Validator.isValidString(textBefore) || !Validator.isValidString(textAfter)) {
+            Logger.warn('json-ipc', 'Invalid input for save-user-custom');
+            return;
         }
+
+        const allowedTypes = Object.values(CUSTOM_TYPES);
+        if (!Validator.isValidType(type, allowedTypes)) {
+            Logger.error('json-ipc', `Invalid type for save-user-custom: ${type}`);
+            return;
+        }
+
+        // Sanitize inputs
+        textBefore = Validator.sanitize(textBefore);
+        textAfter = Validator.sanitize(textAfter);
+
+        // Use helper functions
+        const fileName = getFileNameForType(type);
+        const processedTextBefore = prepareTextBefore(textBefore, type);
+
+        const array = [[processedTextBefore, textAfter, type]];
 
         jsonFunction.saveUserCustom(fileName, array);
         jsonEntry.loadJSON();
         event.sender.send('create-table');
+
+        Logger.info('json-ipc', `Saved user custom: ${type}`);
     });
 
     // delete user custom
     ipcMain.on('delete-user-custom', (event, textBefore = '', type = '') => {
-        let fileName = '';
-        let textBefore2 = textBefore;
-
-        if (type !== 'custom-overwrite' && textBefore2.length < 3 && regNoKanji.test(textBefore2)) {
-            textBefore2 += '#';
+        // Validate inputs
+        if (!Validator.isValidString(textBefore)) {
+            Logger.warn('json-ipc', 'Invalid input for delete-user-custom');
+            return;
         }
 
-        if (type === 'custom-source') {
-            fileName = 'custom-source.json';
-        } else if (type === 'custom-overwrite') {
-            fileName = 'custom-overwrite.json';
-        } else if (type === 'player' || type === 'retainer') {
-            fileName = 'player-name.json';
-        } else {
-            fileName = 'custom-target.json';
+        const allowedTypes = Object.values(CUSTOM_TYPES);
+        if (!Validator.isValidType(type, allowedTypes)) {
+            Logger.error('json-ipc', `Invalid type for delete-user-custom: ${type}`);
+            return;
         }
 
-        jsonFunction.editUserCustom(fileName, textBefore2);
-        jsonFunction.editUserCustom('temp-name.json', textBefore2);
+        // Sanitize input
+        textBefore = Validator.sanitize(textBefore);
+
+        // Use helper functions
+        const fileName = getFileNameForType(type);
+        const processedTextBefore = prepareTextBefore(textBefore, type);
+
+        jsonFunction.editUserCustom(fileName, processedTextBefore);
+        jsonFunction.editUserCustom(FILE_NAMES.TEMP_NAME, processedTextBefore);
         jsonEntry.loadJSON();
         event.sender.send('create-table');
+
+        Logger.info('json-ipc', `Deleted user custom: ${type}`);
     });
 }
 

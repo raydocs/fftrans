@@ -31,7 +31,10 @@ header {
   padding: 0.8rem 1.5rem;
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(255, 154, 118, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
 }
 
