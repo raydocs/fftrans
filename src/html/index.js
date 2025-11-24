@@ -10,8 +10,8 @@ let clickThrough = false;
 let hideUpdateButton = true;
 
 // timeout
-let timeoutScrollIntoView = null;
-let timeoutMoveToBottom = null;
+let rafScroll = null;
+let rafMove = null;
 
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
@@ -382,22 +382,29 @@ function resetDialogStyle() {
 
 // scroll into view
 function scrollIntoView(id = '') {
-  clearTimeout(timeoutScrollIntoView);
-  timeoutScrollIntoView = setTimeout(() => {
-    document.getElementById(id).scrollIntoView();
-  }, 200);
+  if (rafScroll) {
+    cancelAnimationFrame(rafScroll);
+  }
+  rafScroll = requestAnimationFrame(() => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  });
 }
 
 // move to bottom
 function moveToBottom() {
-  clearTimeout(timeoutMoveToBottom);
-  timeoutMoveToBottom = setTimeout(() => {
+  if (rafMove) {
+    cancelAnimationFrame(rafMove);
+  }
+  rafMove = requestAnimationFrame(() => {
     clearSelection();
     const div = document.getElementById('div-dialog');
     if (div) {
       div.scrollTop = div.scrollHeight;
     }
-  }, 200);
+  });
 }
 
 // clear selection

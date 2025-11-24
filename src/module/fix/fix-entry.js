@@ -7,7 +7,7 @@ const configModule = require('../system/config-module');
 const dialogModule = require('../system/dialog-module');
 
 // language table
-const { languageEnum, fixSourceList } = require('../system/engine-module');
+const { languageEnum } = require('../system/engine-module');
 
 // translate module
 const translateModule = require('../system/translate-module');
@@ -25,11 +25,14 @@ const playerChannel = getPlayerChannel();
 let lastTimestamp = 0;
 let running = false;
 let entryIntervalItem = [];
-let entryInterval = getEntryInterval();
+let processing = false;
 
 // set running
 function setRunning(value) {
   running = value;
+  if (running) {
+    processQueue();
+  }
 }
 
 // add task
@@ -50,23 +53,36 @@ function addTask(dialogData) {
 
   // push
   entryIntervalItem.push(dialogData);
+
+  // process immediately when running
+  if (running) {
+    processQueue();
+  }
 }
 
 // restart entry interval
 function restartEntryInterval() {
-  clearInterval(entryInterval);
   entryIntervalItem = [];
-  entryInterval = getEntryInterval();
+  processing = false;
 }
 
-// get entry interval
-function getEntryInterval() {
-  return setInterval(() => {
-    if (running) entry();
-  }, 1000);
+// process queue immediately (event-driven)
+async function processQueue() {
+  if (processing) {
+    return;
+  }
+  processing = true;
+
+  try {
+    while (running && entryIntervalItem.length > 0) {
+      await entry();
+    }
+  } finally {
+    processing = false;
+  }
 }
 
-// entry
+// entry (single task)
 async function entry() {
   const config = configModule.getConfig();
   const dialogData = entryIntervalItem.shift();
