@@ -8,7 +8,7 @@ const fileModule = require('../system/file-module');
 
 const requestModule = require('../system/request-module');
 
-async function textDetection(path = '') {
+async function textDetection(input) {
   const config = configModule.getConfig();
 
   if (config.api.googleVisionType === 'google-api-key') {
@@ -16,11 +16,15 @@ async function textDetection(path = '') {
     const apiKey = config.api.googleVisionApiKey;
     const apiUrl = 'https://vision.googleapis.com/v1/images:annotate?key=' + apiKey;
     const header = { 'Content-Type': 'application/json' };
+
+    // Check if input is buffer or path
+    const content = Buffer.isBuffer(input) ? input.toString('base64') : fileModule.read(input, 'image');
+
     const payload = {
       requests: [
         {
           image: {
-            content: fileModule.read(path, 'image'),
+            content: content,
           },
           features: [
             {
@@ -37,7 +41,9 @@ async function textDetection(path = '') {
     // JSON
     const keyFilename = fileModule.getUserDataPath('config', 'google-vision-credential.json');
     const client = new vision.ImageAnnotatorClient({ keyFilename: keyFilename });
-    const [result] = await client.textDetection(path);
+
+    // client.textDetection accepts Buffer or filename
+    const [result] = await client.textDetection(input);
     const detections = result.textAnnotations[0];
     return detections.description;
   }

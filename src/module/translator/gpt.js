@@ -5,10 +5,29 @@ const OpenAI = require('openai');
 const aiFunction = require('./ai-function');
 
 const configModule = require('../system/config-module');
+const requestModule = require('../system/request-module');
 
 const chatHistoryList = {};
 
 const regGptModel = /gpt|o1/i; ///gpt-\d.*[^0-9]$/i
+
+let openaiClient = null;
+let cachedApiKey = null;
+
+function getClient() {
+  const config = configModule.getConfig();
+  const apiKey = config.api.gptApiKey;
+
+  if (!openaiClient || cachedApiKey !== apiKey) {
+    cachedApiKey = apiKey;
+    openaiClient = new OpenAI({
+      apiKey,
+      httpAgent: requestModule.getHttpsAgent(),
+    });
+  }
+
+  return openaiClient;
+}
 
 // exec
 async function exec(option, type) {
@@ -21,10 +40,8 @@ async function translate(text, source, target, type) {
   const config = configModule.getConfig();
   const prompt = aiFunction.createTranslationPrompt(source, target, type);
 
-  // Create OpenAI client with API key
-  const openai = new OpenAI({
-    apiKey: config.api.gptApiKey,
-  });
+  // Reuse OpenAI client
+  const openai = getClient();
 
   // initialize chat history
   aiFunction.initializeChatHistory(chatHistoryList, prompt, config);
@@ -77,10 +94,8 @@ async function translateStream(text, source, target, type, onChunk) {
   const config = configModule.getConfig();
   const prompt = aiFunction.createTranslationPrompt(source, target, type);
 
-  // Create OpenAI client with API key
-  const openai = new OpenAI({
-    apiKey: config.api.gptApiKey,
-  });
+  // Reuse OpenAI client
+  const openai = getClient();
 
   // initialize chat history
   aiFunction.initializeChatHistory(chatHistoryList, prompt, config);
@@ -151,10 +166,8 @@ async function getImageText(imageBase64 = '') {
   try {
     const config = configModule.getConfig();
 
-    // Create OpenAI client with API key
-    const openai = new OpenAI({
-      apiKey: config.api.gptApiKey,
-    });
+    // Reuse OpenAI client
+    const openai = getClient();
 
     const response = await openai.chat.completions.create({
       model: config.api.gptModel,

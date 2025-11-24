@@ -221,4 +221,6 @@ module.exports = {
   getUserAgent,
   setUA,
   toParameters,
+  getHttpAgent: () => httpAgent,
+  getHttpsAgent: () => httpsAgent,
 };

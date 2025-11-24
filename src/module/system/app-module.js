@@ -62,15 +62,25 @@ function startApp() {
 function preloadCache() {
   try {
     const config = configModule.getConfig();
-    const engine = config.translation?.engine || 'OpenRouter';
+
+    // Preload for the selected engine AND common fallback engines to boost first-hit latency
+    const engines = new Set([
+      config.translation?.engine || 'OpenRouter',
+      'Google', 'DeepL', 'OpenAI', 'Gemini', 'Kimi', 'Cohere', 'Baidu', 'Youdao', 'Papago'
+    ]);
 
     // Load common phrases dictionary
     const commonPhrasesPath = fileModule.getRootPath('src', 'data', 'text', 'cache', FILE_NAMES.COMMON_PHRASES);
 
     if (fileModule.exists(commonPhrasesPath)) {
       const commonPhrases = require(commonPhrasesPath);
-      const count = globalCache.preload(commonPhrases, engine);
-      Logger.info('app-module', `Cache preloaded with ${count} common phrases for faster translation`);
+      let totalCount = 0;
+
+      engines.forEach((engine) => {
+        totalCount += globalCache.preload(commonPhrases, engine);
+      });
+
+      Logger.info('app-module', `Cache preloaded with ${totalCount} entries across ${engines.size} engines`);
     } else {
       Logger.info('app-module', 'Common phrases file not found, skipping cache preload');
     }
@@ -81,7 +91,8 @@ function preloadCache() {
 
 // write log
 function wirteLog(type = '', message = '') {
-  fileModule.writeLog(type, message);
+  // fire-and-forget to avoid blocking the main thread
+  fileModule.writeLogAsync(type, message);
 }
 
 // detect user language

@@ -90,6 +90,19 @@ const regexPureText = /[^0-9a-z０-９ａ-ｚＡ-Ｚぁ-ゖァ-ヺ一-龯]/gi;
 
 // start
 function start() {
+  // Sharlayan reader binary is Windows-only; skip on other platforms to avoid spawn loops
+  if (process.platform !== 'win32') {
+    restartReader = false;
+    console.log(`${readerName}.exe skipped: non-Windows platform (${process.platform})`);
+    return;
+  }
+
+  if (!fileModule.exists(sharlayanExePath)) {
+    restartReader = false;
+    console.log(`${readerName}.exe not found at: ${sharlayanExePath}`);
+    return;
+  }
+
   try {
     /*
     // read history
@@ -103,10 +116,16 @@ function start() {
 
     // update signatures.json
     if (fileModule.exists(dataSignaturesPath)) {
-      const signatures = fileModule.read(dataSignaturesPath, 'json');
-      if (signatures) {
-        fileModule.write(rootSignaturesPath, signatures, 'json');
-      }
+      fileModule.readAsync(dataSignaturesPath, 'json')
+        .then((signatures) => {
+          if (signatures) {
+            return fileModule.writeAsync(rootSignaturesPath, signatures, 'json');
+          }
+          return null;
+        })
+        .catch((error) => {
+          console.log('Failed to sync signatures.json', error);
+        });
     }
 
     // spawn reader process

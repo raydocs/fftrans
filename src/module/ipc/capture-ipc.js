@@ -53,7 +53,7 @@ function setCaptureChannel() {
                 defaultPath: fileModule.getDownloadsPath(),
                 filters: [{ name: 'JSON', extensions: ['json'] }],
             })
-            .then((value) => {
+            .then(async (value) => {
                 if (!value.canceled && value.filePaths.length > 0 && value.filePaths[0].length > 0) {
                     const filePath = value.filePaths[0];
 
@@ -65,10 +65,10 @@ function setCaptureChannel() {
                         return;
                     }
 
-                    let data = fileModule.read(filePath, 'json');
+                    let data = await fileModule.readAsync(filePath, 'json');
 
                     if (data) {
-                        fileModule.write(fileModule.getUserDataPath('config', 'google-vision-credential.json'), data, 'json');
+                        await fileModule.writeAsync(fileModule.getUserDataPath('config', 'google-vision-credential.json'), data, 'json');
                         dialogModule.addNotification(NOTIFICATIONS.GOOGLE_CREDENTIAL_SAVED);
                         Logger.info('capture-ipc', 'Google credential saved successfully');
                     } else {

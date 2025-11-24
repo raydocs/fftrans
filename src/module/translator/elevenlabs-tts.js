@@ -7,11 +7,13 @@
 
 const axios = require('axios');
 const configModule = require('../system/config-module');
+const elevenLabsAuth = require('./elevenlabs-auth');
 
 // ElevenLabs API configuration
 const API_BASE_URL = 'https://api.elevenlabs.io/v1';
 const VOICES_ENDPOINT = `${API_BASE_URL}/reader/voices`;
 const TTS_ENDPOINT = `${API_BASE_URL}/text-to-speech`;
+const USER_AGENT = 'readerapp/405 CFNetwork/3860.100.1 Darwin/25.0.0';
 
 // punctuations for text splitting (same as Google TTS)
 const punctuations = {
@@ -22,15 +24,23 @@ const punctuations = {
 
 /**
  * Get list of available voices
- * @param {string} bearerToken - Firebase JWT token
+ * @param {Object|string} config - Config override or bearer token
  * @returns {Promise<Array>} Array of voice objects
  */
-async function getVoices(bearerToken) {
+async function getVoices(config) {
   try {
+    const authConfig = await elevenLabsAuth.resolveAuthConfig(
+      typeof config === 'string' ? { bearerToken: config } : (config || {}),
+      { persistTokens: true }
+    );
+
     const response = await axios.get(VOICES_ENDPOINT, {
       headers: {
-        'Authorization': `Bearer ${bearerToken}`,
-        'Accept': '*/*'
+        'Authorization': `Bearer ${authConfig.bearerToken}`,
+        'Accept': '*/*',
+        'User-Agent': USER_AGENT,
+        ...(authConfig.deviceId ? { 'Device-ID': authConfig.deviceId } : {}),
+        ...(authConfig.appCheckToken ? { 'xi-app-check-token': authConfig.appCheckToken } : {}),
       },
       timeout: 10000
     });
@@ -47,20 +57,34 @@ async function getVoices(bearerToken) {
  * @param {string} text - Text to synthesize
  * @param {string} language - Language code (not used by ElevenLabs, accepts all)
  * @param {Object} config - Configuration object
- * @param {string} config.bearerToken - Firebase JWT token
  * @param {string} config.voiceId - Voice ID
  * @param {string} config.modelId - Model ID (default: eleven_turbo_v2_5)
+ * @param {Object} options - Additional options
+ * @param {boolean} options.persistTokens - Persist refreshed tokens/deviceId to config
+ * @param {boolean} options.skipAuthResolve - Use provided config without resolving auth
  * @returns {Promise<string>} Data URL of audio
  */
-async function synthesizeSpeech(text, language, config) {
-  const { bearerToken, voiceId = 'nPczCjzI2devNBz1zQrb', modelId = 'eleven_turbo_v2_5' } = config;
-
-  if (!bearerToken) {
-    throw new Error('Bearer Token is required');
-  }
+async function synthesizeSpeech(text, language, config = {}, options = {}) {
+  const { persistTokens = false, skipAuthResolve = false } = options;
 
   if (!text || text.trim() === '') {
     throw new Error('Text is required');
+  }
+
+  const authConfig = skipAuthResolve
+    ? (config || {})
+    : await elevenLabsAuth.resolveAuthConfig(config, { persistTokens });
+
+  const {
+    bearerToken,
+    voiceId = 'nPczCjzI2devNBz1zQrb',
+    modelId = 'eleven_turbo_v2_5',
+    appCheckToken,
+    deviceId,
+  } = authConfig;
+
+  if (!bearerToken) {
+    throw new Error('Bearer Token is required');
   }
 
   try {
@@ -81,7 +105,10 @@ async function synthesizeSpeech(text, language, config) {
       headers: {
         'Authorization': `Bearer ${bearerToken}`,
         'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg'
+        'Accept': 'audio/mpeg',
+        'User-Agent': USER_AGENT,
+        ...(deviceId ? { 'Device-ID': deviceId } : {}),
+        ...(appCheckToken ? { 'xi-app-check-token': appCheckToken } : {}),
       },
       responseType: 'arraybuffer',
       timeout: 30000
@@ -114,10 +141,12 @@ async function synthesizeSpeech(text, language, config) {
  */
 async function getAudioUrl(text = '', from = 'English') {
   const config = configModule.getConfig();
-  const elevenLabsConfig = config.api.elevenlabs || {};
+  let authConfig;
 
-  if (!elevenLabsConfig.bearerToken) {
-    console.error('[ElevenLabs TTS] Not configured. Please set Bearer Token in settings.');
+  try {
+    authConfig = await elevenLabsAuth.resolveAuthConfig(config.api.elevenlabs || {}, { persistTokens: true });
+  } catch (error) {
+    console.error('[ElevenLabs TTS] Not configured. Please set Bearer Token or Refresh Token in settings.', error.message);
     return [];
   }
 
@@ -138,7 +167,7 @@ async function getAudioUrl(text = '', from = 'English') {
   const audioUrls = [];
   for (const chunk of texts) {
     try {
-      const audioUrl = await synthesizeSpeech(chunk, language, elevenLabsConfig);
+      const audioUrl = await synthesizeSpeech(chunk, language, authConfig, { skipAuthResolve: true });
       if (audioUrl) {
         audioUrls.push(audioUrl);
       }
@@ -160,16 +189,11 @@ async function testConfiguration() {
     const config = configModule.getConfig();
     const elevenLabsConfig = config.api.elevenlabs || {};
 
-    if (!elevenLabsConfig.bearerToken) {
-      return {
-        success: false,
-        message: 'Bearer Token 未配置'
-      };
-    }
+    const authConfig = await elevenLabsAuth.resolveAuthConfig(elevenLabsConfig, { persistTokens: true });
 
     // Test with a short text
     const testText = 'Hello from ElevenLabs TTS!';
-    const audioUrl = await synthesizeSpeech(testText, 'en', elevenLabsConfig);
+    const audioUrl = await synthesizeSpeech(testText, 'en', authConfig, { skipAuthResolve: true });
 
     return {
       success: true,

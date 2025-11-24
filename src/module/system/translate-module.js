@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 // dialog module
 const dialogModule = require('./dialog-module');
 
@@ -8,6 +10,8 @@ const engineModule = require('./engine-module');
 
 // translation cache
 const { globalCache: translationCache } = require('./translation-cache');
+const pendingTranslations = new Map();
+const tableHashes = new Map();
 
 // translator
 const baidu = require('../translator/baidu');
@@ -24,6 +28,55 @@ const kimi = require('../translator/kimi');
 const openRouter = require('../translator/openrouter');
 const zhConverter = require('../translator/zh-convert');
 
+function stableStringify(value) {
+  if (value === null || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((v) => stableStringify(v)).join(',')}]`;
+  }
+  const keys = Object.keys(value).sort();
+  return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
+}
+
+function generateTableHash(table = []) {
+  try {
+    const serialized = stableStringify(table);
+    return crypto.createHash('md5').update(serialized).digest('hex');
+  } catch (error) {
+    console.warn('Failed to hash table, falling back to length-based key', error);
+    return `len:${(Array.isArray(table) ? table.length : 0)}`;
+  }
+}
+
+function getTableHash(table = []) {
+  if (!table || (Array.isArray(table) && table.length === 0)) {
+    return 'no-table';
+  }
+
+  if (tableHashes.has(table)) {
+    return tableHashes.get(table);
+  }
+
+  const hash = generateTableHash(table);
+  tableHashes.set(table, hash);
+  return hash;
+}
+
+function getCacheKey(text = '', translation = {}, table = [], type = 'sentence') {
+  const normalizedText = (text || '')
+    .replace(/[\r\n]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/\[r\]/gi, '');
+  const textHash = crypto.createHash('md5').update(normalizedText).digest('hex');
+  const tableHash = getTableHash(table);
+  const target = translation.to || '';
+  const engine = translation.engine || 'unknown';
+  return `${engine}:${textHash}:${tableHash}:${target}:${type || 'sentence'}`;
+}
+
 // translate
 async function translate(text = '', translation = {}, table = [], type = 'sentence') {
   let result = '';
@@ -37,8 +90,9 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
       return text;
     }
 
-    // ✨ Check cache first (OPTIMIZED: simplified parameters)
-    const cacheKey = `${text}:${JSON.stringify(table)}:${translation.to}`;
+    const cacheKey = getCacheKey(text, translation, table, type);
+
+    // ✨ Check cache first (OPTIMIZED: hashed/stable key)
     const cached = translationCache.get(cacheKey, translation.engine);
 
     if (cached) {
@@ -46,16 +100,33 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
       return cached;
     }
 
-    // Cache miss - perform translation
-    result = await translate2(text, translation, type);
+    // ✅ Deduplicate in-flight requests
+    if (pendingTranslations.has(cacheKey)) {
+      return pendingTranslations.get(cacheKey);
+    }
 
-    // zh convert
-    const finalResult = zhConvert(clearCode(result, table), translation.to);
+    const promise = (async () => {
+      // Cache miss - perform translation
+      const rawResult = await translate2(text, translation, type);
 
-    // ✨ Store in cache (OPTIMIZED: simplified parameters)
-    translationCache.set(cacheKey, translation.engine, finalResult);
+      // zh convert
+      const finalResult = zhConvert(clearCode(rawResult, table), translation.to);
 
-    return finalResult;
+      // ✨ Store in cache (hashed key)
+      translationCache.set(cacheKey, translation.engine, finalResult);
+
+      return finalResult;
+    })();
+
+    pendingTranslations.set(cacheKey, promise);
+
+    try {
+      const resolved = await promise;
+      return resolved;
+    } finally {
+      pendingTranslations.delete(cacheKey);
+    }
+
   } catch (error) {
     console.log(error);
     result = '' + error;
@@ -75,6 +146,17 @@ async function translateStream(text = '', translation = {}, table = [], type = '
     // check text
     if (text === '' || translation.from === translation.to) {
       return text;
+    }
+
+    const cacheKey = getCacheKey(text, translation, table, type);
+
+    // Cache short-circuit
+    const cached = translationCache.get(cacheKey, translation.engine);
+    if (cached) {
+      if (onChunk) {
+        onChunk(cached);
+      }
+      return cached;
     }
 
     // Check if engine supports streaming
@@ -103,6 +185,9 @@ async function translateStream(text = '', translation = {}, table = [], type = '
             return await translate(text, translation, table, type);
         }
 
+        let processedText = '';
+        let lastLength = 0;
+
         // Call stream translation with chunk callback
         result = await streamFunction(
           option.text,
@@ -110,17 +195,45 @@ async function translateStream(text = '', translation = {}, table = [], type = '
           option.to,
           type,
           (chunk) => {
-            // Process and send each chunk
-            const processed = zhConvert(clearCode(chunk, table), translation.to);
+            if (typeof chunk !== 'string') {
+              return;
+            }
+
+            // Only process the newly received delta to avoid O(n^2) work
+            let delta = '';
+            if (chunk.length >= lastLength) {
+              delta = chunk.slice(lastLength);
+              lastLength = chunk.length;
+            } else {
+              // If upstream sends pure deltas, just consume as-is
+              delta = chunk;
+              lastLength += chunk.length;
+            }
+
+            if (!delta) {
+              return;
+            }
+
+            const processed = zhConvert(clearCode(delta, table), translation.to);
+            processedText += processed;
+
             if (onChunk) {
-              onChunk(processed);
+              onChunk(processedText);
             }
           }
         );
 
-        // zh convert final result
-        return zhConvert(clearCode(result, table), translation.to);
+        // zh convert final result (fallback to processed stream buffer)
+        const finalResult = processedText || zhConvert(clearCode(result, table), translation.to);
+
+        // ✅ cache after streaming completes
+        translationCache.set(cacheKey, translation.engine, finalResult);
+
+        return finalResult;
       }
+
+      // If no option, fall back to regular translation
+      return await translate(text, translation, table, type);
     } else {
       // Fall back to regular translate for non-streaming engines
       return await translate(text, translation, table, type);

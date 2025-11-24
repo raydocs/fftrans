@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, ipcMain } = require('electron');
+const { app, ipcMain, dialog } = require('electron');
 const path = require('path');
 const configModule = require('../system/config-module');
 const sharlayanModule = require('../system/sharlayan-module');
@@ -9,6 +9,7 @@ const windowModule = require('../system/window-module');
 const dialogModule = require('../system/dialog-module');
 const { execFile } = require('child_process');
 const Logger = require('../../utils/logger');
+const appCheckHelper = require('../system/app-check-helper');
 
 const appVersion = app.getVersion();
 
@@ -75,6 +76,56 @@ function setSystemChannel() {
   // get chat code
   ipcMain.handle('get-chat-code', () => {
     return chatCodeModule.getChatCode();
+  });
+
+  // extract ElevenLabs App Check token from a flows file
+  ipcMain.handle('pick-app-check-token', async () => {
+    try {
+      const autoExtracted = appCheckHelper.extractFromKnownLocations();
+      if (autoExtracted?.token) {
+        const config = configModule.getConfig();
+        config.api.elevenlabs.appCheckToken = autoExtracted.token;
+        configModule.setConfig(config);
+
+        return {
+          success: true,
+          token: autoExtracted.token,
+          source: autoExtracted.source,
+          method: autoExtracted.method,
+          expiresAt: autoExtracted.expiresAt,
+        };
+      }
+
+      const { canceled, filePaths } = await dialog.showOpenDialog({
+        title: '选择 ElevenLabs 流量文件 (flows.elevenlabsio)',
+        properties: ['openFile'],
+        filters: [{ name: 'Flows', extensions: ['elevenlabsio', 'txt', '*'] }],
+      });
+
+      if (canceled || !filePaths || filePaths.length === 0) {
+        return { success: false, message: '已取消' };
+      }
+
+      const tokenInfo = appCheckHelper.extractBestTokenFromFile(filePaths[0]);
+      if (!tokenInfo?.token) {
+        return { success: false, message: '未在文件中找到 xi-app-check-token' };
+      }
+
+      const config = configModule.getConfig();
+      config.api.elevenlabs.appCheckToken = tokenInfo.token;
+      configModule.setConfig(config);
+
+      return {
+        success: true,
+        token: tokenInfo.token,
+        source: filePaths[0],
+        method: 'manual',
+        expiresAt: tokenInfo.expiresAt,
+      };
+    } catch (error) {
+      Logger.error('system-ipc', 'Failed to extract app check token', error);
+      return { success: false, message: error.message || '提取失败' };
+    }
   });
 
   // set chat code

@@ -125,6 +125,10 @@ function getStyle(code = '003D') {
   };
 }
 
+// log cache
+let cachedLog = null;
+let cachedLogPath = '';
+
 // save dialog
 function saveDialog(dialogData) {
   try {
@@ -143,20 +147,24 @@ function saveDialog(dialogData) {
     };
 
     const filePath = fileModule.getPath(getLogLocation(), createLogName(item.timestamp));
-    let log = {};
 
-    // read/create log file
-    if (fileModule.exists(filePath)) {
-      log = fileModule.read(filePath, 'json') || {};
+    // Initialize or switch cache if file path changes (new day)
+    if (filePath !== cachedLogPath) {
+      if (fileModule.exists(filePath)) {
+        cachedLog = fileModule.read(filePath, 'json') || {};
 
-      // fix old bug
-      if (Array.isArray(log)) {
-        log = {};
+        // fix old bug
+        if (Array.isArray(cachedLog)) {
+          cachedLog = {};
+        }
+      } else {
+        cachedLog = {};
       }
+      cachedLogPath = filePath;
     }
 
     // speech text at first time
-    if (!log[item.id] && npcChannel.includes(dialogData.code) && dialogData.audioText !== '') {
+    if (!cachedLog[item.id] && npcChannel.includes(dialogData.code) && dialogData.audioText !== '') {
       const currentConfig = configModule.getConfig();
       const ttsEngine = currentConfig.indexWindow.ttsEngine || 'google';
 
@@ -195,11 +203,11 @@ function saveDialog(dialogData) {
       }
     }
 
-    // update log
-    log[item.id] = item;
+    // update log in memory
+    cachedLog[item.id] = item;
 
-    // write log file
-    fileModule.write(filePath, log, 'json');
+    // write log file asynchronously
+    fileModule.writeAsync(filePath, cachedLog, 'json');
   } catch (error) {
     console.error(error);
   }

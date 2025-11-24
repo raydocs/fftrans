@@ -83,8 +83,14 @@ function createWindow(windowName, data = null) {
     switch (windowName) {
       case 'index':
         // set mouse out check interval
-        setInterval(() => {
+        let lastMouseOutState = null;
+        let mouseCheckInterval = setInterval(() => {
           try {
+            if (appWindow.isDestroyed()) {
+              clearInterval(mouseCheckInterval);
+              return;
+            }
+
             const config = configModule.getConfig();
             const cursorScreenPoint = screen.getCursorScreenPoint();
             const windowBounds = appWindow.getContentBounds();
@@ -94,14 +100,25 @@ function createWindow(windowName, data = null) {
               cursorScreenPoint.y < windowBounds.y ||
               cursorScreenPoint.y > windowBounds.y + windowBounds.height;
 
-            appWindow.webContents.send('hide-button', { isMouseOut, hideButton: config.indexWindow.hideButton });
+            // Only send IPC if state changed or first run
+            if (isMouseOut !== lastMouseOutState) {
+              lastMouseOutState = isMouseOut;
+              appWindow.webContents.send('hide-button', { isMouseOut, hideButton: config.indexWindow.hideButton });
+            }
           } catch (error) {
-            error;
+            // If window is destroyed or other error, stop polling
+            clearInterval(mouseCheckInterval);
           }
         }, 100);
 
         // set close event
         appWindow.on('close', () => {
+          // Clear interval immediately
+          if (mouseCheckInterval) {
+            clearInterval(mouseCheckInterval);
+            mouseCheckInterval = null;
+          }
+
           // save position
           const config = configModule.getConfig();
           const bounds = appWindow.getContentBounds();

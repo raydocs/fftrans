@@ -481,10 +481,17 @@ function setButton() {
     try {
       // Get current bearer token
       const bearerTokenInput = document.getElementById('input-elevenlabs-bearer-token');
-      const bearerToken = bearerTokenInput.value.trim();
+      const refreshTokenInput = document.getElementById('input-elevenlabs-refresh-token');
+      const appCheckTokenInput = document.getElementById('input-elevenlabs-app-check-token');
+      const deviceIdInput = document.getElementById('input-elevenlabs-device-id');
 
-      if (!bearerToken) {
-        alert('❌ 请先填写 Bearer Token');
+      const bearerToken = bearerTokenInput.value.trim();
+      const refreshToken = refreshTokenInput.value.trim();
+      const appCheckToken = appCheckTokenInput.value.trim();
+      const deviceId = deviceIdInput.value.trim();
+
+      if (!bearerToken && !refreshToken) {
+        alert('❌ 请填写 Bearer Token 或 Firebase Refresh Token');
         return;
       }
 
@@ -499,6 +506,9 @@ function setButton() {
       const modelSelect = document.getElementById('select-elevenlabs-model');
       const previewConfig = {
         bearerToken: bearerToken,
+        refreshToken: refreshToken,
+        appCheckToken: appCheckToken,
+        deviceId: deviceId,
         voiceId: selectedVoice,
         modelId: modelSelect.value
       };
@@ -533,6 +543,42 @@ function setButton() {
       }
     } catch (error) {
       alert(`❌ 试听出错\n\n${error.message}`);
+      button.disabled = false;
+      button.innerText = originalText;
+    }
+  };
+
+  // ElevenLabs: Import App Check token from flows file
+  document.getElementById('btn-import-elevenlabs-app-check').onclick = async () => {
+    const button = document.getElementById('btn-import-elevenlabs-app-check');
+    const originalText = button.innerText;
+    button.disabled = true;
+    button.innerText = '解析中...';
+    try {
+      const result = await ipcRenderer.invoke('pick-app-check-token');
+      if (result.success && result.token) {
+        document.getElementById('input-elevenlabs-app-check-token').value = result.token;
+        const methodText = (() => {
+          if (result.method === 'cache') {
+            return '已从缓存/上次提取记录读取';
+          }
+          if (result.method === 'flow') {
+            return '已从默认 flows 文件自动提取';
+          }
+          if (result.method === 'manual') {
+            return '已从选定的 flows 文件提取';
+          }
+          return '已提取 xi-app-check-token';
+        })();
+        const sourceText = result.source ? `\n来源: ${result.source}` : '';
+        const expiryText = result.expiresAt ? `\n过期时间: ${new Date(result.expiresAt).toLocaleString()}` : '';
+        alert(`✅ ${methodText}${sourceText}${expiryText}`);
+      } else {
+        alert(`❌ 未能提取\n${result.message || ''}`);
+      }
+    } catch (error) {
+      alert(`❌ 解析失败\n${error.message}`);
+    } finally {
       button.disabled = false;
       button.innerText = originalText;
     }
@@ -1002,6 +1048,18 @@ function getOptionList() {
     [
       ['input-elevenlabs-bearer-token', 'value'],
       ['api', 'elevenlabs', 'bearerToken'],
+    ],
+    [
+      ['input-elevenlabs-refresh-token', 'value'],
+      ['api', 'elevenlabs', 'refreshToken'],
+    ],
+    [
+      ['input-elevenlabs-app-check-token', 'value'],
+      ['api', 'elevenlabs', 'appCheckToken'],
+    ],
+    [
+      ['input-elevenlabs-device-id', 'value'],
+      ['api', 'elevenlabs', 'deviceId'],
     ],
     [
       ['select-elevenlabs-voice-id', 'value'],

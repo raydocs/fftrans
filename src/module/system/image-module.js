@@ -30,20 +30,16 @@ async function takeScreenshot(captureData) {
     // get displays
     const displays = await screenshotModule.listDisplays();
 
-    // set screenshot path
-    captureData.screenshotPath = getImagePath('screenshot.png');
-
-    // take screenshot
+    // take screenshot (returns buffer)
+    let screenshotBuffer = null;
     try {
-      await screenshotModule({
+      screenshotBuffer = await screenshotModule({
         screen: displays[captureData.displayIndex].id,
-        filename: captureData.screenshotPath,
         format: 'png',
       });
     } catch (error) {
       console.log('error:', error);
-      await screenshotModule({
-        filename: captureData.screenshotPath,
+      screenshotBuffer = await screenshotModule({
         format: 'png',
       });
     }
@@ -58,7 +54,11 @@ async function takeScreenshot(captureData) {
     });
 
     // crop image
-    cropImage(captureData);
+    if (screenshotBuffer) {
+      cropImage(captureData, screenshotBuffer);
+    } else {
+      throw 'Failed to take screenshot';
+    }
   } catch (error) {
     console.log(error);
     dialogModule.addNotification(error);
@@ -66,13 +66,10 @@ async function takeScreenshot(captureData) {
 }
 
 // crop image
-async function cropImage(captureData) {
+async function cropImage(captureData, screenshotBuffer) {
   try {
-    // set image path
-    captureData.imagePath = getImagePath('cropped.png');
-
-    // crop image
-    await sharp(captureData.screenshotPath)
+    // crop image (returns buffer)
+    const imageBuffer = await sharp(screenshotBuffer)
       .resize(captureData.screenSize) // resize image to screen size
       .extract({
         left: parseInt(captureData.rectangleSize.x),
@@ -80,8 +77,10 @@ async function cropImage(captureData) {
         width: parseInt(captureData.rectangleSize.width),
         height: parseInt(captureData.rectangleSize.height),
       })
-      //.greyscale()
-      .toFile(captureData.imagePath);
+      .toBuffer();
+
+    // set image buffer
+    captureData.imageBuffer = imageBuffer;
 
     // start reconizing
     dialogModule.addNotification('RECOGNIZING_THE_IMAGE');

@@ -178,8 +178,8 @@ function readUserText(name = '', sort = true) {
 }
 
 // write user text
-function writeUserText(name = '', data = []) {
-  fileModule.write(getUserTextPath(name), data, 'json');
+async function writeUserText(name = '', data = []) {
+  await fileModule.writeAsync(getUserTextPath(name), data, 'json');
 }
 
 // update temp name
@@ -194,7 +194,9 @@ function updateTempName(userArray = {}, name = '', translatedName = '') {
     userArray.tempName.push(element);
   }
 
-  writeUserText('temp-name.json', userArray.tempName);
+  writeUserText('temp-name.json', userArray.tempName).catch((error) => {
+    console.log('Failed to persist temp-name.json', error);
+  });
 }
 
 // clear temp name
@@ -215,7 +217,9 @@ function clearTempName(combine = [], tempName = []) {
     }
   }
 
-  writeUserText('temp-name.json', tempName);
+  writeUserText('temp-name.json', tempName).catch((error) => {
+    console.log('Failed to persist temp-name.json', error);
+  });
 }
 
 // map array
@@ -387,12 +391,16 @@ function editUserCustom(name = '', target = '', item = null) {
     array.push(item);
   }
 
-  writeUserText(name, array);
+  writeUserText(name, array).catch((error) => {
+    console.log('Failed to write user custom file', error);
+  });
 }
 
 // delete temp-name.json
 function deleteTemp() {
-  fileModule.unlink(getUserTextPath('temp-name.json'));
+  fileModule.unlinkAsync(getUserTextPath('temp-name.json')).catch((error) => {
+    console.log('Failed to delete temp-name.json', error);
+  });
 }
 
 // check array

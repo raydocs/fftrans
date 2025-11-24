@@ -20,6 +20,8 @@
  * - Preloading support
  */
 
+const fileModule = require('./file-module');
+
 class TranslationCache {
   constructor(maxSize = 10000) {
     this.cache = new Map();
@@ -30,6 +32,55 @@ class TranslationCache {
       evictions: 0,
       totalSaved: 0,  // Time saved in ms
     };
+
+    // Auto-save interval (5 minutes)
+    this.autoSaveInterval = setInterval(() => this.save(), 5 * 60 * 1000);
+
+    // Load cache on startup
+    this.load();
+  }
+
+  /**
+   * Get cache file path
+   */
+  getCachePath() {
+    return fileModule.getUserDataPath('config', 'translation-cache.json');
+  }
+
+  /**
+   * Load cache from disk
+   */
+  load() {
+    try {
+      const path = this.getCachePath();
+      if (fileModule.exists(path)) {
+        const data = fileModule.read(path, 'json');
+        if (data && Array.isArray(data)) {
+          // Reconstruct Map from array of entries
+          this.cache = new Map(data);
+          console.log(`✅ Translation cache loaded: ${this.cache.size} entries`);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load translation cache:', error);
+    }
+  }
+
+  /**
+   * Save cache to disk
+   */
+  async save() {
+    try {
+      const path = this.getCachePath();
+      // Convert Map to array of entries for JSON serialization
+      const data = Array.from(this.cache.entries());
+      await fileModule.writeAsync(path, data, 'json');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`💾 Translation cache saved: ${this.cache.size} entries`);
+      }
+    } catch (error) {
+      console.error('Failed to save translation cache:', error);
+    }
   }
 
   /**
@@ -171,6 +222,7 @@ class TranslationCache {
   clear() {
     const size = this.cache.size;
     this.cache.clear();
+    this.save(); // Save empty cache
     console.log(`🗑️  Cache cleared: ${size} entries removed`);
   }
 

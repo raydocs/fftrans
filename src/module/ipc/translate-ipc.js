@@ -89,20 +89,24 @@ function setTranslateChannel() {
         }
     });
 
+    // TTS Rate Limiter
+    const PromiseQueue = require('../../utils/promise-queue');
+    const ttsQueue = new PromiseQueue(2); // Max 2 concurrent TTS requests
+
     // google tts
     ipcMain.handle('google-tts', (event, text, from) => {
-        return googleTTS.getAudioUrl(text, from);
+        return ttsQueue.add(() => googleTTS.getAudioUrl(text, from));
     });
 
     // elevenlabs tts
     ipcMain.handle('elevenlabs-tts', async (event, text, from) => {
         const elevenLabsTTS = require('../translator/elevenlabs-tts');
-        return await elevenLabsTTS.getAudioUrl(text, from);
+        return ttsQueue.add(() => elevenLabsTTS.getAudioUrl(text, from));
     });
 
     // speechify tts
     ipcMain.handle('speechify-tts', async (event, text, from) => {
-        return await speechifyTTS.getAudioUrl(text, from);
+        return ttsQueue.add(() => speechifyTTS.getAudioUrl(text, from));
     });
 
     // translation cache statistics

@@ -2,6 +2,7 @@
 
 // https://ai.google.dev/api/generate-content#v1beta.GenerationConfig
 
+const axios = require('axios');
 const requestModule = require('../system/request-module');
 
 const aiFunction = require('./ai-function');
@@ -9,6 +10,31 @@ const aiFunction = require('./ai-function');
 const configModule = require('../system/config-module');
 
 const chatHistoryList = {};
+const axiosInstance = axios.create({
+  httpAgent: requestModule.getHttpAgent(),
+  httpsAgent: requestModule.getHttpsAgent(),
+});
+
+function buildProxyConfig(config) {
+  if (!config.proxy?.enable) {
+    return false;
+  }
+
+  const proxy = {
+    protocol: (config.proxy.protocol || '').replace(':', ''),
+    host: config.proxy.hostname,
+    port: parseInt(config.proxy.port),
+  };
+
+  if (config.proxy.username && config.proxy.password) {
+    proxy.auth = {
+      username: config.proxy.username,
+      password: config.proxy.password,
+    };
+  }
+
+  return proxy;
+}
 
 const safetySettings = [
   {
@@ -96,7 +122,6 @@ async function translate(text, source, target, type) {
 
 // translate with streaming
 async function translateStream(text, source, target, type, onChunk) {
-  const axios = require('axios');
   const config = configModule.getConfig();
   const model = config.api.geminiModel;
   const apiKey = config.api.geminiApiKey;
@@ -125,12 +150,13 @@ async function translateStream(text, source, target, type, onChunk) {
   };
 
   return new Promise((resolve, reject) => {
-    axios.post(apiUrl, payload, {
+    axiosInstance.post(apiUrl, payload, {
       headers: {
         'Content-Type': 'application/json',
       },
       responseType: 'stream',
       timeout: Math.max(10000, parseInt(config.translation.timeout) * 1000),
+      proxy: buildProxyConfig(config),
     })
     .then(response => {
       let fullText = '';

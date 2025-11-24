@@ -94,6 +94,10 @@ const defaultConfig = {
     },
     elevenlabs: {
       bearerToken: '',
+      bearerTokenExpiresAt: '',
+      refreshToken: '',
+      appCheckToken: '',
+      deviceId: '',
       voiceId: 'nPczCjzI2devNBz1zQrb',  // Brian - default voice
       modelId: 'eleven_turbo_v2_5',
     },
@@ -197,9 +201,9 @@ function loadConfig() {
 }
 
 // save config
-function saveConfig() {
+async function saveConfig() {
   try {
-    fileModule.write(getConfigLocation(), currentConfig, 'json');
+    await fileModule.writeAsync(getConfigLocation(), currentConfig, 'json');
   } catch (error) {
     console.log(error);
   }

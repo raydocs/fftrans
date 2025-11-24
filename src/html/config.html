@@ -895,6 +895,55 @@
           </div>
         </div>
 
+        <div class="row align-items-center mt-3">
+          <div class="col">
+            <label for="input-elevenlabs-refresh-token">Firebase Refresh Token（自动刷新 Bearer Token）</label>
+          </div>
+          <div class="col-auto">
+            <img
+              class="img-fluid img-visibility"
+              src="./img/ui/visibility_off_white_48dp.svg"
+              alt=""
+              style="width: 1.5rem"
+              id="img-visibility-elevenlabs-refresh-token"
+            />
+          </div>
+          <div class="col-auto">
+            <textarea type="password" class="form-control" name="" id="input-elevenlabs-refresh-token" rows="3" style="width: 500px" placeholder="长效 Firebase Refresh Token"></textarea>
+          </div>
+        </div>
+
+        <div class="row align-items-center mt-3">
+          <div class="col">
+            <label for="input-elevenlabs-app-check-token">Firebase App Check Token（xi-app-check-token，用于 Reader WS）</label>
+          </div>
+          <div class="col-auto">
+            <img
+              class="img-fluid img-visibility"
+              src="./img/ui/visibility_off_white_48dp.svg"
+              alt=""
+              style="width: 1.5rem"
+              id="img-visibility-elevenlabs-app-check-token"
+            />
+          </div>
+          <div class="col-auto">
+            <textarea type="password" class="form-control" name="" id="input-elevenlabs-app-check-token" rows="2" style="width: 500px" placeholder="xi-app-check-token JWT"></textarea>
+          </div>
+          <div class="col-auto">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">一键提取（缓存/flows）</button>
+          </div>
+        </div>
+
+        <div class="row align-items-center mt-3">
+          <div class="col">
+            <label for="input-elevenlabs-device-id">Device ID（可选，UUID）</label>
+            <p class="text-secondary mb-0" style="font-size: 0.9rem">未填写将自动生成并缓存</p>
+          </div>
+          <div class="col-auto">
+            <input type="text" class="form-control" name="" id="input-elevenlabs-device-id" style="width: 250px" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" />
+          </div>
+        </div>
+
         <br />
 
         <div class="row align-items-center">

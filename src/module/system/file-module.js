@@ -5,6 +5,7 @@ const { app } = require('electron');
 
 // fs
 const fs = require('fs');
+const fsp = fs.promises;
 
 // path
 const path = require('path');
@@ -127,6 +128,26 @@ function directoryCheck() {
   });
 }
 
+async function directoryCheckAsync() {
+  const subPath = [
+    '',
+    appName,
+    path.join(appName, 'config'),
+    path.join(appName, 'image'),
+    path.join(appName, 'log'),
+    path.join(appName, 'text')
+  ];
+
+  await Promise.all(subPath.map(async (value) => {
+    try {
+      const dir = getPath(getDocumentsPathInternal(), value);
+      await fsp.mkdir(dir, { recursive: true });
+    } catch (error) {
+      Logger.error('file-module', 'Failed to create directory (async)', error);
+    }
+  }));
+}
+
 // readdir
 function readdir(path) {
   let result = [];
@@ -134,10 +155,19 @@ function readdir(path) {
   try {
     result = fs.readdirSync(path);
   } catch (error) {
-    error;
+    Logger.error('file-module', 'Failed to read directory', error);
   }
 
   return result;
+}
+
+async function readdirAsync(pathValue) {
+  try {
+    return await fsp.readdir(pathValue);
+  } catch (error) {
+    Logger.error('file-module', 'Failed to read directory async', error);
+    return [];
+  }
 }
 
 // exists
@@ -153,6 +183,15 @@ function exists(filePath = './') {
   return result;
 }
 
+async function existsAsync(filePath = './') {
+  try {
+    await fsp.access(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // rmdir
 function rmdir(filePath = './') {
   try {
@@ -162,12 +201,28 @@ function rmdir(filePath = './') {
   }
 }
 
+async function rmdirAsync(filePath = './') {
+  try {
+    await fsp.rm(filePath, { recursive: true, force: true });
+  } catch (error) {
+    Logger.error('file-module', 'Failed to remove directory async', error);
+  }
+}
+
 // unlink
 function unlink(filePath = './') {
   try {
     fs.unlinkSync(filePath);
   } catch (error) {
     Logger.error('file-module', 'Failed to unlink file', error);
+  }
+}
+
+async function unlinkAsync(filePath = './') {
+  try {
+    await fsp.unlink(filePath);
+  } catch (error) {
+    Logger.error('file-module', 'Failed to unlink file async', error);
   }
 }
 
@@ -198,6 +253,35 @@ function read(filePath = './', type = '') {
   }
 
   return data;
+}
+
+// read async
+async function readAsync(filePath = './', type = '') {
+  try {
+    let data = null;
+
+    switch (type) {
+      case 'json':
+        data = JSON.parse((await fsp.readFile(filePath)).toString());
+        break;
+
+      case 'image':
+        data = await fsp.readFile(filePath, 'base64');
+        break;
+
+      case 'txt':
+        data = (await fsp.readFile(filePath)).toString();
+        break;
+
+      default:
+        data = await fsp.readFile(filePath);
+        break;
+    }
+    return data;
+  } catch (error) {
+    Logger.error('file-module', `Failed to read file async: ${filePath}`, error);
+    return null;
+  }
 }
 
 // write
@@ -231,16 +315,57 @@ function write(filePath = './', data = '', type = '') {
   }
 }
 
+// write async
+async function writeAsync(filePath = './', data = '', type = '') {
+  try {
+    switch (type) {
+      case 'json':
+        {
+          let dataString = JSON.stringify(data).includes('{')
+            ? JSON.stringify(data, null, '\t')
+            : JSON.stringify(data)
+              .replaceAll('[[', '[\n\t[')
+              .replaceAll('],', '],\n\t')
+              .replaceAll(']]', ']\n]')
+              .replaceAll('","', '", "');
+          dataString = dataString.replaceAll('\r\n', '\n').replaceAll('\n', '\r\n');
+          await fsp.writeFile(filePath, dataString);
+        }
+        break;
+
+      case 'image':
+        await fsp.writeFile(filePath, Buffer.from(data, 'base64'));
+        break;
+
+      default:
+        await fsp.writeFile(filePath, data);
+        break;
+    }
+  } catch (error) {
+    Logger.error('file-module', `Failed to write file async: ${filePath}`, error);
+  }
+}
+
 // write log
 function writeLog(type = '', message = '') {
   try {
     const logPath = getUserDataPath('config', 'log.txt');
     const currentTime = new Date().toLocaleString();
-    let log = read(logPath, 'txt') || '';
-    log += '\r\n' + currentTime + '\r\n' + type + '\r\n' + message + '\r\n\r\n';
-    write(logPath, log);
+    const log = '\r\n' + currentTime + '\r\n' + type + '\r\n' + message + '\r\n\r\n';
+    fs.appendFileSync(logPath, log, { encoding: 'utf8' });
   } catch (error) {
     Logger.error('file-module', 'Failed to write log', error);
+  }
+}
+
+async function writeLogAsync(type = '', message = '') {
+  try {
+    const logPath = getUserDataPath('config', 'log.txt');
+    const currentTime = new Date().toLocaleString();
+    const log = '\r\n' + currentTime + '\r\n' + type + '\r\n' + message + '\r\n\r\n';
+    await fsp.appendFile(logPath, log, { encoding: 'utf8' });
+  } catch (error) {
+    Logger.error('file-module', 'Failed to write log async', error);
   }
 }
 
@@ -282,14 +407,22 @@ function getDownloadsPath(...args) {
 // module exports
 module.exports = {
   directoryCheck,
+  directoryCheckAsync,
 
   readdir,
+  readdirAsync,
   exists,
+  existsAsync,
   rmdir,
+  rmdirAsync,
   unlink,
+  unlinkAsync,
   read,
+  readAsync,
   write,
+  writeAsync,
   writeLog,
+  writeLogAsync,
 
   getPath,
   getAppPath,

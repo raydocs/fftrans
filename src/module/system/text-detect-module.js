@@ -30,22 +30,26 @@ const gptModule = require('../translator/gpt');
 // image dir
 const imageDir = fileModule.getRootPath('src', 'data', 'img');
 
+// OCR Rate Limiter
+const PromiseQueue = require('../../utils/promise-queue');
+const ocrQueue = new PromiseQueue(1); // Max 1 concurrent OCR request
+
 // start reconizing
 async function startReconizing(captureData) {
   captureData.text = '';
 
   // gpt vision
   if (captureData.type === 'gpt-vision') {
-    const imageBase64 = fileModule.read(captureData.imagePath, 'image');
-    captureData.text = await gptModule.getImageText(imageBase64);
+    const imageBase64 = captureData.imageBuffer.toString('base64');
+    captureData.text = await ocrQueue.add(() => gptModule.getImageText(imageBase64));
   }
   // google vision
   else if (captureData.type === 'google-vision') {
-    captureData.text = await googleVision(captureData);
+    captureData.text = await ocrQueue.add(() => googleVision(captureData));
   }
   // tesseract ocr
   else {
-    captureData.text = await tesseractOCR(captureData);
+    captureData.text = await ocrQueue.add(() => tesseractOCR(captureData));
 
     // fix ocr text
     captureData.text = fixText(captureData);
@@ -75,7 +79,7 @@ async function googleVision(captureData) {
   let text = '';
 
   try {
-    return await cloudVision.textDetection(captureData.imagePath);
+    return await cloudVision.textDetection(captureData.imageBuffer);
   } catch (error) {
     console.log(error);
     dialogModule.addNotification(error);
@@ -93,7 +97,7 @@ async function tesseractOCR(captureData) {
     const worker = await createWorker('eng');
 
     // recognize text
-    const ret = await worker.recognize(captureData.imagePath);
+    const ret = await worker.recognize(captureData.imageBuffer);
 
     // fix or show error
     text = ret.data.text;
@@ -142,9 +146,6 @@ async function translateImageText(captureData) {
     textArray.push(captureData.text.replace(/[\r\n]/g, ' ').replaceAll('  ', ' '));
   }
 
-  // delete images
-  deleteImages();
-
   // start translation
   for (let index = 0; index < textArray.length; index++) {
     const text = textArray[index];
@@ -163,13 +164,9 @@ async function translateImageText(captureData) {
   }
 }
 
-// delete images
+// delete images (deprecated/removed)
 function deleteImages() {
-  fileModule.readdir(imageDir).forEach((fileName) => {
-    if (fileName.includes('.png')) {
-      fileModule.unlink(fileModule.getPath(imageDir, fileName));
-    }
-  });
+  // No-op: In-memory processing removes need for file cleanup
 }
 
 module.exports = {
