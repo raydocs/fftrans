@@ -198,9 +198,11 @@ function start() {
 function stop(restart = true) {
   restartReader = restart;
   try {
-    readerProcess.kill('SIGINT');
+    if (readerProcess && !readerProcess.killed) {
+      readerProcess.kill('SIGINT');
+    }
   } catch (error) {
-    console.log(error);
+    console.log('[sharlayan-module] Stop error:', error.message);
   }
 }
 

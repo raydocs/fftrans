@@ -7,6 +7,9 @@ const aiFunction = require('./ai-function');
 
 const configModule = require('../system/config-module');
 
+// Retry utility for resilient API calls
+const { retryWithBackoff } = require('../../utils/retry');
+
 const chatHistoryList = {};
 const axiosInstance = axios.create({
   httpAgent: requestModule.getHttpAgent(),
@@ -40,7 +43,7 @@ async function exec(option, type) {
   return response;
 }
 
-// translate (non-streaming)
+// translate (non-streaming) with retry logic
 async function translate(text, source, target, type) {
   const config = configModule.getConfig();
   const prompt = aiFunction.createTranslationPrompt(source, target, type);
@@ -71,8 +74,19 @@ async function translate(text, source, target, type) {
     temperature: parseFloat(config.ai.temperature),
   };
 
-  // get response
-  const response = await requestModule.post(apiUrl, payload, headers);
+  // Execute with retry logic for transient failures
+  const response = await retryWithBackoff(
+    () => requestModule.post(apiUrl, payload, headers),
+    {
+      maxRetries: 2,
+      initialDelayMs: 1000,
+      maxDelayMs: 5000,
+      onRetry: ({ attempt, error }) => {
+        console.log(`[OpenRouter] Retry attempt ${attempt} due to: ${error.message}`);
+      }
+    }
+  );
+
   const responseText = response.data.choices[0].message.content;
   const totalTokens = response?.data?.usage?.total_tokens;
 
@@ -135,10 +149,16 @@ async function translateStream(text, source, target, type, onChunk) {
       responseType: 'stream',
       timeout: Math.max(10000, parseInt(config.translation.timeout) * 1000),
       proxy: buildProxyConfig(config),
+      // Reuse connection pool for better performance
+      httpAgent: requestModule.getHttpAgent(),
+      httpsAgent: requestModule.getHttpsAgent(),
     })
     .then(response => {
       let fullText = '';
       let buffer = '';
+      // OPTIMIZATION: Buffer small deltas before triggering callback
+      let pendingDelta = '';
+      const MIN_CHUNK_SIZE = 5; // Minimum characters before triggering update
 
       response.data.on('data', (chunk) => {
         buffer += chunk.toString();
@@ -161,19 +181,33 @@ async function translateStream(text, source, target, type, onChunk) {
 
               if (delta) {
                 fullText += delta;
-                // Call the chunk callback to update UI in real-time
-                if (onChunk) {
-                  onChunk(fullText);
+                pendingDelta += delta;
+
+                // OPTIMIZATION: Only trigger callback when we have enough content
+                // This reduces callback frequency and improves performance
+                if (pendingDelta.length >= MIN_CHUNK_SIZE || pendingDelta.includes('\n')) {
+                  if (onChunk) {
+                    onChunk(fullText);
+                  }
+                  pendingDelta = '';
                 }
               }
-            } catch (error) {
-              console.error('Error parsing SSE data:', error, trimmedLine);
+            } catch {
+              // Silently ignore parse errors for incomplete JSON
+              if (process.env.NODE_ENV !== 'production') {
+                console.debug('SSE parse skip:', trimmedLine.substring(0, 50));
+              }
             }
           }
         }
       });
 
       response.data.on('end', () => {
+        // Flush any remaining pending delta
+        if (pendingDelta && onChunk) {
+          onChunk(fullText);
+        }
+
         // push history
         if (config.ai.useChat && type !== 'name') {
           chatHistoryList[prompt].push(

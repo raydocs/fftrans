@@ -237,6 +237,26 @@ class TranslationCache {
   }
 
   /**
+   * Cleanup resources (call on app exit)
+   * Clears auto-save interval and performs final save
+   */
+  async cleanup() {
+    try {
+      // Clear auto-save interval
+      if (this.autoSaveInterval) {
+        clearInterval(this.autoSaveInterval);
+        this.autoSaveInterval = null;
+      }
+
+      // Final save
+      await this.save();
+      console.log('Translation cache cleanup completed');
+    } catch (error) {
+      console.error('Translation cache cleanup failed:', error);
+    }
+  }
+
+  /**
    * Log current status
    */
   logStatus() {

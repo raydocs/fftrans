@@ -2,7 +2,6 @@
 
 // child process
 const { execFile } = require('child_process');
-const path = require('path');
 
 // electron
 const { globalShortcut, ipcMain } = require('electron');
@@ -90,10 +89,13 @@ function preloadCache() {
 }
 
 // write log
-function wirteLog(type = '', message = '') {
+function writeLog(type = '', message = '') {
   // fire-and-forget to avoid blocking the main thread
   fileModule.writeLogAsync(type, message);
 }
+
+// Backwards compatibility alias (deprecated - use writeLog instead)
+const wirteLog = writeLog;
 
 // detect user language
 function detectUserLanguage() {
@@ -158,5 +160,6 @@ function unregisterGlobalShortcut() {
 // module exports
 module.exports = {
   startApp,
-  wirteLog,
+  writeLog,
+  wirteLog, // Deprecated alias for backwards compatibility
 };

@@ -27,6 +27,10 @@ let running = false;
 let entryIntervalItem = [];
 let processing = false;
 
+// UI update throttling for streaming (reduces CPU usage)
+const UI_UPDATE_INTERVAL_MS = 80; // Update UI at most every 80ms during streaming
+const streamingUpdateState = new Map(); // Track last update time per dialog
+
 // set running
 function setRunning(value) {
   running = value;
@@ -129,17 +133,31 @@ async function entry() {
 
     // translate text (with streaming support for OpenRouter, GPT, Gemini)
     if (useStreaming) {
+      // Initialize throttle state for this dialog
+      streamingUpdateState.set(dialogData.id, { lastUpdate: 0 });
+
       dialogData.translatedText = await translateModule.translateStream(
         dialogData.text,
         dialogData.translation,
         [],
         'sentence',
         (chunk) => {
-          // Update dialog in real-time as chunks arrive
+          // Update dialog in real-time as chunks arrive (THROTTLED to reduce CPU)
           dialogData.translatedText = chunk;
-          dialogModule.updateDialog(dialogData);
+
+          const now = Date.now();
+          const state = streamingUpdateState.get(dialogData.id);
+
+          // Only update UI if enough time has passed since last update
+          if (state && now - state.lastUpdate >= UI_UPDATE_INTERVAL_MS) {
+            state.lastUpdate = now;
+            dialogModule.updateDialog(dialogData);
+          }
         }
       );
+
+      // Clean up throttle state
+      streamingUpdateState.delete(dialogData.id);
     } else {
       dialogData.translatedText = await translateModule.translate(dialogData.text, dialogData.translation);
     }

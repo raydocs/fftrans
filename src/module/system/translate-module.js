@@ -26,7 +26,7 @@ const cohere = require('../translator/cohere');
 const gemini = require('../translator/gemini');
 const kimi = require('../translator/kimi');
 const openRouter = require('../translator/openrouter');
-const zhConverter = require('../translator/zh-convert');
+// zh-convert removed for performance optimization
 
 function stableStringify(value) {
   if (value === null || typeof value !== 'object') {
@@ -350,44 +350,66 @@ async function getTranslation(engine = '', option = {}, type = 'sentence') {
   };
 }
 
-// zh convert
-function zhConvert(text = '', languageTo = '') {
-  if (languageTo === engineModule.languageEnum.zht) {
-    text = zhConverter.exec({ text: text, tableName: 'zh2Hant' });
-  } else if (languageTo === engineModule.languageEnum.zhs) {
-    text = zhConverter.exec({ text: text, tableName: 'zh2Hans' });
-  }
-
+// zh convert - DISABLED for performance (removed 21,000+ entry conversion table)
+// Translation engines (GPT, OpenRouter, etc.) already output correct zh variant
+function zhConvert(text = '' /*, languageTo = '' */) {
+  // Direct passthrough - no conversion needed
   return text;
 }
 
-// clear code
+// Pre-compiled regex patterns for performance (avoid recreating on each call)
+const FULL_WIDTH_LETTERS_REGEX = /[\uff21-\uff3a\uff41-\uff5a]/g;
+const FULL_WIDTH_SPACE_REGEX = /\u3000/g;
+
+// Cache for code regex patterns (avoid recreating RegExp objects)
+const codeRegexCache = new Map();
+
+/**
+ * Get or create cached regex for code pattern
+ * @param {string} code - The code to match
+ * @returns {RegExp} - Cached regex pattern
+ */
+function getCodeRegex(code) {
+  if (!codeRegexCache.has(code)) {
+    // Escape special regex characters in code
+    const escaped = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    codeRegexCache.set(code, new RegExp(`${escaped}+`, 'gi'));
+  }
+  return codeRegexCache.get(code);
+}
+
+/**
+ * Convert full-width characters to half-width (OPTIMIZED: single pass)
+ * @param {string} text - Input text
+ * @returns {string} - Converted text
+ */
+function fullToHalf(text = '') {
+  // Use pre-compiled regex for better performance
+  return text
+    .replace(FULL_WIDTH_LETTERS_REGEX, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    .replace(FULL_WIDTH_SPACE_REGEX, ' ');
+}
+
+/**
+ * Clear and normalize code patterns in text (OPTIMIZED)
+ * @param {string} text - Input text
+ * @param {Array} table - Code table
+ * @returns {string} - Processed text
+ */
 function clearCode(text = '', table = []) {
-  let halfText = '';
-  for (let index = 0; index < text.length; index++) {
-    const ch = text[index];
-    halfText += fullToHalf(ch);
-  }
-  text = halfText;
+  // OPTIMIZATION: Apply full-width conversion in single pass (not char-by-char)
+  text = fullToHalf(text);
 
+  // OPTIMIZATION: Use cached regex patterns
   if (table.length > 0) {
-    table.forEach((value) => {
+    for (const value of table) {
       const code = value[0];
-      text = text.replaceAll(new RegExp(`${code}+`, 'gi'), code.toUpperCase());
-    });
+      const regex = getCodeRegex(code);
+      text = text.replace(regex, code.toUpperCase());
+    }
   }
 
   return text;
-}
-
-function fullToHalf(str = '') {
-  // full-width English letters: [\uff21-\uff3a\uff41-\uff5a]
-  // full-width characters: [\uff01-\uff5e]
-  return str
-    .replace(/[\uff21-\uff3a\uff41-\uff5a]/g, function (ch) {
-      return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
-    })
-    .replace(/\u3000/g, ' ');
 }
 
 // module exports

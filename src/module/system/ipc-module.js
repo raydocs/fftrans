@@ -9,6 +9,25 @@ const childProcess = require('child_process');
 // electron
 const { app, ipcMain, screen, BrowserWindow } = require('electron');
 
+// Default timeout for IPC operations (30 seconds)
+const DEFAULT_IPC_TIMEOUT = 30000;
+
+/**
+ * Wraps a promise with a timeout
+ * @param {Promise} promise - The promise to wrap
+ * @param {number} ms - Timeout in milliseconds
+ * @param {string} operationName - Name of the operation for error message
+ * @returns {Promise} - Promise that rejects on timeout
+ */
+function withTimeout(promise, ms = DEFAULT_IPC_TIMEOUT, operationName = 'Operation') {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${operationName} timed out after ${ms}ms`)), ms)
+    )
+  ]);
+}
+
 // chat code module
 const chatCodeModule = require('./chat-code-module');
 
@@ -165,19 +184,28 @@ function setSystemChannel() {
     sharlayanModule.stop(true);
   });
 
-  // fix reader
+  // fix reader - Uses execFile with fixed arguments for security (no shell injection)
   ipcMain.on('fix-reader', (event) => {
-    childProcess.exec('secedit /configure /cfg %windir%\\inf\\defltbase.inf /db defltbase.sdb /verbose', (error) => {
-      let message = '';
+    // Using execFile instead of exec to prevent command injection
+    // This command resets Windows security settings to fix Sharlayan reader issues
+    childProcess.execFile(
+      'secedit',
+      ['/configure', '/cfg', `${process.env.windir}\\inf\\defltbase.inf`, '/db', 'defltbase.sdb', '/verbose'],
+      (error) => {
+        let message = '';
 
-      if (error && error.code === 740) {
-        message = 'You must run Tataru Assistant as administrator. (Error 740)';
-      } else {
-        message = 'Completed.';
+        if (error && error.code === 740) {
+          message = 'You must run Tataru Assistant as administrator. (Error 740)';
+        } else if (error) {
+          message = `Operation failed: ${error.message}`;
+          console.error('[IPC] fix-reader error:', error);
+        } else {
+          message = 'Completed.';
+        }
+
+        dialogModule.showInfo(event.sender, message);
       }
-
-      dialogModule.showInfo(event.sender, message);
-    });
+    );
   });
 
   // console log
@@ -190,16 +218,35 @@ function setSystemChannel() {
 function setWindowChannel() {
   // create window
   ipcMain.on('create-window', (event, windowName, data = null) => {
+    // Validate window name against whitelist (security)
+    if (!windowModule.isValidWindowName(windowName)) {
+      console.error(`[IPC] Invalid window name rejected: ${windowName}`);
+      return;
+    }
+
     try {
+      // Try to close existing window first
       windowModule.closeWindow(windowName);
-    } catch (error) {
-      error;
+    } catch {
+      // Window doesn't exist or already closed, this is expected
+      console.log(`[IPC] Window ${windowName} not found or already closed, creating new one`);
+    }
+
+    // Always try to create the window
+    try {
       windowModule.createWindow(windowName, data);
+    } catch (createError) {
+      console.error(`[IPC] Failed to create window ${windowName}:`, createError);
     }
   });
 
   // restart window
   ipcMain.on('restart-window', (event, windowName, data = null) => {
+    // Validate window name against whitelist (security)
+    if (!windowModule.isValidWindowName(windowName)) {
+      console.error(`[IPC] Invalid window name for restart rejected: ${windowName}`);
+      return;
+    }
     windowModule.restartWindow(windowName, data);
   });
 
@@ -301,12 +348,9 @@ function setWindowChannel() {
     });
   });
 
-  // execute command
-  ipcMain.on('execute-command', (event, command) => {
-    childProcess.exec(command, () => {
-      //console.log(error.message);
-    });
-  });
+  // execute command - REMOVED for security (command injection vulnerability)
+  // If you need to execute specific commands, use a whitelist approach instead
+  // ipcMain.on('execute-command', ...) - DEPRECATED
 
   ipcMain.on('show-info', (event, message = '') => {
     dialogModule.showInfo(event.sender, message);
@@ -413,11 +457,14 @@ function setRequestChannel() {
     requestModule.setUA(scuValue, uaValue);
   });
 
-  // version check
+  // version check (with timeout and proper error handling)
   ipcMain.on('version-check', (event) => {
     // get lastest version
-    requestModule
-      .get('https://api.github.com/repos/winw1010/tataru-assistant/releases/latest')
+    withTimeout(
+      requestModule.get('https://api.github.com/repos/winw1010/tataru-assistant/releases/latest'),
+      15000,
+      'Version check'
+    )
       .then((response) => {
         // compare with app version
         const latestVersion = response?.data?.tag_name;
@@ -425,19 +472,20 @@ function setRequestChannel() {
         if (latestVersion) {
           if (versionModule.isLatest(appVersion, latestVersion)) {
             windowModule.sendIndex('hide-update-button', true);
-            console.log('latest version');
+            console.log('[IPC] Latest version confirmed');
           } else {
             windowModule.sendIndex('hide-update-button', false);
             dialogModule.addNotification('UPDATE_AVAILABLE');
           }
         } else {
-          throw 'VERSION_CHECK_ERRORED';
+          throw new Error('VERSION_CHECK_ERRORED');
         }
       })
       .catch((error) => {
-        console.log(error);
+        console.error('[IPC] Version check failed:', error.message || error);
         windowModule.sendIndex('hide-update-button', false);
-        dialogModule.addNotification(error);
+        // Show user-friendly error message instead of raw error
+        dialogModule.addNotification('VERSION_CHECK_FAILED');
       });
 
     // get info
@@ -586,12 +634,22 @@ function setTranslateChannel() {
     addTask(dialogData);
   });
 
-  // get translation
+  // get translation (with timeout)
   ipcMain.on('translate-text', async (event, dialogData) => {
-    event.sender.send('show-translation', await translateModule.translate(dialogData.text, dialogData.translation), dialogData.translation.to);
+    try {
+      const result = await withTimeout(
+        translateModule.translate(dialogData.text, dialogData.translation),
+        60000, // 60 second timeout for translation
+        'Translation'
+      );
+      event.sender.send('show-translation', result, dialogData.translation.to);
+    } catch (error) {
+      console.error('[IPC] translate-text error:', error.message);
+      event.sender.send('show-translation', `Error: ${error.message}`, dialogData.translation.to);
+    }
   });
 
-  // get translation with streaming (for OpenRouter, GPT, Gemini)
+  // get translation with streaming (for OpenRouter, GPT, Gemini) - with timeout
   ipcMain.on('translate-text-stream', async (event, dialogData) => {
     try {
       const config = configModule.getConfig();
@@ -601,45 +659,80 @@ function setTranslateChannel() {
       const useStreaming = config.ai?.useStreaming !== false && streamingSupportedEngines.includes(dialogData.translation.engine);
 
       if (useStreaming) {
-        // Use streaming translation with real-time updates
-        const result = await translateModule.translateStream(
-          dialogData.text,
-          dialogData.translation,
-          dialogData.table || [],
-          dialogData.type || 'sentence',
-          (chunk) => {
-            // Send each chunk as it arrives
-            event.sender.send('translation-chunk', chunk, dialogData.translation.to);
-          }
+        // Use streaming translation with real-time updates (90 second timeout for streaming)
+        const result = await withTimeout(
+          translateModule.translateStream(
+            dialogData.text,
+            dialogData.translation,
+            dialogData.table || [],
+            dialogData.type || 'sentence',
+            (chunk) => {
+              // Send each chunk as it arrives
+              event.sender.send('translation-chunk', chunk, dialogData.translation.to);
+            }
+          ),
+          90000,
+          'Streaming translation'
         );
 
         // Send final result
         event.sender.send('show-translation', result, dialogData.translation.to);
       } else {
-        // Fall back to regular translation
-        const result = await translateModule.translate(dialogData.text, dialogData.translation);
+        // Fall back to regular translation (60 second timeout)
+        const result = await withTimeout(
+          translateModule.translate(dialogData.text, dialogData.translation),
+          60000,
+          'Translation'
+        );
         event.sender.send('show-translation', result, dialogData.translation.to);
       }
     } catch (error) {
-      console.error('Streaming translation error:', error);
-      event.sender.send('show-translation', String(error), dialogData.translation.to);
+      console.error('[IPC] translate-text-stream error:', error.message);
+      event.sender.send('show-translation', `Error: ${error.message}`, dialogData.translation.to);
     }
   });
 
-  // google tts
-  ipcMain.handle('google-tts', (event, text, from) => {
-    return googleTTS.getAudioUrl(text, from);
+  // google tts (with timeout)
+  ipcMain.handle('google-tts', async (event, text, from) => {
+    try {
+      return await withTimeout(
+        googleTTS.getAudioUrl(text, from),
+        15000, // 15 second timeout for TTS
+        'Google TTS'
+      );
+    } catch (error) {
+      console.error('[IPC] google-tts error:', error.message);
+      throw error;
+    }
   });
 
-  // elevenlabs tts
+  // elevenlabs tts (with timeout)
   ipcMain.handle('elevenlabs-tts', async (event, text, from) => {
-    const elevenLabsTTS = require('../translator/elevenlabs-tts');
-    return await elevenLabsTTS.getAudioUrl(text, from);
+    try {
+      const elevenLabsTTS = require('../translator/elevenlabs-tts');
+      return await withTimeout(
+        elevenLabsTTS.getAudioUrl(text, from),
+        15000, // 15 second timeout for TTS
+        'ElevenLabs TTS'
+      );
+    } catch (error) {
+      console.error('[IPC] elevenlabs-tts error:', error.message);
+      throw error;
+    }
   });
 
-  // speechify tts
+  // speechify tts (with timeout)
   ipcMain.handle('speechify-tts', async (event, text, from) => {
-    return await speechifyTTS.getAudioUrl(text, from);
+    try {
+      return await withTimeout(
+        speechifyTTS.getAudioUrl(text, from),
+        15000, // 15 second timeout for TTS
+        'Speechify TTS'
+      );
+    } catch (error) {
+      console.error('[IPC] speechify-tts error:', error.message);
+      throw error;
+    }
   });
 
   // translation cache statistics

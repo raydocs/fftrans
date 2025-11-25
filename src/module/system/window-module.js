@@ -15,11 +15,29 @@ const fileModule = require('./file-module');
 // utils
 const Logger = require('../../utils/logger');
 
+// Allowed window names (whitelist for security - prevents path traversal attacks)
+const ALLOWED_WINDOWS = ['index', 'config', 'capture', 'capture-edit', 'dictionary', 'custom', 'edit', 'read-log'];
+
+/**
+ * Validate window name against whitelist
+ * @param {string} windowName - The window name to validate
+ * @returns {boolean} - True if valid, false otherwise
+ */
+function isValidWindowName(windowName) {
+  return typeof windowName === 'string' && ALLOWED_WINDOWS.includes(windowName);
+}
+
 // window list
 let windowList = {};
 
 // create window
 function createWindow(windowName, data = null) {
+  // Validate window name against whitelist (security: prevents path traversal)
+  if (!isValidWindowName(windowName)) {
+    Logger.error('window-module', `Invalid window name rejected: ${windowName}`);
+    return null;
+  }
+
   try {
     // get config
     const config = configModule.getConfig();
@@ -66,13 +84,13 @@ function createWindow(windowName, data = null) {
     // ensure the overlay can always be minimized, even when it's not focusable on handheld devices
     appWindow.setMinimizable(true);
 
-    // show window
-    appWindow.on('ready-to-show', () => {
+    // show window (use once() to prevent memory leak)
+    appWindow.once('ready-to-show', () => {
       appWindow.show();
     });
 
-    // did-finish-load
-    appWindow.webContents.on('did-finish-load', () => {
+    // did-finish-load (use once() to prevent memory leak - only need to send data once)
+    appWindow.webContents.once('did-finish-load', () => {
       // send data
       if (data) {
         appWindow.webContents.send('send-data', data);
@@ -81,8 +99,8 @@ function createWindow(windowName, data = null) {
 
     // set event
     switch (windowName) {
-      case 'index':
-        // set mouse out check interval
+      case 'index': {
+        // set mouse out check interval (wrapped in block to fix ESLint no-case-declarations)
         let lastMouseOutState = null;
         let mouseCheckInterval = setInterval(() => {
           try {
@@ -105,7 +123,7 @@ function createWindow(windowName, data = null) {
               lastMouseOutState = isMouseOut;
               appWindow.webContents.send('hide-button', { isMouseOut, hideButton: config.indexWindow.hideButton });
             }
-          } catch (error) {
+          } catch {
             // If window is destroyed or other error, stop polling
             clearInterval(mouseCheckInterval);
           }
@@ -135,6 +153,7 @@ function createWindow(windowName, data = null) {
           chatCodeModule.saveChatCode();
         });
         break;
+      }
 
       case 'capture':
         // set close event
@@ -477,7 +496,16 @@ function restartWindow(windowName, data) {
 
 // close window
 function closeWindow(windowName) {
-  windowList[windowName].close();
+  // Validate window name against whitelist
+  if (!isValidWindowName(windowName)) {
+    Logger.error('window-module', `Invalid window name for close: ${windowName}`);
+    return;
+  }
+
+  const window = windowList[windowName];
+  if (window && !window.isDestroyed()) {
+    window.close();
+  }
 }
 
 // get window
@@ -542,6 +570,22 @@ function fixTitleBar(appWindow) {
   appWindow.webContents.on('before-input-event', runWorkaround);
   appWindow.webContents.on('focus', runWorkaround);
   appWindow.webContents.on('blur', runWorkaround);
+
+  // Cleanup listeners when window is closed to prevent memory leak
+  // Note: By the time 'closed' fires, webContents may already be destroyed
+  // The listeners will be auto-cleaned by Electron when the window is destroyed
+  // This is kept for documentation purposes but wrapped in try-catch for safety
+  appWindow.once('closed', () => {
+    try {
+      if (appWindow.webContents && !appWindow.webContents.isDestroyed()) {
+        appWindow.webContents.removeListener('before-input-event', runWorkaround);
+        appWindow.webContents.removeListener('focus', runWorkaround);
+        appWindow.webContents.removeListener('blur', runWorkaround);
+      }
+    } catch {
+      // Window already destroyed, listeners auto-cleaned by Electron
+    }
+  });
 }
 
 // console log
@@ -566,4 +610,8 @@ module.exports = {
 
   openDevTools,
   consoleLog,
+
+  // Security utilities
+  isValidWindowName,
+  ALLOWED_WINDOWS,
 };

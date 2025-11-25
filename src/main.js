@@ -10,7 +10,7 @@ change icon
 */
 
 // electron
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, globalShortcut } = require('electron');
 //app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-http-cache');
 
@@ -19,6 +19,12 @@ const appModule = require('./module/system/app-module');
 
 // window module
 const windowModule = require('./module/system/window-module');
+
+// sharlayan module
+const sharlayanModule = require('./module/system/sharlayan-module');
+
+// translation cache
+const { globalCache } = require('./module/system/translation-cache');
 
 // on ready
 app.on('ready', () => {
@@ -36,13 +42,39 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) windowModule.createWindow('index');
 });
 
+// Cleanup on app exit
+app.on('before-quit', async (event) => {
+  // Prevent default to allow async cleanup
+  event.preventDefault();
+
+  try {
+    console.log('Starting app cleanup...');
+
+    // Stop Sharlayan reader process (don't restart)
+    sharlayanModule.stop(false);
+
+    // Cleanup translation cache (stop auto-save interval, final save)
+    await globalCache.cleanup();
+
+    // Unregister all global shortcuts
+    globalShortcut.unregisterAll();
+
+    console.log('App cleanup completed');
+  } catch (error) {
+    console.error('Error during app cleanup:', error);
+  }
+
+  // Now actually quit
+  app.exit(0);
+});
+
 // ignore uncaughtException
 process.on('uncaughtException', (error) => {
   console.log('\r\nuncaughtException');
   console.log(error);
 
   // write log
-  appModule.wirteLog('uncaughtException', error);
+  appModule.writeLog('uncaughtException', error);
 });
 
 // ignore unhandledRejection
@@ -51,7 +83,7 @@ process.on('unhandledRejection', (error) => {
   console.log(error);
 
   // write log
-  appModule.wirteLog('unhandledRejection', error);
+  appModule.writeLog('unhandledRejection', error);
 });
 
 /*
