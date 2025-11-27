@@ -272,10 +272,12 @@ function setButton() {
     ipcRenderer.send('close-app');
   };
 
-  // auto play
+  // auto play (TTS toggle)
   document.getElementById('img-button-speech').onclick = async () => {
+    console.log('[TTS] Button clicked');
     const config = await ipcRenderer.invoke('get-config');
     config.indexWindow.speech = !config.indexWindow.speech;
+    console.log('[TTS] Speech enabled:', config.indexWindow.speech);
     await ipcRenderer.invoke('set-config', config);
     ipcRenderer.send('mute-window', config.indexWindow.speech);
     setSpeech(config.indexWindow.speech);
@@ -398,17 +400,26 @@ function resetDialogStyle() {
   ipcRenderer.send('reset-dialog-style', resetList);
 }
 
-// scroll into view
+// scroll into view - optimized for streaming translation
+let lastScrollId = '';
+let scrollPending = false;
+
 function scrollIntoView(id = '') {
-  if (rafScroll) {
-    cancelAnimationFrame(rafScroll);
+  lastScrollId = id;
+  
+  // Use requestAnimationFrame to batch scroll updates
+  if (!scrollPending) {
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      scrollPending = false;
+      
+      // Always scroll the dialog container to bottom for smooth streaming
+      const container = document.getElementById('div-dialog');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    });
   }
-  rafScroll = requestAnimationFrame(() => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
-  });
 }
 
 // move to bottom
@@ -484,11 +495,15 @@ function setClickThrough(value) {
 }
 
 function setSpeech(value) {
+  console.log('[TTS] setSpeech called with:', value);
+  const button = document.getElementById('img-button-speech');
   if (value) {
-    document.getElementById('img-button-speech').setAttribute('src', './img/ui/volume_up_white_48dp.svg');
+    if (button) button.style.opacity = '1';
+    console.log('[TTS] Dispatching start-playing event');
     document.dispatchEvent(new CustomEvent('start-playing'));
   } else {
-    document.getElementById('img-button-speech').setAttribute('src', './img/ui/volume_off_white_48dp.svg');
+    if (button) button.style.opacity = '0.5';
+    console.log('[TTS] Dispatching stop-playing event');
     document.dispatchEvent(new CustomEvent('stop-playing'));
   }
 }

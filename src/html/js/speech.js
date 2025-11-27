@@ -24,12 +24,14 @@
 
   // start playing
   document.addEventListener('start-playing', () => {
+    console.log('[TTS] start-playing event received, enabling TTS');
     tts.enable = true;
     setPlayInterval();
   });
 
   // stop playing
   document.addEventListener('stop-playing', () => {
+    console.log('[TTS] stop-playing event received, disabling TTS');
     clearInterval(tts.interval);
     tts.enable = false;
     tts.list = [];

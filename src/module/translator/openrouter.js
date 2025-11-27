@@ -156,9 +156,9 @@ async function translateStream(text, source, target, type, onChunk) {
     .then(response => {
       let fullText = '';
       let buffer = '';
-      // OPTIMIZATION: Buffer small deltas before triggering callback
+      // Buffer small deltas before triggering callback
       let pendingDelta = '';
-      const MIN_CHUNK_SIZE = 5; // Minimum characters before triggering update
+      const MIN_CHUNK_SIZE = 1; // Trigger update on each character for smooth streaming
 
       response.data.on('data', (chunk) => {
         buffer += chunk.toString();

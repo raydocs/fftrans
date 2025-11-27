@@ -27,8 +27,8 @@ let running = false;
 let entryIntervalItem = [];
 let processing = false;
 
-// UI update throttling for streaming (reduces CPU usage)
-const UI_UPDATE_INTERVAL_MS = 80; // Update UI at most every 80ms during streaming
+// UI update throttling for streaming
+const UI_UPDATE_INTERVAL_MS = 30; // Update UI every 30ms for smooth streaming effect
 const streamingUpdateState = new Map(); // Track last update time per dialog
 
 // set running
