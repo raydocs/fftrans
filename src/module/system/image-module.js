@@ -7,9 +7,6 @@ sharp.cache(false);
 // dialog module
 const dialogModule = require('./dialog-module');
 
-// file module
-const fileModule = require('./file-module');
-
 // screenshot module
 const screenshotModule = require('./screenshot-module');
 
@@ -219,11 +216,6 @@ async function getOstuValue(croppedPath = '') {
   return Math.min(255, otsu(intensity) + 1);
 }
 */
-
-// get image path
-function getImagePath(fileName) {
-  return fileModule.getRootPath('src', 'data', 'img', fileName);
-}
 
 // module exports
 module.exports = {

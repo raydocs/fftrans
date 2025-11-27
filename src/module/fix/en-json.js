@@ -4,7 +4,7 @@
 const jsonFunction = require('./json-function');
 
 // language table
-const { languageEnum, languageIndex, fixTargetList } = require('../system/engine-module');
+const { languageEnum, fixTargetList } = require('../system/engine-module');
 
 // ch array
 const chArray = {};

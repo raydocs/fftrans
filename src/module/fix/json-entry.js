@@ -177,7 +177,7 @@ function loadJSON() {
 }
 
 // get array (JP json removed, return empty array)
-function getUserArray(arrayName = '') {
+function getUserArray() {
   // let array = jpJson.getUserArray()[arrayName];
   // return array || [];
   return []; // JP dictionaries removed, always return empty array

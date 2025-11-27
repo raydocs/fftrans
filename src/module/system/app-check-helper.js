@@ -7,8 +7,7 @@ const { spawnSync } = require('child_process');
 const fileModule = require('./file-module');
 const Logger = require('../../utils/logger');
 
-const TOKEN_REGEX = /xi-app-check-token\s*:\s*([A-Za-z0-9_\-\.]+)/i;
-const TOKEN_REGEX_GLOBAL = /xi-app-check-token\s*:\s*([A-Za-z0-9_\-\.]+)/gi;
+const TOKEN_REGEX_GLOBAL = /xi-app-check-token\s*:\s*([A-Za-z0-9_\-.]+)/gi;
 const CACHE_FILES = ['tokens_cache.json', 'extracted_tokens.json', 'elevenlabs_tokens.json'];
 const FLOW_FILES = ['flows.elevenlabsio', 'flows.txt'];
 
@@ -57,7 +56,7 @@ function extractWithStrings(filePath = '') {
         const parts = line.split(/xi-app-check-token\s*[:\s]+/i);
         if (parts.length >= 2) {
           const candidate = parts[1].trim();
-          const match = /^([A-Za-z0-9_\-\.]+)/.exec(candidate);
+          const match = /^([A-Za-z0-9_\-.]+)/.exec(candidate);
           if (match) {
             const token = match[1];
             return {

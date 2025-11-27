@@ -12,9 +12,6 @@ const configModule = require('./config-module');
 // dialog module
 const dialogModule = require('./dialog-module');
 
-// file module
-const fileModule = require('./file-module');
-
 // window module
 const windowModule = require('./window-module');
 
@@ -26,9 +23,6 @@ const { addTask } = require('../fix/fix-entry');
 
 // gpt module
 const gptModule = require('../translator/gpt');
-
-// image dir
-const imageDir = fileModule.getRootPath('src', 'data', 'img');
 
 // OCR Rate Limiter
 const PromiseQueue = require('../../utils/promise-queue');
@@ -162,11 +156,6 @@ async function translateImageText(captureData) {
     await engineModule.sleep(100);
     addTask(dialogData);
   }
-}
-
-// delete images (deprecated/removed)
-function deleteImages() {
-  // No-op: In-memory processing removes need for file cleanup
 }
 
 module.exports = {

@@ -6,9 +6,6 @@ const configModule = require('./config-module');
 // dialog module
 const dialogModule = require('./dialog-module');
 
-// engine module
-const engineModule = require('./engine-module');
-
 // fix entry module
 const fixEntryModule = require('../fix/fix-entry');
 
