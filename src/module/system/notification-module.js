@@ -20,6 +20,9 @@ const message = {
 
   SETTINGS_SAVED: ['設定已儲存', '设定已储存', 'Settings saved'],
   RESTORED_TO_DEFAULT_SETTINGS: ['已恢復預設值', '已恢復预设值', 'Restored to default settings'],
+  COMPACT_SIZE_APPLIED: ['緊湊尺寸已套用', '紧凑尺寸已应用', 'Compact size applied'],
+  COMPACT_MODE_ON: ['緊湊模式已開啟', '紧凑模式已开启', 'Compact mode enabled'],
+  COMPACT_MODE_OFF: ['緊湊模式已關閉', '紧凑模式已关闭', 'Compact mode disabled'],
 
   GOOGLE_CREDENTIAL_SAVED: ['已儲存Google憑證', '已储存Google凭证', 'Google credential saved'],
   INCORRECT_FILE: ['檔案格式不正確', '档案格式不正确', 'Incorrect file'],

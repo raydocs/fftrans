@@ -53,6 +53,7 @@ function createWindow(windowName, data = null) {
       roundedCorners: false,
       transparent: windowName === 'index' || windowName === 'capture', // Only index and capture windows are transparent
       fullscreenable: false,
+      maximizable: false, // Prevent maximizing (important for handheld devices)
       webPreferences: {
         contextIsolation: false,
         nodeIntegration: true,
@@ -95,6 +96,11 @@ function createWindow(windowName, data = null) {
       if (data) {
         appWindow.webContents.send('send-data', data);
       }
+    });
+
+    // Prevent window from being maximized (important for handheld devices like ROG Ally)
+    appWindow.on('maximize', () => {
+      appWindow.unmaximize();
     });
 
     // set event
@@ -210,13 +216,22 @@ function getWindowSize(windowName, config) {
     case 'index':
       {
         const indexBounds = config.indexWindow;
+        const isCompactMode = config.indexWindow.compactMode;
 
-        // first time
+        // first time or compact mode reset
         if (boundsValidCheck(indexBounds)) {
-          bounds.x = displayBounds.x + parseInt(displayBounds.width * 0.7);
-          bounds.y = displayBounds.y + parseInt(displayBounds.height * 0.2);
-          bounds.width = parseInt(displayLength * 0.16);
-          bounds.height = parseInt(displayLength * 0.32);
+          if (isCompactMode) {
+            // Compact mode: use configured compact size, position at bottom-right corner
+            bounds.width = config.indexWindow.compactWidth || 320;
+            bounds.height = config.indexWindow.compactHeight || 200;
+            bounds.x = displayBounds.x + displayBounds.width - bounds.width - 10;
+            bounds.y = displayBounds.y + displayBounds.height - bounds.height - 50;
+          } else {
+            bounds.x = displayBounds.x + parseInt(displayBounds.width * 0.7);
+            bounds.y = displayBounds.y + parseInt(displayBounds.height * 0.2);
+            bounds.width = parseInt(displayLength * 0.16);
+            bounds.height = parseInt(displayLength * 0.32);
+          }
         } else {
           bounds.x = indexBounds.x;
           bounds.y = indexBounds.y;
@@ -225,8 +240,8 @@ function getWindowSize(windowName, config) {
         }
 
         if (configModule.getConfig().indexWindow.minSize) {
-          bounds.minWidth = 200;
-          bounds.minHeight = 200;
+          bounds.minWidth = isCompactMode ? 150 : 200;
+          bounds.minHeight = isCompactMode ? 100 : 200;
         }
 
         bounds = boundsSizeCheck(bounds);
@@ -273,10 +288,10 @@ function getWindowSize(windowName, config) {
     case 'config':
       {
         const indexBounds = windowList['index'].getContentBounds();
-        bounds.width = parseInt(displayLength * 0.26);
-        bounds.height = parseInt(displayLength * 0.47);
-        bounds.minWidth = bounds.width;
-        bounds.minHeight = bounds.height;
+        bounds.width = Math.max(parseInt(displayLength * 0.26), 380);
+        bounds.height = Math.max(parseInt(displayLength * 0.47), 550);
+        bounds.minWidth = 380;
+        bounds.minHeight = 550;
         bounds = getNearPosition(displayBounds, indexBounds, bounds);
       }
       break;

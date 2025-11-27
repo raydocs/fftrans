@@ -165,6 +165,9 @@ async function setView() {
   // set speech
   setSpeech(config.indexWindow.speech);
 
+  // set compact mode button
+  updateCompactButton(config.indexWindow.compactMode);
+
   // first time check
   if (config.system.firstTime) {
     ipcRenderer.send('create-window', 'config', 'div-translation');
@@ -242,6 +245,21 @@ function setButton() {
   // update
   document.getElementById('img-button-update').onclick = () => {
     ipcRenderer.send('execute-command', 'explorer "https://github.com/winw1010/tataru-assistant/releases/latest/"');
+  };
+
+  // compact mode toggle
+  document.getElementById('img-button-compact').onclick = async () => {
+    const config = await ipcRenderer.invoke('get-config');
+    config.indexWindow.compactMode = !config.indexWindow.compactMode;
+    // Reset window position to apply compact size
+    config.indexWindow.x = -1;
+    config.indexWindow.y = -1;
+    config.indexWindow.width = -1;
+    config.indexWindow.height = -1;
+    await ipcRenderer.invoke('set-config', config);
+    ipcRenderer.send('send-index', 'reset-view', config);
+    updateCompactButton(config.indexWindow.compactMode);
+    ipcRenderer.send('add-notification', config.indexWindow.compactMode ? 'COMPACT_MODE_ON' : 'COMPACT_MODE_OFF');
   };
 
   // minimize
@@ -454,5 +472,14 @@ function setSpeech(value) {
   } else {
     document.getElementById('img-button-speech').setAttribute('src', './img/ui/volume_off_white_48dp.svg');
     document.dispatchEvent(new CustomEvent('stop-playing'));
+  }
+}
+
+// update compact button appearance
+function updateCompactButton(isCompact) {
+  const btn = document.getElementById('img-button-compact');
+  if (btn) {
+    btn.style.opacity = isCompact ? '1' : '0.5';
+    btn.title = isCompact ? 'Compact Mode (ON)' : 'Compact Mode (OFF)';
   }
 }

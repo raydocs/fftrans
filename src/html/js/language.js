@@ -122,6 +122,7 @@ function getElementTextList() {
         'button-restart-sharlayan-reader': ['重新啟動字幕讀取器', '重新启动字幕读取器', 'Restart Chat Reader'],
         'button-fix-reader': ['修復字幕讀取器', '修復字幕读取器', 'Fix Chat Reader'],
         'button-version-check': ['檢查更新', '检查更新', 'Check For Updates'],
+        'button-apply-compact-size': ['套用緊湊尺寸', '应用紧凑尺寸', 'Apply Compact Size'],
 
 
         // capture
@@ -158,6 +159,9 @@ function getElementTextList() {
         'checkbox-focusable': ['可被選取', '可被选取', 'Focusable'],
         'checkbox-shortcut': ['啟用快捷鍵', '启用快捷键', 'Shortcut'],
         'checkbox-min-size': ['最小尺寸限制', '最小尺寸限制', 'Minimum Size Limit'],
+        'checkbox-compact-mode': ['緊湊模式（掌機適用）', '紧凑模式（掌机适用）', 'Compact Mode (Handheld)'],
+        'input-compact-width': ['緊湊寬度(px)', '紧凑宽度(px)', 'Compact Width(px)'],
+        'input-compact-height': ['緊湊高度(px)', '紧凑高度(px)', 'Compact Height(px)'],
         'checkbox-hide-button': ['自動隱藏按鈕', '自动隐藏按钮', 'Hide Buttons Automatically'],
         'checkbox-hide-dialog': ['自動隱藏視窗', '自动隐藏视窗', 'Hide Window Automatically'],
         'input-hide-dialog-timeout': ['隱藏間隔(秒)', '隐藏间隔(秒)', 'Hide Window After(Sec)'],
@@ -445,6 +449,7 @@ function getElementTextList() {
         'img-button-read-log': ['讀取對話紀錄', '读取对话纪录', 'Read Chat Log'],
         'img-button-backspace': ['刪除最後一句', '删除最后一句', 'Delete Last'],
         'img-button-clear': ['刪除全部對話', '删除全部对话', 'Delete All'],
+        'img-button-compact': ['緊湊模式', '紧凑模式', 'Compact Mode'],
       },
       button: {
         // index
@@ -462,6 +467,7 @@ function getElementTextList() {
         'img-button-read-log': ['讀取對話紀錄', '读取对话纪录', 'Read Chat Log'],
         'img-button-backspace': ['刪除最後一句', '删除最后一句', 'Delete Last'],
         'img-button-clear': ['刪除全部對話', '删除全部对话', 'Delete All'],
+        'img-button-compact': ['緊湊模式', '紧凑模式', 'Compact Mode'],
       },
     },
   };

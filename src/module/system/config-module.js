@@ -34,6 +34,9 @@ const defaultConfig = {
     speech: false,
     speechSpeed: '1',
     ttsEngine: 'google', // 'google' or 'speechify'
+    compactMode: false, // Compact mode for handheld devices (ROG Ally, Steam Deck, etc.)
+    compactWidth: 320,  // Default width in compact mode (pixels)
+    compactHeight: 200, // Default height in compact mode (pixels)
   },
   dialog: {
     weight: 'normal',

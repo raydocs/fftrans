@@ -51,6 +51,10 @@ async function setView() {
   const googleVisionType = document.getElementById('select-google-vision-type').value;
   document.getElementById('div-' + googleVisionType).hidden = false;
 
+  // Initialize compact mode settings visibility
+  const compactMode = document.getElementById('checkbox-compact-mode').checked;
+  document.getElementById('div-compact-settings').hidden = !compactMode;
+
   // change UI text
   setTimeout(async () => {
     const config = await ipcRenderer.invoke('get-config');
@@ -169,6 +173,12 @@ function setEvent() {
     }
   };
 
+  // Compact mode toggle - show/hide size settings
+  document.getElementById('checkbox-compact-mode').onchange = () => {
+    const isCompact = document.getElementById('checkbox-compact-mode').checked;
+    document.getElementById('div-compact-settings').hidden = !isCompact;
+  };
+
   // Sync TTS engine selectors (window page and translation page)
   const ttsEngineWindow = document.getElementById('select-tts-engine');
   const ttsEngineTranslation = document.getElementById('select-tts-engine-translation');
@@ -225,6 +235,21 @@ function setButton() {
   // fix reader
   document.getElementById('button-fix-reader').onclick = () => {
     ipcRenderer.send('fix-reader');
+  };
+
+  // apply compact size - reset window position to apply new compact size
+  document.getElementById('button-apply-compact-size').onclick = async () => {
+    const config = await ipcRenderer.invoke('get-config');
+    // Reset window position to trigger recalculation with new compact size
+    config.indexWindow.x = -1;
+    config.indexWindow.y = -1;
+    config.indexWindow.width = -1;
+    config.indexWindow.height = -1;
+    config.indexWindow.compactWidth = parseInt(document.getElementById('input-compact-width').value) || 280;
+    config.indexWindow.compactHeight = parseInt(document.getElementById('input-compact-height').value) || 180;
+    await ipcRenderer.invoke('set-config', config);
+    ipcRenderer.send('send-index', 'reset-view', config);
+    ipcRenderer.send('add-notification', 'COMPACT_SIZE_APPLIED');
   };
 
   // get set google vision
@@ -873,6 +898,20 @@ function getOptionList() {
     [
       ['input-speech-speed', 'value'],
       ['indexWindow', 'speechSpeed'],
+    ],
+
+    // compact mode
+    [
+      ['checkbox-compact-mode', 'checked'],
+      ['indexWindow', 'compactMode'],
+    ],
+    [
+      ['input-compact-width', 'value'],
+      ['indexWindow', 'compactWidth'],
+    ],
+    [
+      ['input-compact-height', 'value'],
+      ['indexWindow', 'compactHeight'],
     ],
 
     // font
