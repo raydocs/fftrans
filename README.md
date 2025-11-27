@@ -1,112 +1,210 @@
-# FFTrans 是什么?
+<p align="center">
+  <img src="src/html/img/icon/tataru.ico" alt="FFTrans Logo" width="120" height="120">
+</p>
 
-**FFTrans** (Final Fantasy Translator) 是 FFXIV 国际版的即时剧情字幕翻译程序，主要功能如下：
+<h1 align="center">FFTrans</h1>
 
-- 即时翻译对话文字
+<p align="center">
+  <strong>Final Fantasy XIV 实时翻译助手</strong>
+</p>
 
-- 即时翻译过场字幕
+<p align="center">
+  <a href="https://github.com/raydocs/tataru/releases/latest">
+    <img src="https://img.shields.io/github/v/release/raydocs/tataru?style=flat-square&color=blue" alt="Release">
+  </a>
+  <a href="https://github.com/raydocs/tataru/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/raydocs/tataru?style=flat-square" alt="License">
+  </a>
+  <a href="https://github.com/raydocs/tataru/releases">
+    <img src="https://img.shields.io/github/downloads/raydocs/tataru/total?style=flat-square&color=green" alt="Downloads">
+  </a>
+  <img src="https://img.shields.io/badge/platform-Windows-lightgrey?style=flat-square" alt="Platform">
+  <img src="https://img.shields.io/badge/electron-37.2.6-blue?style=flat-square" alt="Electron">
+</p>
 
-- 屏幕文字截取翻译功能
+<p align="center">
+  <a href="#-功能特性">功能特性</a> •
+  <a href="#-快速开始">快速开始</a> •
+  <a href="#-翻译引擎">翻译引擎</a> •
+  <a href="#-开发指南">开发指南</a> •
+  <a href="#-常见问题">常见问题</a>
+</p>
 
-- (仅支持中文翻译)根据[**对照表**](https://github.com/winw1010/tataru-assistant-text)修正翻译结果，例如将 **タタル** 修正为 **塔塔露**
+---
 
-- (全语言)自定义翻译
+## 📖 简介
 
-- 翻译查询器
+**FFTrans** 是一款专为 Final Fantasy XIV 国际服设计的实时翻译工具。通过读取游戏内存，自动捕获对话和过场字幕，并即时翻译成目标语言，让您无障碍体验游戏剧情。
 
-# FFTrans 的翻译方式
+## ✨ 功能特性
 
-## 在线翻译引擎
+| 功能 | 描述 |
+|------|------|
+| 🎮 **实时翻译** | 自动捕获并翻译游戏对话和过场字幕 |
+| 📸 **OCR 截图翻译** | 屏幕区域截取，识别并翻译任意文字 |
+| 🔊 **TTS 语音朗读** | 支持 Google TTS、Speechify、ElevenLabs |
+| 📝 **智能修正** | 3.8MB 游戏术语词库，精准翻译角色名/地名/技能名 |
+| 🎨 **自定义翻译** | 支持用户自定义翻译规则 |
+| 🌐 **多引擎支持** | 15+ 翻译引擎，含 AI 大模型 |
+| 🖥️ **悬浮窗口** | 透明悬浮显示，支持点击穿透 |
 
-翻译能力一般，但基本上无使用限制
+## 🚀 快速开始
 
-- 有道翻译
+### 系统要求
 
-- 百度翻译
+- **操作系统**: Windows 10/11 (64-bit)
+- **运行环境**: [.NET Framework 4.8](https://dotnet.microsoft.com/download/dotnet-framework/net48)
+- **游戏版本**: Final Fantasy XIV (国际服)
 
-- 彩云小译
+### 安装步骤
 
-- Papago Naver
+1. **下载安装包**
+   
+   [![Download](https://img.shields.io/badge/下载-最新版本-blue?style=for-the-badge)](https://github.com/raydocs/tataru/releases/latest/download/Tataru_Assistant_Setup.exe)
 
-- DeepL
+2. **安装 .NET Framework 4.8**（如未安装）
+   
+   [点击下载 .NET Framework 4.8](https://dotnet.microsoft.com/download/dotnet-framework/net48)
 
-- Google 翻译
+3. **运行安装程序**
+   
+   执行 `Tataru_Assistant_Setup.exe`，如遇 Windows 安全提示，点击「更多信息」→「仍要运行」
 
-## AI 翻译
+4. **配置翻译设置**
+   
+   启动程序 → 点击齿轮图标 ⚙️ → 设置源语言和目标语言 → 保存
 
-翻译能力较佳，可正确翻译较艰深的句子，需申请 API key 才能使用，目前支持以下方案：
+5. **开始游戏**
+   
+   启动 FFXIV，翻译将自动开始工作
 
-### 单一模型方案
-- Gemini
-- ChatGPT
-- Cohere
-- Kimi
+> ⚠️ **提示**: 如无法自动翻译，请前往「设置」→「系统设置」→「修复字幕读取器」
 
-### AI 聚合平台（推荐）
-- **OpenRouter** - 统一接口访问 100+ AI 模型，支持 Claude 4.5、GPT-5、Gemini 2.5 等最新模型
-  - 📖 [OpenRouter 模型列表](OPENROUTER_MODELS.md)
-  - ✅ [验证报告](OPENROUTER_VERIFICATION.md)
+## 🌐 翻译引擎
 
-### VibeProxy（免费使用 AI）
-- **内置 VibeProxy** - 无需 API key，通过 OAuth 授权直接使用 Claude、ChatGPT、Gemini 等 AI 服务
-  - 支持 Claude、ChatGPT、Gemini、通义千问
-  - 自动管理认证令牌
-  - 一键启动，开箱即用
+### 在线翻译（免费）
 
-### 自定义方案
-- 自定义 OpenAI（自定义模式，可自行输入 POST URL 和 API KEY 使用与 OpenAI 兼容的 AI 模型）
+| 引擎 | 语言支持 | 说明 |
+|------|---------|------|
+| 有道翻译 | 中/英/日/韩 | 免费，无需配置 |
+| 百度翻译 | 多语言 | 免费，无需配置 |
+| 彩云小译 | 中/英/日 | 免费，无需配置 |
+| Papago | 中/英/日/韩 | 免费，无需配置 |
+| DeepL | 多语言 | 免费额度 |
 
-# 文件下载
+### AI 翻译（推荐）
 
-- [FFTrans 安装包](https://github.com/raydocs/tataru/releases/latest/download/Tataru_Assistant_Setup.exe)
+| 引擎 | 特点 | 配置方式 |
+|------|------|---------|
+| **OpenRouter** ⭐ | 100+ 模型，统一接口 | [获取 API Key](https://openrouter.ai/) |
+| GPT-4 | OpenAI 官方 | 需 API Key |
+| Claude | Anthropic | 需 API Key |
+| Gemini | Google | 需 API Key |
+| Cohere | 免费额度 | 需 API Key |
+| Kimi | 月之暗面 | 需 API Key |
 
-- [.NET Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer) (运行 FFTrans 的必要组件)
+> 📖 **推荐使用 OpenRouter**：一个 API Key 即可访问 Claude、GPT、Gemini 等 100+ 模型
+> 
+> 查看 [OpenRouter 模型列表](OPENROUTER_MODELS.md)
 
-# 安装步骤
+## 🛠️ 开发指南
 
-1. 下载「FFTrans 安装包」和「.NET Framework 4.8」
+### 环境准备
 
-2. 执行「ndp48-web.exe」安装 .NET Framework 4.8（运行 FFTrans 的必要组件）
+```bash
+# 克隆仓库
+git clone https://github.com/raydocs/tataru.git
+cd tataru
 
-3. 执行「Tataru_Assistant_Setup.exe」安装 FFTrans，若显示「Windows 已保护你的电脑」的消息，请点击「更多信息」，再点击下方的「仍要运行」
+# 安装依赖
+npm install
 
-4. 点击窗口上的齿轮图标打开 FFTrans 的设置窗口，切换到【翻译设置】设置你的游戏语言和翻译语言，设定完毕后按保存即可使用
+# 启动开发模式
+npm start
+```
 
-5. 若安装后无法自动翻译，请至【设置】>【系统设置】，点击【修复字幕读取器】，修复后重新启动即可
+### 项目结构
 
-# 源代码
+```
+tataru/
+├── src/
+│   ├── main.js              # Electron 主进程入口
+│   ├── html/                 # 渲染进程 UI
+│   │   ├── index.html       # 主窗口（翻译显示）
+│   │   ├── config.html      # 设置窗口
+│   │   └── capture.html     # 截图窗口
+│   ├── module/
+│   │   ├── system/          # 核心系统模块
+│   │   ├── translator/      # 翻译引擎实现
+│   │   ├── fix/             # 文本修正处理
+│   │   └── ipc/             # IPC 通信
+│   └── data/
+│       └── text/            # 翻译词库 (3.8MB)
+├── package.json
+└── CLAUDE.md                 # AI 开发指南
+```
 
-- [源代码使用说明](https://github.com/raydocs/tataru/blob/main/doc/README_SOURCE.md)
+### 构建发布
 
-# 致谢
+```bash
+# 打包（不生成安装包）
+npm run pack
 
-- [FFXIVAPP/sharlayan](https://github.com/FFXIVAPP/sharlayan) - FFXIV 内存读取库
-- [Electron](https://www.electronjs.org/) - 跨平台桌面应用框架
-- [@google-cloud/vision](https://github.com/googleapis/nodejs-vision) - Google Cloud Vision OCR
-- [axios](https://github.com/axios/axios) - HTTP 客户端
-- [crypto-js](https://github.com/brix/crypto-js) - 加密库
-- [sharp](https://github.com/lovell/sharp) - 图像处理库
-- [tesseract.js](https://github.com/naptha/tesseract.js) - OCR 文字识别
-- [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) - VibeProxy OAuth 代理
+# 构建安装包
+npm run dist
+```
+
+输出目录: `build/Tataru_Assistant_Setup.exe`
+
+## ❓ 常见问题
+
+<details>
+<summary><b>Q: 启动后没有翻译显示？</b></summary>
+
+1. 确认 FFXIV 已启动且进入游戏
+2. 前往「设置」→「系统设置」→「修复字幕读取器」
+3. 以管理员身份重新启动程序
+</details>
+
+<details>
+<summary><b>Q: 翻译延迟很高？</b></summary>
+
+1. 检查网络连接
+2. 尝试切换翻译引擎
+3. AI 翻译首次请求可能较慢，后续会使用缓存
+</details>
+
+<details>
+<summary><b>Q: OCR 识别不准确？</b></summary>
+
+1. 确保截取区域清晰、对比度高
+2. 尝试使用 Google Vision（需配置 API）
+3. 避免截取过小的文字区域
+</details>
+
+<details>
+<summary><b>Q: 如何使用 AI 翻译？</b></summary>
+
+1. 前往「设置」→「翻译设置」
+2. 选择 AI 引擎（推荐 OpenRouter）
+3. 在「API 设置」中填入对应的 API Key
+4. 保存并测试
+</details>
+
+## 🤝 致谢
+
+- [FFXIVAPP/sharlayan](https://github.com/FFXIVAPP/sharlayan) - FFXIV 内存读取
 - [winw1010/tataru-assistant](https://github.com/winw1010/tataru-assistant) - 原始项目
+- [Electron](https://www.electronjs.org/) - 跨平台框架
+- [tesseract.js](https://github.com/naptha/tesseract.js) - OCR 引擎
+- [sharp](https://github.com/lovell/sharp) - 图像处理
 
-# 项目信息
+## 📄 许可证
 
-- **作者**: [raydocs](https://github.com/raydocs)
-- **版本**: 0.0.2
-- **项目名称**: FFTrans (Final Fantasy Translator)
-- **原始项目**: Tataru Assistant by [winw1010](https://github.com/winw1010)
-- **许可证**: MIT License
-- **仓库地址**: https://github.com/raydocs/tataru
+本项目基于 [MIT License](LICENSE) 开源。
 
-# 更新日志
+---
 
-## 0.0.2
-- 集成 VibeProxy，支持免 API key 使用 AI 翻译
-- 更新文档为简体中文
-- 优化 OCR 识别准确率
-- 新增更多翻译引擎支持
-
-## 0.0.1
-- 初始版本
-- 基于 Tataru Assistant 进行二次开发
+<p align="center">
+  <sub>Made with ❤️ by <a href="https://github.com/raydocs">raydocs</a></sub>
+</p>
