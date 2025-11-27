@@ -130,21 +130,13 @@ function registerGlobalShortcut() {
   });
 
   globalShortcut.register('CommandOrControl+F10', () => {
-    try {
-      windowModule.closeWindow('config');
-    } catch (error) {
-      error;
-      windowModule.createWindow('config');
-    }
+    windowModule.closeWindow('config');
+    windowModule.createWindow('config');
   });
 
   globalShortcut.register('CommandOrControl+F11', () => {
-    try {
-      windowModule.closeWindow('capture');
-    } catch (error) {
-      error;
-      windowModule.createWindow('capture');
-    }
+    windowModule.closeWindow('capture');
+    windowModule.createWindow('capture');
   });
 
   globalShortcut.register('CommandOrControl+F12', () => {

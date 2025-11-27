@@ -9,12 +9,8 @@ const childProcess = require('child_process');
 function setWindowChannel() {
     // create window
     ipcMain.on('create-window', (event, windowName, data = null) => {
-        try {
-            windowModule.closeWindow(windowName);
-        } catch (error) {
-            error;
-            windowModule.createWindow(windowName, data);
-        }
+        windowModule.closeWindow(windowName);
+        windowModule.createWindow(windowName, data);
     });
 
     // restart window

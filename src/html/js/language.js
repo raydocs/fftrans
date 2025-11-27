@@ -371,6 +371,9 @@ function getElementTextList() {
         'span-title-edit': ['編輯翻譯', '编辑翻译', 'Edit Translation'],
         'span-title-read-log': ['讀取對話紀錄', '读取对话纪录', 'Read Logs'],
 
+        // index - click through hint
+        'span-click-through-text': ['滑鼠穿透已啟用', '鼠标穿透已启用', 'Click Through Enabled'],
+
         // config
         'span-channel-comment': ['滾動滑鼠中鍵可以捲動頻道清單', '滚动鼠标中键可以捲动频道清单', 'Use middle mouse button to sroll the page'],
         'span-author': [

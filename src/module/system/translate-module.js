@@ -19,14 +19,12 @@ const youdao = require('../translator/youdao');
 const caiyun = require('../translator/caiyun');
 const papago = require('../translator/papago');
 const deepl = require('../translator/deepl');
-//const google = require('../translator/google');
 const gpt = require('../translator/gpt');
 const openai = require('../translator/openai');
 const cohere = require('../translator/cohere');
 const gemini = require('../translator/gemini');
 const kimi = require('../translator/kimi');
 const openRouter = require('../translator/openrouter');
-// zh-convert removed for performance optimization
 
 function stableStringify(value) {
   if (value === null || typeof value !== 'object') {
@@ -109,8 +107,8 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
       // Cache miss - perform translation
       const rawResult = await translate2(text, translation, type);
 
-      // zh convert
-      const finalResult = zhConvert(clearCode(rawResult, table), translation.to);
+      // Process and normalize the result
+      const finalResult = clearCode(rawResult, table);
 
       // ✨ Store in cache (hashed key)
       translationCache.set(cacheKey, translation.engine, finalResult);
@@ -214,7 +212,7 @@ async function translateStream(text = '', translation = {}, table = [], type = '
               return;
             }
 
-            const processed = zhConvert(clearCode(delta, table), translation.to);
+            const processed = clearCode(delta, table);
             processedText += processed;
 
             if (onChunk) {
@@ -223,8 +221,8 @@ async function translateStream(text = '', translation = {}, table = [], type = '
           }
         );
 
-        // zh convert final result (fallback to processed stream buffer)
-        const finalResult = processedText || zhConvert(clearCode(result, table), translation.to);
+        // Use processed stream buffer or process final result
+        const finalResult = processedText || clearCode(result, table);
 
         // ✅ cache after streaming completes
         translationCache.set(cacheKey, translation.engine, finalResult);
@@ -326,12 +324,6 @@ async function getTranslation(engine = '', option = {}, type = 'sentence') {
         text = await openRouter.exec(option, type);
         break;
 
-      /*
-      case 'Google':
-        result = await google.exec(option);
-        break;
-      */
-
       default:
         break;
     }
@@ -348,13 +340,6 @@ async function getTranslation(engine = '', option = {}, type = 'sentence') {
     isError,
     text,
   };
-}
-
-// zh convert - DISABLED for performance (removed 21,000+ entry conversion table)
-// Translation engines (GPT, OpenRouter, etc.) already output correct zh variant
-function zhConvert(text = '' /*, languageTo = '' */) {
-  // Direct passthrough - no conversion needed
-  return text;
 }
 
 // Pre-compiled regex patterns for performance (avoid recreating on each call)
@@ -417,6 +402,5 @@ module.exports = {
   translate,
   translateStream,
   getTranslation,
-  zhConvert,
-  translationCache,  // Export cache for statistics
+  translationCache,
 };

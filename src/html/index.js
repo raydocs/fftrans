@@ -206,7 +206,7 @@ function setEvent() {
   });
 
   // button click through
-  const buttonArray = document.getElementsByClassName('img-button');
+  const buttonArray = document.getElementsByClassName('btn-icon');
   for (let index = 0; index < buttonArray.length; index++) {
     const element = buttonArray[index];
 
@@ -456,12 +456,30 @@ function hideButton(isMouseOut, hideButton) {
 }
 
 // set click through button
+let clickThroughHintTimeout = null;
 function setClickThrough(value) {
   clickThrough = value;
+  const hint = document.getElementById('div-click-through-hint');
+  const button = document.getElementById('img-button-through');
+  
+  // Clear any existing timeout
+  if (clickThroughHintTimeout) {
+    clearTimeout(clickThroughHintTimeout);
+    clickThroughHintTimeout = null;
+  }
+  
   if (clickThrough) {
-    document.getElementById('img-button-through').setAttribute('src', './img/ui/near_me_white_48dp.svg');
+    // Show hint briefly (2 seconds) then hide
+    if (hint) {
+      hint.hidden = false;
+      clickThroughHintTimeout = setTimeout(() => {
+        hint.hidden = true;
+      }, 2000);
+    }
+    if (button) button.style.opacity = '0.5';
   } else {
-    document.getElementById('img-button-through').setAttribute('src', './img/ui/near_me_disabled_white_48dp.svg');
+    if (hint) hint.hidden = true;
+    if (button) button.style.opacity = '1';
   }
 }
 

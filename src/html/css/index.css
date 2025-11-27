@@ -246,3 +246,28 @@ body:not(:hover) footer {
   opacity: 0;
   pointer-events: none;
 }
+
+/* Click Through Hint */
+.click-through-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 107, 107, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}

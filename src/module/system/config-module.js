@@ -261,7 +261,7 @@ function fixConfig1(config) {
       config.api.gptModel = '';
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig1 - fix custom API failed:', error.message);
   }
 
   try {
@@ -274,7 +274,7 @@ function fixConfig1(config) {
       }
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig1 - fix protocol failed:', error.message);
   }
 
   try {
@@ -283,7 +283,7 @@ function fixConfig1(config) {
       config.proxy.hostname = config.proxy.host;
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig1 - fix hostname failed:', error.message);
   }
 
   try {
@@ -292,7 +292,7 @@ function fixConfig1(config) {
       config.ai.customTranslationPrompt = config.api.kimiCustomPrompt;
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig1 - fix custom prompt failed:', error.message);
   }
 }
 
@@ -304,7 +304,7 @@ function fixConfig2(config) {
       config.translation.engine = defaultConfig.translation.engine;
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig2 - fix engine failed:', error.message);
   }
 
   try {
@@ -313,7 +313,7 @@ function fixConfig2(config) {
       config.translation.from = defaultConfig.translation.from;
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig2 - fix source failed:', error.message);
   }
 
   try {
@@ -322,7 +322,7 @@ function fixConfig2(config) {
       config.translation.fromPlayer = defaultConfig.translation.fromPlayer;
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig2 - fix player failed:', error.message);
   }
 
   try {
@@ -331,7 +331,7 @@ function fixConfig2(config) {
       config.translation.to = defaultConfig.translation.to;
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig2 - fix target failed:', error.message);
   }
 
   try {
@@ -344,7 +344,7 @@ function fixConfig2(config) {
       }
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig2 - fix text detect failed:', error.message);
   }
 
   try {
@@ -358,7 +358,7 @@ function fixConfig2(config) {
       config.api.googleVisionType = 'google-json';
     }
   } catch (error) {
-    error;
+    console.warn('[ConfigModule] fixConfig2 - fix google vision failed:', error.message);
   }
 }
 

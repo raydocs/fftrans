@@ -46,7 +46,7 @@ async function takeScreenshot(captureData) {
       try {
         myWindow.restore();
       } catch (error) {
-        error;
+        console.warn('[ImageModule] Failed to restore window:', error.message);
       }
     });
 

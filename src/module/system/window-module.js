@@ -500,13 +500,8 @@ function minimizeWindow(appWindow) {
 
 // restart window
 function restartWindow(windowName, data) {
-  try {
-    closeWindow(windowName);
-    throw null;
-  } catch (error) {
-    error;
-    createWindow(windowName, data);
-  }
+  closeWindow(windowName);
+  createWindow(windowName, data);
 }
 
 // close window
@@ -550,7 +545,7 @@ function forEachWindow(callback = () => { }) {
     try {
       callback(windowList[windowName]);
     } catch (error) {
-      error;
+      console.warn('[WindowModule] forEachWindow callback failed for', windowName, ':', error.message);
     }
   });
 }
