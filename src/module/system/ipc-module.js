@@ -461,7 +461,7 @@ function setRequestChannel() {
   ipcMain.on('version-check', (event) => {
     // get lastest version
     withTimeout(
-      requestModule.get('https://api.github.com/repos/winw1010/tataru-assistant/releases/latest'),
+      requestModule.get('https://api.github.com/repos/raydocs/fftrans/releases/latest'),
       15000,
       'Version check'
     )

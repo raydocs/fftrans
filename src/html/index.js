@@ -244,7 +244,7 @@ function setButton() {
 
   // update
   document.getElementById('img-button-update').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://github.com/winw1010/tataru-assistant/releases/latest/"');
+    ipcRenderer.send('execute-command', 'explorer "https://github.com/raydocs/fftrans/releases/latest/"');
   };
 
   // compact mode toggle
