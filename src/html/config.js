@@ -55,11 +55,14 @@ async function setView() {
   const compactMode = document.getElementById('checkbox-compact-mode').checked;
   document.getElementById('div-compact-settings').hidden = !compactMode;
 
-  // change UI text
-  setTimeout(async () => {
-    const config = await ipcRenderer.invoke('get-config');
-    document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
-  }, 500);
+  // change UI text (立即加载，然后移除 loading 类显示内容)
+  const config = await ipcRenderer.invoke('get-config');
+  document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
+  
+  // 语言加载完成，移除 loading 类显示内容
+  requestAnimationFrame(() => {
+    document.body.classList.remove('loading');
+  });
 }
 
 // Initialize prompt preset selector
@@ -179,21 +182,6 @@ function setEvent() {
     document.getElementById('div-compact-settings').hidden = !isCompact;
   };
 
-  // Sync TTS engine selectors (window page and translation page)
-  const ttsEngineWindow = document.getElementById('select-tts-engine');
-  const ttsEngineTranslation = document.getElementById('select-tts-engine-translation');
-
-  if (ttsEngineWindow && ttsEngineTranslation) {
-    // When window page selector changes, update translation page
-    ttsEngineWindow.onchange = () => {
-      ttsEngineTranslation.value = ttsEngineWindow.value;
-    };
-
-    // When translation page selector changes, update window page
-    ttsEngineTranslation.onchange = () => {
-      ttsEngineWindow.value = ttsEngineTranslation.value;
-    };
-  }
 }
 
 // set button
@@ -632,6 +620,17 @@ function setButton() {
       button.innerText = originalText;
     }
   };
+
+  // 折叠区域切换
+  const toggleMoreEngines = document.getElementById('toggle-more-engines');
+  const divMoreEngines = document.getElementById('div-more-engines');
+  if (toggleMoreEngines && divMoreEngines) {
+    toggleMoreEngines.onclick = () => {
+      const isHidden = divMoreEngines.hidden;
+      divMoreEngines.hidden = !isHidden;
+      toggleMoreEngines.classList.toggle('expanded', isHidden);
+    };
+  }
 }
 
 // read config
@@ -1021,11 +1020,6 @@ function getOptionList() {
       ['select-to', 'value'],
       ['translation', 'to'],
     ],
-    [
-      ['input-translation-timeout', 'value'],
-      ['translation', 'timeout'],
-    ],
-
     // api
     [
       ['select-google-vision-type', 'value'],
@@ -1139,12 +1133,7 @@ function getOptionList() {
       ['indexWindow', 'ttsEngine'],
     ],
 
-    // TTS Engine (translation page - same config)
-    [
-      ['select-tts-engine-translation', 'value'],
-      ['indexWindow', 'ttsEngine'],
-    ],
-
+    // AI settings
     [
       ['input-ai-chat-enable', 'checked'],
       ['ai', 'useChat'],

@@ -199,7 +199,6 @@ function getElementTextList() {
         'select-from': ['遊戲語言', '游戏语言', 'Game Language'],
         'select-from-player': ['隊伍語言', '队伍语言', 'Party Language'],
         'select-to': ['目標語言', '目标语言', 'Target Language'],
-        'input-translation-timeout': ['最大等待時間(秒)', '最大等待时间(秒)', 'Timeout(Sec)'],
 
         'select-google-vision-type': ['認證方式', '认证方式', 'Type'],
         'input-google-vision-api-key': ['API Key', 'API金钥', 'API Key'],

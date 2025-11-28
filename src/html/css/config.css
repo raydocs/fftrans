@@ -6,6 +6,18 @@ body {
   background-color: var(--bg-primary);
 }
 
+/* 初始隐藏内容，防止语言加载时闪烁 */
+body.loading main,
+body.loading .settings-tabs {
+  opacity: 0;
+}
+
+body:not(.loading) main,
+body:not(.loading) .settings-tabs {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
 /* ========== Header 样式 ========== */
 .settings-header {
   position: fixed;
@@ -481,4 +493,40 @@ main::-webkit-scrollbar-thumb:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* ========== 折叠区域样式 ========== */
+.settings-section.collapsible {
+  cursor: pointer;
+}
+
+.collapsible-header {
+  position: relative;
+}
+
+.collapse-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  transition: transform 0.3s ease;
+  opacity: 0.6;
+}
+
+.collapsible-header.expanded .collapse-icon {
+  transform: rotate(180deg);
+}
+
+.collapsible-content {
+  padding-left: 0;
+}
+
+.settings-section.nested {
+  margin-left: 0;
+  border-left: 3px solid var(--accent-color);
+  border-radius: 0 16px 16px 0;
+  opacity: 0.95;
+}
+
+.settings-section.nested .settings-section-header {
+  padding: 0.875rem 1.25rem;
 }

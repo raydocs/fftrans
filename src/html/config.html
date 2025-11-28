@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="css/enhancements.css" />
   </head>
 
-  <body>
+  <body class="loading">
     <!-- 新的 Header -->
     <header class="settings-header">
       <div class="header-left">
@@ -489,93 +489,10 @@
           </div>
         </div>
 
-        <!-- 高级设置分组 -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="4" y1="21" x2="4" y2="14"></line>
-              <line x1="4" y1="10" x2="4" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="3"></line>
-              <line x1="20" y1="21" x2="20" y2="16"></line>
-              <line x1="20" y1="12" x2="20" y2="3"></line>
-              <line x1="1" y1="14" x2="7" y2="14"></line>
-              <line x1="9" y1="8" x2="15" y2="8"></line>
-              <line x1="17" y1="16" x2="23" y2="16"></line>
-            </svg>
-            <span id="section-advanced">高级设置</span>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-tts-engine-translation">语音引擎</div>
-              <div class="setting-description" id="desc-tts-engine-translation">TTS 语音合成服务</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-tts-engine-translation" style="width: 160px">
-                <option value="google">Google TTS</option>
-                <option value="elevenlabs">ElevenLabs</option>
-                <option value="speechify">Speechify</option>
-              </select>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-translation-timeout">翻译超时</div>
-              <div class="setting-description" id="desc-translation-timeout">翻译请求的等待秒数</div>
-            </div>
-            <div class="setting-control">
-              <input class="form-control" type="number" id="input-translation-timeout" min="10" step="1" value="10" style="width: 80px" />
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- api page -->
       <div id="div-api" class="config-page" hidden>
-        <!-- Google Vision OCR -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            <span id="p-google-vision">Google Vision OCR</span>
-            <a href="#" id="a-set-google-vision" class="header-link">获取 API Key</a>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-google-vision-type">认证方式</div>
-              <div class="setting-description" id="desc-google-vision-type">选择 API Key 或 JSON 凭证</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-google-vision-type" style="width: 160px">
-                <option value="google-api-key">API Key</option>
-                <option value="google-json">JSON 凭证</option>
-              </select>
-            </div>
-          </div>
-          <div class="div-google-vision-type setting-item" id="div-google-api-key" hidden>
-            <div class="setting-info">
-              <div class="setting-label" id="label-google-vision-api-key">API Key</div>
-              <div class="setting-description" id="desc-google-vision-api-key">Google Cloud Vision API Key</div>
-            </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-google-vision-api-key" />
-              <input type="password" class="form-control" id="input-google-vision-api-key" />
-            </div>
-          </div>
-          <div class="div-google-vision-type setting-item" id="div-google-json" hidden>
-            <div class="setting-info">
-              <div class="setting-label">JSON 凭证文件</div>
-              <div class="setting-description">Google Cloud 服务账户凭证</div>
-            </div>
-            <div class="setting-control setting-control-group">
-              <button id="button-google-credential" class="btn btn-primary btn-sm">选择文件</button>
-              <button id="button-google-credential-view" class="btn btn-secondary btn-sm">查看</button>
-            </div>
-          </div>
-        </div>
-
         <!-- Gemini -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -671,21 +588,37 @@
           </div>
         </div>
 
-        <!-- Cohere -->
-        <div class="settings-section">
-          <div class="settings-section-header">
+        <!-- 更多引擎折叠区域 -->
+        <div class="settings-section collapsible">
+          <div class="settings-section-header collapsible-header" id="toggle-more-engines">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-              <path d="M2 17l10 5 10-5"></path>
-              <path d="M2 12l10 5 10-5"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            <span id="p-cohere">Cohere</span>
-            <a href="#" id="a-set-cohere-api" class="header-link">获取 API Key</a>
+            <span id="section-more-engines">更多翻译引擎</span>
+            <svg class="collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-cohere-token">API Token</div>
-              <div class="setting-description" id="desc-cohere-token">Cohere Dashboard Token</div>
+        </div>
+
+        <!-- 折叠内容 -->
+        <div id="div-more-engines" class="collapsible-content" hidden>
+          <!-- Cohere -->
+          <div class="settings-section nested">
+            <div class="settings-section-header">
+              <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+              </svg>
+              <span id="p-cohere">Cohere</span>
+              <a href="#" id="a-set-cohere-api" class="header-link">获取 API Key</a>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-cohere-token">API Token</div>
+                <div class="setting-description" id="desc-cohere-token">Cohere Dashboard Token</div>
             </div>
             <div class="setting-control api-key-control">
               <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-cohere-token" />
@@ -703,81 +636,126 @@
           </div>
         </div>
 
-        <!-- Kimi -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            </svg>
-            <span id="p-kimi">Kimi (Moonshot)</span>
-            <a href="#" id="a-set-kimi-api" class="header-link">获取 API Key</a>
+          <!-- Kimi -->
+          <div class="settings-section nested">
+            <div class="settings-section-header">
+              <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+              <span id="p-kimi">Kimi (Moonshot)</span>
+              <a href="#" id="a-set-kimi-api" class="header-link">获取 API Key</a>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-kimi-token">API Token</div>
+                <div class="setting-description" id="desc-kimi-token">Moonshot API Token</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-kimi-token" />
+                <input type="password" class="form-control" id="input-kimi-token" />
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-kimi-model">模型</div>
+                <div class="setting-description" id="desc-kimi-model">如 moonshot-v1-8k</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" id="input-kimi-model" style="width: 200px" />
+              </div>
+            </div>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-kimi-token">API Token</div>
-              <div class="setting-description" id="desc-kimi-token">Moonshot API Token</div>
-            </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-kimi-token" />
-              <input type="password" class="form-control" id="input-kimi-token" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-kimi-model">模型</div>
-              <div class="setting-description" id="desc-kimi-model">如 moonshot-v1-8k</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-kimi-model" style="width: 200px" />
-            </div>
-          </div>
-        </div>
 
-        <!-- 自定义 LLM API -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-              <rect x="9" y="9" width="6" height="6"></rect>
-              <line x1="9" y1="1" x2="9" y2="4"></line>
-              <line x1="15" y1="1" x2="15" y2="4"></line>
-              <line x1="9" y1="20" x2="9" y2="23"></line>
-              <line x1="15" y1="20" x2="15" y2="23"></line>
-              <line x1="20" y1="9" x2="23" y2="9"></line>
-              <line x1="20" y1="14" x2="23" y2="14"></line>
-              <line x1="1" y1="9" x2="4" y2="9"></line>
-              <line x1="1" y1="14" x2="4" y2="14"></line>
-            </svg>
-            <span id="p-llm-api">自定义 LLM API</span>
-            <a href="#" id="a-set-llm-api" class="header-link">文档</a>
+          <!-- 自定义 LLM API -->
+          <div class="settings-section nested">
+            <div class="settings-section-header">
+              <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                <rect x="9" y="9" width="6" height="6"></rect>
+                <line x1="9" y1="1" x2="9" y2="4"></line>
+                <line x1="15" y1="1" x2="15" y2="4"></line>
+                <line x1="9" y1="20" x2="9" y2="23"></line>
+                <line x1="15" y1="20" x2="15" y2="23"></line>
+                <line x1="20" y1="9" x2="23" y2="9"></line>
+                <line x1="20" y1="14" x2="23" y2="14"></line>
+                <line x1="1" y1="9" x2="4" y2="9"></line>
+                <line x1="1" y1="14" x2="4" y2="14"></line>
+              </svg>
+              <span id="p-llm-api">自定义 LLM API</span>
+              <a href="#" id="a-set-llm-api" class="header-link">文档</a>
+            </div>
+            <p id="p-ssl-warning" class="text-warning" style="padding: 0.5rem 1.25rem; margin: 0; font-size: 0.8rem;"></p>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-llm-api-url">API URL</div>
+                <div class="setting-description" id="desc-llm-api-url">OpenAI 兼容的 API 端点</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" id="input-llm-api-url" style="width: 280px" placeholder="https://api.example.com/v1" />
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-llm-api-key">API Key</div>
+                <div class="setting-description" id="desc-llm-api-key">API 访问密钥</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-llm-api-key" />
+                <input type="password" class="form-control" id="input-llm-api-key" />
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-llm-model">模型</div>
+                <div class="setting-description" id="desc-llm-model">要使用的模型名称</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" id="input-llm-model" style="width: 200px" />
+              </div>
+            </div>
           </div>
-          <p id="p-ssl-warning" class="text-warning" style="padding: 0.5rem 1.25rem; margin: 0; font-size: 0.8rem;"></p>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-llm-api-url">API URL</div>
-              <div class="setting-description" id="desc-llm-api-url">OpenAI 兼容的 API 端点</div>
+
+          <!-- Google Vision OCR -->
+          <div class="settings-section nested">
+            <div class="settings-section-header">
+              <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span id="p-google-vision">Google Vision OCR</span>
+              <a href="#" id="a-set-google-vision" class="header-link">获取 API Key</a>
             </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-llm-api-url" style="width: 280px" placeholder="https://api.example.com/v1" />
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-google-vision-type">认证方式</div>
+                <div class="setting-description" id="desc-google-vision-type">选择 API Key 或 JSON 凭证</div>
+              </div>
+              <div class="setting-control">
+                <select class="form-select" id="select-google-vision-type" style="width: 160px">
+                  <option value="google-api-key">API Key</option>
+                  <option value="google-json">JSON 凭证</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-llm-api-key">API Key</div>
-              <div class="setting-description" id="desc-llm-api-key">API 访问密钥</div>
+            <div class="div-google-vision-type setting-item" id="div-google-api-key" hidden>
+              <div class="setting-info">
+                <div class="setting-label" id="label-google-vision-api-key">API Key</div>
+                <div class="setting-description" id="desc-google-vision-api-key">Google Cloud Vision API Key</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-google-vision-api-key" />
+                <input type="password" class="form-control" id="input-google-vision-api-key" />
+              </div>
             </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-llm-api-key" />
-              <input type="password" class="form-control" id="input-llm-api-key" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-llm-model">模型</div>
-              <div class="setting-description" id="desc-llm-model">要使用的模型名称</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-llm-model" style="width: 200px" />
+            <div class="div-google-vision-type setting-item" id="div-google-json" hidden>
+              <div class="setting-info">
+                <div class="setting-label">JSON 凭证文件</div>
+                <div class="setting-description">Google Cloud 服务账户凭证</div>
+              </div>
+              <div class="setting-control setting-control-group">
+                <button id="button-google-credential" class="btn btn-primary btn-sm">选择文件</button>
+                <button id="button-google-credential-view" class="btn btn-secondary btn-sm">查看</button>
+              </div>
             </div>
           </div>
         </div>
