@@ -532,568 +532,434 @@
 
       <!-- api page -->
       <div id="div-api" class="config-page" hidden>
-        <!-- set google vision -->
-        <div class="row">
-          <div class="col-auto">
-            <p id="p-google-vision"></p>
+        <!-- Google Vision OCR -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span id="p-google-vision">Google Vision OCR</span>
+            <a href="#" id="a-set-google-vision" class="header-link">获取 API Key</a>
           </div>
-
-          <div class="col-auto">
-            <a href="#" id="a-set-google-vision"></a>
-          </div>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-google-vision-type"></label>
-          </div>
-          <div class="col-auto">
-            <select class="form-select" name="" id="select-google-vision-type">
-              <option value="google-api-key"></option>
-              <option value="google-json"></option>
-            </select>
-          </div>
-        </div>
-
-        <br />
-
-        <div class="div-google-vision-type" id="div-google-api-key" hidden>
-          <div class="row align-items-center">
-            <div class="col">
-              <label for="input-google-vision-api-key"></label>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-google-vision-type">认证方式</div>
+              <div class="setting-description" id="desc-google-vision-type">选择 API Key 或 JSON 凭证</div>
             </div>
-            <div class="col-auto">
-              <img
-                class="img-fluid img-visibility"
-                src="./img/ui/visibility_off_white_48dp.svg"
-                alt=""
-                style="width: 1.5rem"
-                id="img-visibility-google-vision-api-key"
-              />
-            </div>
-            <div class="col-auto">
-              <input type="password" class="form-control" name="" id="input-google-vision-api-key" />
+            <div class="setting-control">
+              <select class="form-select" id="select-google-vision-type" style="width: 160px">
+                <option value="google-api-key">API Key</option>
+                <option value="google-json">JSON 凭证</option>
+              </select>
             </div>
           </div>
-        </div>
-
-        <div class="div-google-vision-type" id="div-google-json" hidden>
-          <div class="row">
-            <div class="col-auto">
-              <button id="button-google-credential" class="btn btn-primary"></button>
-              <button id="button-google-credential-view" class="btn btn-secondary"></button>
+          <div class="div-google-vision-type setting-item" id="div-google-api-key" hidden>
+            <div class="setting-info">
+              <div class="setting-label" id="label-google-vision-api-key">API Key</div>
+              <div class="setting-description" id="desc-google-vision-api-key">Google Cloud Vision API Key</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-google-vision-api-key" />
+              <input type="password" class="form-control" id="input-google-vision-api-key" />
+            </div>
+          </div>
+          <div class="div-google-vision-type setting-item" id="div-google-json" hidden>
+            <div class="setting-info">
+              <div class="setting-label">JSON 凭证文件</div>
+              <div class="setting-description">Google Cloud 服务账户凭证</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <button id="button-google-credential" class="btn btn-primary btn-sm">选择文件</button>
+              <button id="button-google-credential-view" class="btn btn-secondary btn-sm">查看</button>
             </div>
           </div>
         </div>
 
-        <hr />
-
-        <!-- set Gemini -->
-        <div class="row">
-          <div class="col-auto">
-            <p id="p-gemini"></p>
+        <!-- Gemini -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span id="p-gemini">Google Gemini</span>
+            <a href="#" id="a-set-gemini-api" class="header-link">获取 API Key</a>
           </div>
-
-          <div class="col-auto">
-            <a href="#" id="a-set-gemini-api"></a>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-gemini-api-key">API Key</div>
+              <div class="setting-description" id="desc-gemini-api-key">Google AI Studio API Key</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-gemini-api-key" />
+              <input type="password" class="form-control" id="input-gemini-api-key" />
+            </div>
           </div>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-gemini-api-key"></label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-gemini-api-key"
-            />
-          </div>
-          <div class="col-auto">
-            <input type="password" class="form-control" name="" id="input-gemini-api-key" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-gemini-model"></label>
-          </div>
-          <div class="col-auto">
-            <input type="text" class="form-control" name="" id="input-gemini-model" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-gemini-model">模型</div>
+              <div class="setting-description" id="desc-gemini-model">如 gemini-1.5-flash</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-gemini-model" style="width: 200px" />
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <!-- set GPT -->
-        <div class="row">
-          <div class="col-auto">
-            <p id="p-chat-gpt"></p>
+        <!-- GPT -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <circle cx="15.5" cy="8.5" r="1.5"></circle>
+              <path d="M9 15h6"></path>
+            </svg>
+            <span id="p-chat-gpt">OpenAI GPT</span>
+            <a href="#" id="a-set-gpt-api" class="header-link">获取 API Key</a>
           </div>
-
-          <div class="col-auto">
-            <a href="#" id="a-set-gpt-api"></a>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-gpt-api-key">API Key</div>
+              <div class="setting-description" id="desc-gpt-api-key">OpenAI Platform API Key</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-gpt-api-key" />
+              <input type="password" class="form-control" id="input-gpt-api-key" />
+            </div>
           </div>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-gpt-api-key"></label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-gpt-api-key"
-            />
-          </div>
-          <div class="col-auto">
-            <input type="password" class="form-control" name="" id="input-gpt-api-key" />
-          </div>
-        </div>
-
-        <br />
-
-        <!--
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-gpt-model"></label>
-          </div>
-          <div class="col-auto">
-            <select class="form-select" name="" id="select-gpt-model"></select>
-          </div>
-        </div>
-        -->
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-gpt-model"></label>
-          </div>
-          <div class="col-auto">
-            <input type="text" class="form-control" name="" id="input-gpt-model" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-gpt-model">模型</div>
+              <div class="setting-description" id="desc-gpt-model">如 gpt-4o-mini</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-gpt-model" style="width: 200px" />
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <!-- set Cohere -->
-        <div class="row">
-          <div class="col-auto">
-            <p id="p-cohere"></p>
+        <!-- OpenRouter -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span id="p-openrouter">OpenRouter</span>
+            <a href="#" id="a-set-openrouter-api" class="header-link">获取 API Key</a>
           </div>
-
-          <div class="col-auto">
-            <a href="#" id="a-set-cohere-api"></a>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-openrouter-api-key">API Key</div>
+              <div class="setting-description" id="desc-openrouter-api-key">OpenRouter API Key</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-openrouter-api-key" />
+              <input type="password" class="form-control" id="input-openrouter-api-key" />
+            </div>
           </div>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-cohere-token"></label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-cohere-token"
-            />
-          </div>
-          <div class="col-auto">
-            <input type="password" class="form-control" name="" id="input-cohere-token" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-cohere-model"></label>
-          </div>
-          <div class="col-auto">
-            <input type="text" class="form-control" name="" id="input-cohere-model" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-openrouter-model">模型</div>
+              <div class="setting-description" id="desc-openrouter-model">如 google/gemini-flash-1.5</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-openrouter-model" style="width: 220px" />
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <!-- set Kimi -->
-        <div class="row">
-          <div class="col-auto">
-            <p id="p-kimi"></p>
+        <!-- Cohere -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <span id="p-cohere">Cohere</span>
+            <a href="#" id="a-set-cohere-api" class="header-link">获取 API Key</a>
           </div>
-
-          <div class="col-auto">
-            <a href="#" id="a-set-kimi-api"></a>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-cohere-token">API Token</div>
+              <div class="setting-description" id="desc-cohere-token">Cohere Dashboard Token</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-cohere-token" />
+              <input type="password" class="form-control" id="input-cohere-token" />
+            </div>
           </div>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-kimi-token"></label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-kimi-token"
-            />
-          </div>
-          <div class="col-auto">
-            <input type="password" class="form-control" name="" id="input-kimi-token" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-kimi-model"></label>
-          </div>
-          <div class="col-auto">
-            <input type="text" class="form-control" name="" id="input-kimi-model" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-cohere-model">模型</div>
+              <div class="setting-description" id="desc-cohere-model">如 command-r-plus</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-cohere-model" style="width: 200px" />
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <!-- set OpenRouter -->
-        <div class="row">
-          <div class="col-auto">
-            <p id="p-openrouter"></p>
+        <!-- Kimi -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+            <span id="p-kimi">Kimi (Moonshot)</span>
+            <a href="#" id="a-set-kimi-api" class="header-link">获取 API Key</a>
           </div>
-
-          <div class="col-auto">
-            <a href="#" id="a-set-openrouter-api"></a>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-kimi-token">API Token</div>
+              <div class="setting-description" id="desc-kimi-token">Moonshot API Token</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-kimi-token" />
+              <input type="password" class="form-control" id="input-kimi-token" />
+            </div>
           </div>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-openrouter-api-key"></label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-openrouter-api-key"
-            />
-          </div>
-          <div class="col-auto">
-            <input type="password" class="form-control" name="" id="input-openrouter-api-key" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-openrouter-model"></label>
-          </div>
-          <div class="col-auto">
-            <input type="text" class="form-control" name="" id="input-openrouter-model" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-kimi-model">模型</div>
+              <div class="setting-description" id="desc-kimi-model">如 moonshot-v1-8k</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-kimi-model" style="width: 200px" />
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <!-- set OpenAI API -->
-        <div class="row">
-          <div class="col-auto">
-            <p id="p-llm-api"></p>
+        <!-- 自定义 LLM API -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+              <rect x="9" y="9" width="6" height="6"></rect>
+              <line x1="9" y1="1" x2="9" y2="4"></line>
+              <line x1="15" y1="1" x2="15" y2="4"></line>
+              <line x1="9" y1="20" x2="9" y2="23"></line>
+              <line x1="15" y1="20" x2="15" y2="23"></line>
+              <line x1="20" y1="9" x2="23" y2="9"></line>
+              <line x1="20" y1="14" x2="23" y2="14"></line>
+              <line x1="1" y1="9" x2="4" y2="9"></line>
+              <line x1="1" y1="14" x2="4" y2="14"></line>
+            </svg>
+            <span id="p-llm-api">自定义 LLM API</span>
+            <a href="#" id="a-set-llm-api" class="header-link">文档</a>
           </div>
-
-          <div class="col-auto">
-            <a href="#" id="a-set-llm-api"></a>
+          <p id="p-ssl-warning" class="text-warning" style="padding: 0.5rem 1.25rem; margin: 0; font-size: 0.8rem;"></p>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-llm-api-url">API URL</div>
+              <div class="setting-description" id="desc-llm-api-url">OpenAI 兼容的 API 端点</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-llm-api-url" style="width: 280px" placeholder="https://api.example.com/v1" />
+            </div>
           </div>
-        </div>
-
-        <p id="p-ssl-warning" class="text-warning"></p>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-llm-api-url"></label>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-llm-api-key">API Key</div>
+              <div class="setting-description" id="desc-llm-api-key">API 访问密钥</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-llm-api-key" />
+              <input type="password" class="form-control" id="input-llm-api-key" />
+            </div>
           </div>
-          <div class="col-auto">
-            <input class="form-control" type="text" name="" id="input-llm-api-url" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-llm-api-key"></label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-llm-api-key"
-            />
-          </div>
-          <div class="col-auto">
-            <input type="password" class="form-control" name="" id="input-llm-api-key" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-llm-model"></label>
-          </div>
-          <div class="col-auto">
-            <input class="form-control" type="text" name="" id="input-llm-model" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-llm-model">模型</div>
+              <div class="setting-description" id="desc-llm-model">要使用的模型名称</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-llm-model" style="width: 200px" />
+            </div>
           </div>
         </div>
 
-        <br />
-        <hr />
-        <br />
-
-        <!-- set Speechify TTS -->
-        <div class="row align-items-center">
-          <div class="col">
-            <p id="p-speechify-tts">Speechify TTS 设置</p>
+        <!-- Speechify TTS -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span id="p-speechify-tts">Speechify TTS</span>
+            <a href="#" id="a-open-speechify-guide" class="header-link">配置指南</a>
+            <button type="button" class="btn btn-primary btn-sm header-btn" id="btn-test-speechify">测试</button>
           </div>
-          <div class="col-auto">
-            <a href="#" id="a-open-speechify-guide" class="link-primary">查看配置指南</a>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Bearer Token</div>
+              <div class="setting-description">从 Speechify 获取的认证令牌</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-speechify-bearer-token" />
+              <textarea class="form-control token-textarea" id="input-speechify-bearer-token" rows="2" placeholder="eyJhbGciOiJSUzI1NiIs..."></textarea>
+            </div>
           </div>
-          <div class="col-auto">
-            <button type="button" class="btn btn-primary btn-sm" id="btn-test-speechify">测试配置</button>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">语音</div>
+              <div class="setting-description">选择 TTS 语音角色</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select voice-select" id="select-speechify-voice-id">
+                <optgroup label="女性语音 (推荐)">
+                  <option value="gwyneth">Gwyneth - 名人风格</option>
+                  <option value="joanna">Joanna - 清晰自然</option>
+                  <option value="olivia">Olivia - 游戏对话</option>
+                </optgroup>
+                <optgroup label="女性语音">
+                  <option value="ivy">Ivy</option>
+                  <option value="salli">Salli</option>
+                  <option value="kimberly">Kimberly</option>
+                  <option value="emma">Emma</option>
+                  <option value="amy">Amy</option>
+                  <option value="nicole">Nicole</option>
+                  <option value="aria">Aria</option>
+                </optgroup>
+                <optgroup label="男性语音 (推荐)">
+                  <option value="snoop">Snoop - 独特风格</option>
+                  <option value="mrbeast">MrBeast - 年轻活力</option>
+                  <option value="matthew">Matthew - 游戏旁白</option>
+                </optgroup>
+                <optgroup label="男性语音">
+                  <option value="henry">Henry</option>
+                  <option value="justin">Justin</option>
+                  <option value="joey">Joey</option>
+                  <option value="stephen">Stephen</option>
+                  <option value="brian">Brian</option>
+                  <option value="russell">Russell</option>
+                </optgroup>
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-voice">试听</button>
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-speechify-bearer-token">Bearer Token</label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-speechify-bearer-token"
-            />
-          </div>
-          <div class="col-auto">
-            <textarea type="password" class="form-control" name="" id="input-speechify-bearer-token" rows="3" style="width: 500px" placeholder="eyJhbGciOiJSUzI1NiIs..."></textarea>
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-speechify-voice-id">语音选择</label>
-          </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-speechify-voice-id" style="width: 300px">
-              <optgroup label="👩 女性语音 (名人)">
-                <option value="gwyneth">Gwyneth Paltrow (gwyneth) - 推荐⭐</option>
-              </optgroup>
-              <optgroup label="👩 女性语音 (标准)">
-                <option value="joanna">Joanna - 清晰自然</option>
-                <option value="olivia">Olivia - 适合游戏对话</option>
-                <option value="ivy">Ivy</option>
-                <option value="salli">Salli</option>
-                <option value="kimberly">Kimberly</option>
-                <option value="emma">Emma</option>
-                <option value="amy">Amy</option>
-                <option value="nicole">Nicole</option>
-                <option value="aria">Aria</option>
-              </optgroup>
-              <optgroup label="👨 男性语音 (名人)">
-                <option value="snoop">Snoop Dogg (snoop) - 独特风格⭐</option>
-                <option value="mrbeast">MrBeast (mrbeast) - 年轻活力⭐</option>
-              </optgroup>
-              <optgroup label="👨 男性语音 (标准)">
-                <option value="matthew">Matthew - 适合游戏旁白</option>
-                <option value="henry">Henry</option>
-                <option value="justin">Justin</option>
-                <option value="joey">Joey</option>
-                <option value="stephen">Stephen</option>
-                <option value="brian">Brian</option>
-                <option value="russell">Russell</option>
-              </optgroup>
-            </select>
-          </div>
-          <div class="col-auto">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-voice">🎧 试听语音</button>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">音频格式</div>
+              <div class="setting-description">输出音频的格式</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-speechify-audio-format" style="width: 120px">
+                <option value="mp3" selected>MP3</option>
+                <option value="ogg">OGG</option>
+                <option value="wav">WAV</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-speechify-audio-format">音频格式</label>
+        <!-- ElevenLabs TTS -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <span id="p-elevenlabs-tts">ElevenLabs Reader</span>
+            <button type="button" class="btn btn-primary btn-sm header-btn" id="btn-test-elevenlabs">测试</button>
           </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-speechify-audio-format">
-              <option value="mp3" selected>MP3 - 推荐⭐</option>
-              <option value="ogg">OGG</option>
-              <option value="wav">WAV</option>
-            </select>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Bearer Token</div>
+              <div class="setting-description">ElevenLabs Reader 认证令牌</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-bearer-token" />
+              <textarea class="form-control token-textarea" id="input-elevenlabs-bearer-token" rows="2" placeholder="eyJhbGciOiJSUzI1NiIs..."></textarea>
+            </div>
           </div>
-        </div>
-
-        <br />
-        <hr />
-        <br />
-
-        <!-- set ElevenLabs TTS -->
-        <div class="row align-items-center">
-          <div class="col">
-            <p id="p-elevenlabs-tts">ElevenLabs Reader 设置</p>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Refresh Token</div>
+              <div class="setting-description">Firebase Refresh Token (自动刷新)</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
+              <textarea class="form-control token-textarea" id="input-elevenlabs-refresh-token" rows="2" placeholder="长效 Refresh Token"></textarea>
+            </div>
           </div>
-          <div class="col-auto">
-            <button type="button" class="btn btn-primary btn-sm" id="btn-test-elevenlabs">测试配置</button>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">App Check Token</div>
+              <div class="setting-description">xi-app-check-token (用于 Reader WS)</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-app-check-token" />
+              <textarea class="form-control token-textarea" id="input-elevenlabs-app-check-token" rows="2" placeholder="xi-app-check-token JWT"></textarea>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">提取</button>
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-elevenlabs-bearer-token">Bearer Token</label>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Device ID</div>
+              <div class="setting-description">可选，未填写将自动生成</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-elevenlabs-device-id" style="width: 280px" placeholder="UUID 格式" />
+            </div>
           </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-elevenlabs-bearer-token"
-            />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">语音</div>
+              <div class="setting-description">选择 TTS 语音角色</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select voice-select" id="select-elevenlabs-voice-id">
+                <optgroup label="推荐">
+                  <option value="nPczCjzI2devNBz1zQrb">Brian - 专业旁白</option>
+                  <option value="EXAVITQu4vr4xnSDxMaL">Sarah - 年轻女声</option>
+                </optgroup>
+                <optgroup label="女性语音">
+                  <option value="Xb7hH8MSUJpSbSDYk0k2">Alice - 英式</option>
+                  <option value="pFZP5JQG7iQjIQuC4Bku">Lily - 专业</option>
+                  <option value="XrExE9yKIg1WjnnlVkGX">Matilda - 美式</option>
+                  <option value="cgSgspJ2msm6clMCkdW9">Jessica - 年轻</option>
+                  <option value="FGY2WhTYpPnrIDTdsKH5">Laura - 活力</option>
+                </optgroup>
+                <optgroup label="男性语音">
+                  <option value="onwK4e9ZLuTAKqWW03F9">Daniel - 英式</option>
+                  <option value="JBFqnCBsd6RMkjVDRZzb">George - 温暖</option>
+                  <option value="CwhRBWXzGAHq8TQ4Fs17">Roger - 美式</option>
+                  <option value="cjVigY5qzO86Huf0OWal">Eric - 中年</option>
+                  <option value="iP95p4xoKVk53GoZ742B">Chris - 自然</option>
+                  <option value="pqHfZKP75CvOlQylNhV4">Bill - 年长</option>
+                  <option value="TX3LPaxmHKxFdv7VOQHJ">Liam - 年轻</option>
+                  <option value="bIHbv24MWmeRgasZH58o">Will - 轻松</option>
+                </optgroup>
+                <optgroup label="其他">
+                  <option value="2EiwWnXFnvU5JabPnv8n">Clyde - 动画</option>
+                  <option value="IKne3meq5aSn9XLyUdCD">Charlie - 澳式</option>
+                  <option value="SOYHLrjzK2X1ezoPC6cr">Harry - 战士</option>
+                  <option value="SAz9YHcvj6GT2YYXdXww">River - 中性</option>
+                  <option value="N2lVS1w4EtoT3dr4eOWO">Callum - 独特</option>
+                </optgroup>
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-elevenlabs-voice">试听</button>
+            </div>
           </div>
-          <div class="col-auto">
-            <textarea type="password" class="form-control" name="" id="input-elevenlabs-bearer-token" rows="3" style="width: 500px" placeholder="eyJhbGciOiJSUzI1NiIs..."></textarea>
-          </div>
-        </div>
-
-        <div class="row align-items-center mt-3">
-          <div class="col">
-            <label for="input-elevenlabs-refresh-token">Firebase Refresh Token（自动刷新 Bearer Token）</label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-elevenlabs-refresh-token"
-            />
-          </div>
-          <div class="col-auto">
-            <textarea type="password" class="form-control" name="" id="input-elevenlabs-refresh-token" rows="3" style="width: 500px" placeholder="长效 Firebase Refresh Token"></textarea>
-          </div>
-        </div>
-
-        <div class="row align-items-center mt-3">
-          <div class="col">
-            <label for="input-elevenlabs-app-check-token">Firebase App Check Token（xi-app-check-token，用于 Reader WS）</label>
-          </div>
-          <div class="col-auto">
-            <img
-              class="img-fluid img-visibility"
-              src="./img/ui/visibility_off_white_48dp.svg"
-              alt=""
-              style="width: 1.5rem"
-              id="img-visibility-elevenlabs-app-check-token"
-            />
-          </div>
-          <div class="col-auto">
-            <textarea type="password" class="form-control" name="" id="input-elevenlabs-app-check-token" rows="2" style="width: 500px" placeholder="xi-app-check-token JWT"></textarea>
-          </div>
-          <div class="col-auto">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">一键提取（缓存/flows）</button>
-          </div>
-        </div>
-
-        <div class="row align-items-center mt-3">
-          <div class="col">
-            <label for="input-elevenlabs-device-id">Device ID（可选，UUID）</label>
-            <p class="text-secondary mb-0" style="font-size: 0.9rem">未填写将自动生成并缓存</p>
-          </div>
-          <div class="col-auto">
-            <input type="text" class="form-control" name="" id="input-elevenlabs-device-id" style="width: 250px" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-elevenlabs-voice-id">语音选择</label>
-          </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-elevenlabs-voice-id" style="width: 300px">
-              <optgroup label="推荐语音">
-                <option value="nPczCjzI2devNBz1zQrb">Brian - 中年男声，专业旁白 ⭐</option>
-                <option value="EXAVITQu4vr4xnSDxMaL">Sarah - 年轻女声，专业自信 ⭐</option>
-              </optgroup>
-              <optgroup label="女性语音">
-                <option value="Xb7hH8MSUJpSbSDYk0k2">Alice - 英式女声</option>
-                <option value="pFZP5JQG7iQjIQuC4Bku">Lily - 英式女声，专业</option>
-                <option value="XrExE9yKIg1WjnnlVkGX">Matilda - 美式女声</option>
-                <option value="cgSgspJ2msm6clMCkdW9">Jessica - 年轻美式女声</option>
-                <option value="FGY2WhTYpPnrIDTdsKH5">Laura - 活力女声</option>
-              </optgroup>
-              <optgroup label="男性语音">
-                <option value="onwK4e9ZLuTAKqWW03F9">Daniel - 英式男声，专业</option>
-                <option value="JBFqnCBsd6RMkjVDRZzb">George - 英式男声，温暖</option>
-                <option value="CwhRBWXzGAHq8TQ4Fs17">Roger - 美式男声</option>
-                <option value="cjVigY5qzO86Huf0OWal">Eric - 中年男声</option>
-                <option value="iP95p4xoKVk53GoZ742B">Chris - 自然男声</option>
-                <option value="pqHfZKP75CvOlQylNhV4">Bill - 年长男声</option>
-                <option value="TX3LPaxmHKxFdv7VOQHJ">Liam - 年轻男声</option>
-                <option value="bIHbv24MWmeRgasZH58o">Will - 轻松男声</option>
-              </optgroup>
-              <optgroup label="其他语音">
-                <option value="2EiwWnXFnvU5JabPnv8n">Clyde - 动画角色</option>
-                <option value="IKne3meq5aSn9XLyUdCD">Charlie - 澳式男声</option>
-                <option value="SOYHLrjzK2X1ezoPC6cr">Harry - 战士风格</option>
-                <option value="SAz9YHcvj6GT2YYXdXww">River - 中性</option>
-                <option value="N2lVS1w4EtoT3dr4eOWO">Callum - 独特风格</option>
-              </optgroup>
-            </select>
-          </div>
-          <div class="col-auto">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-elevenlabs-voice">🎧 试听语音</button>
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-elevenlabs-model">模型选择</label>
-          </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-elevenlabs-model">
-              <option value="eleven_turbo_v2_5" selected>Turbo v2.5 (推荐，快速)</option>
-              <option value="eleven_multilingual_v2">Multilingual v2 (多语言)</option>
-              <option value="eleven_monolingual_v1">Monolingual v1 (英语专用)</option>
-            </select>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">模型</div>
+              <div class="setting-description">TTS 模型版本</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-elevenlabs-model" style="width: 200px">
+                <option value="eleven_turbo_v2_5" selected>Turbo v2.5 (推荐)</option>
+                <option value="eleven_multilingual_v2">Multilingual v2</option>
+                <option value="eleven_monolingual_v1">Monolingual v1</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
