@@ -31,447 +31,501 @@
   </head>
 
   <body>
-    <header class="container-fluid p-2">
-      <div class="row align-items-center">
-        <div class="col-auto">
+    <!-- 新的 Header -->
+    <header class="settings-header">
+      <div class="header-left">
+        <div class="header-drag">
           <img id="img-button-drag" class="img-button" src="./img/ui/open_with_white_48dp.svg" />
+          <h1 class="settings-title" id="span-title-config">Settings</h1>
         </div>
-        <div class="col">
-          <span id="span-title-config"></span>
-        </div>
-        <div class="col-auto">
-          <img id="img-button-close" class="img-button" src="./img/ui/close_white_48dp.svg" />
-        </div>
+        <p class="settings-subtitle" id="settings-subtitle">Configure FFTrans preferences</p>
       </div>
-
-      <div class="row my-2">
-        <div class="col-auto">
-          <select class="form-select" name="" id="select-option">
-            <option value="#option-layout" disabled></option>
-            <option value="div-window" selected></option>
-            <option value="div-font"></option>
-            <option value="#option-translation" disabled></option>
-            <option value="div-channel"></option>
-            <option value="div-translation"></option>
-            <option value="#option-api" disabled></option>
-            <option value="div-api"></option>
-            <option value="div-ai"></option>
-            <option value="#option-system" disabled></option>
-            <option value="div-system"></option>
-            <option value="div-proxy"></option>
-            <option value="div-about"></option>
-          </select>
-        </div>
-
-        <div class="col-auto">
-          <button id="button-save-config" class="btn btn-primary"></button>
-          <button id="button-save-default-config" class="btn btn-secondary"></button>
-        </div>
+      <div class="header-right">
+        <button id="button-save-config" class="btn-save">
+          <svg class="btn-save-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span id="btn-save-text">Save Settings</span>
+        </button>
+        <img id="img-button-close" class="img-button" src="./img/ui/close_white_48dp.svg" />
       </div>
     </header>
+
+    <!-- 水平标签导航栏 -->
+    <nav class="settings-tabs">
+      <button class="tab-item active" data-target="div-window" id="tab-window">Window</button>
+      <button class="tab-item" data-target="div-font" id="tab-font">Font</button>
+      <button class="tab-item" data-target="div-channel" id="tab-channel">Channel</button>
+      <button class="tab-item" data-target="div-translation" id="tab-translation">Translation</button>
+      <button class="tab-item" data-target="div-api" id="tab-api">API</button>
+      <button class="tab-item" data-target="div-ai" id="tab-ai">AI</button>
+      <button class="tab-item" data-target="div-system" id="tab-system">System</button>
+      <button class="tab-item" data-target="div-proxy" id="tab-proxy">Proxy</button>
+      <button class="tab-item" data-target="div-about" id="tab-about">About</button>
+    </nav>
+
+    <!-- 兼容旧代码的隐藏 select -->
+    <select class="form-select" name="" id="select-option" hidden>
+      <option value="div-window" selected></option>
+      <option value="div-font"></option>
+      <option value="div-channel"></option>
+      <option value="div-translation"></option>
+      <option value="div-api"></option>
+      <option value="div-ai"></option>
+      <option value="div-system"></option>
+      <option value="div-proxy"></option>
+      <option value="div-about"></option>
+    </select>
 
     <main class="container-fluid">
       <!-- window page -->
       <div id="div-window" class="config-page">
-        <!-- always on top -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-top" />
-              <label class="form-check-label" for="checkbox-top"></label>
+        <!-- 窗口行为分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+            </svg>
+            <span id="section-window-behavior">窗口行为</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-checkbox-top">置顶显示</div>
+              <div class="setting-description" id="desc-checkbox-top">窗口始终显示在最前面</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-top" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-checkbox-focusable">可聚焦</div>
+              <div class="setting-description" id="desc-checkbox-focusable">允许窗口获取焦点</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-focusable" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-checkbox-min-size">最小尺寸</div>
+              <div class="setting-description" id="desc-checkbox-min-size">限制窗口最小大小</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-min-size" />
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- focusable -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-focusable" />
-              <label class="form-check-label" for="checkbox-focusable"></label>
+        <!-- 紧凑模式分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <span id="section-compact-mode">紧凑模式</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-checkbox-compact-mode">紧凑模式</div>
+              <div class="setting-description" id="desc-checkbox-compact-mode">适用于掌机设备的小窗口模式</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-compact-mode" />
+            </div>
+          </div>
+          <div id="div-compact-settings" class="setting-nested" hidden>
+            <div class="setting-nested-row">
+              <span class="setting-nested-label" id="label-compact-width">宽度</span>
+              <div class="setting-nested-control">
+                <input class="form-control" type="number" id="input-compact-width" min="200" max="800" step="10" value="320" />
+              </div>
+            </div>
+            <div class="setting-nested-row">
+              <span class="setting-nested-label" id="label-compact-height">高度</span>
+              <div class="setting-nested-control">
+                <input class="form-control" type="number" id="input-compact-height" min="150" max="600" step="10" value="200" />
+              </div>
+            </div>
+            <div class="setting-nested-row">
+              <span></span>
+              <button id="button-apply-compact-size" class="btn btn-secondary btn-sm">应用尺寸</button>
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- min size -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-min-size" />
-              <label class="form-check-label" for="checkbox-min-size"></label>
+        <!-- 显示设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span id="section-display">显示设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-checkbox-hide-button">隐藏按钮</div>
+              <div class="setting-description" id="desc-checkbox-hide-button">隐藏窗口控制按钮</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-hide-button" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-checkbox-hide-dialog">自动隐藏对话</div>
+              <div class="setting-description" id="desc-checkbox-hide-dialog">超时后自动隐藏对话框</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-hide-dialog" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-hide-dialog-timeout">隐藏超时</div>
+              <div class="setting-description" id="desc-hide-dialog-timeout">对话框自动隐藏的等待秒数</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="number" id="input-hide-dialog-timeout" min="1" step="1" value="15" style="width: 80px" />
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- compact mode (for handheld devices) -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-compact-mode" />
-              <label class="form-check-label" for="checkbox-compact-mode"></label>
+        <!-- 背景样式分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="4"></circle>
+              <line x1="21.17" y1="8" x2="12" y2="8"></line>
+              <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
+              <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
+            </svg>
+            <span id="section-background">背景样式</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-background-color">背景颜色</div>
+              <div class="setting-description" id="desc-background-color">设置窗口背景色</div>
+            </div>
+            <div class="setting-control">
+              <span id="span-background-color" class="setting-value"></span>
+              <input type="color" class="form-control form-control-color" id="input-background-color" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-background-transparency">背景透明度</div>
+              <div class="setting-description" id="desc-background-transparency">调整背景的透明程度</div>
+            </div>
+            <div class="setting-control">
+              <span id="span-background-transparency" class="setting-value"></span>
+              <input type="range" class="form-range" min="0" max="255" id="input-background-transparency" style="width: 120px" />
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- compact mode size settings -->
-        <div id="div-compact-settings" class="ms-3" hidden>
-          <div class="row align-items-center mb-2">
-            <div class="col">
-              <label for="input-compact-width"></label>
-            </div>
-            <div class="col-4">
-              <input class="form-control" type="number" id="input-compact-width" min="200" max="800" step="10" value="320" />
-            </div>
+        <!-- 语音设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span id="section-speech">语音设置</span>
           </div>
-
-          <div class="row align-items-center mb-2">
-            <div class="col">
-              <label for="input-compact-height"></label>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-speech-speed">语音速度</div>
+              <div class="setting-description" id="desc-speech-speed">TTS 播放速度倍率</div>
             </div>
-            <div class="col-4">
-              <input class="form-control" type="number" id="input-compact-height" min="150" max="600" step="10" value="200" />
+            <div class="setting-control">
+              <span id="span-speech-speed" class="setting-value"></span>
+              <input type="range" class="form-range" min="0.1" max="3" step="0.1" id="input-speech-speed" style="width: 120px" />
             </div>
           </div>
-
-          <div class="row">
-            <div class="col">
-              <button id="button-apply-compact-size" class="btn btn-secondary btn-sm"></button>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-tts-engine">语音引擎</div>
+              <div class="setting-description" id="desc-tts-engine">选择 TTS 语音合成引擎</div>
             </div>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- hide button -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-hide-button" />
-              <label class="form-check-label" for="checkbox-hide-button"></label>
+            <div class="setting-control">
+              <select class="form-select" id="select-tts-engine" style="width: 160px">
+                <option value="google">Google TTS</option>
+                <option value="elevenlabs">ElevenLabs</option>
+                <option value="speechify">Speechify</option>
+              </select>
             </div>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- hide dialog -->
-        <div class="row">
-          <div class="col-auto">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-hide-dialog" />
-              <label class="form-check-label" for="checkbox-hide-dialog"></label>
-            </div>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- hide dialog timeout -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-hide-dialog-timeout"></label>
-          </div>
-          <div class="col-4">
-            <input class="form-control" type="number" id="input-hide-dialog-timeout" min="1" step="1" value="15" />
-          </div>
-        </div>
-
-        <br />
-
-        <!-- background color -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-background-color"></label>
-          </div>
-          <div class="col-auto">
-            <span id="span-background-color"></span>
-          </div>
-          <div class="col-auto">
-            <input type="color" class="form-control form-control-color" id="input-background-color" />
-          </div>
-        </div>
-
-        <br />
-
-        <!-- background transparency -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-background-transparency"></label>
-          </div>
-          <div class="col-auto">
-            <span id="span-background-transparency"></span>
-          </div>
-          <div class="col-auto">
-            <input type="range" class="form-range" min="0" max="255" id="input-background-transparency" />
-          </div>
-        </div>
-
-        <br />
-
-        <!-- speech speed -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-speech-speed"></label>
-          </div>
-          <div class="col-auto">
-            <span id="span-speech-speed"></span>
-          </div>
-          <div class="col-auto">
-            <input type="range" class="form-range" min="0.1" max="3" step="0.1" id="input-speech-speed" />
-          </div>
-        </div>
-
-        <br />
-
-        <!-- TTS engine selection -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-tts-engine">语音引擎</label>
-          </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-tts-engine">
-              <option value="google">Google TTS</option>
-              <option value="elevenlabs">ElevenLabs Reader</option>
-              <option value="speechify">Speechify</option>
-            </select>
           </div>
         </div>
       </div>
 
       <!-- font page -->
       <div id="div-font" class="config-page" hidden>
-        <!-- select font weight -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-font-weight"></label>
+        <!-- 文字设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 7 4 4 20 4 20 7"></polyline>
+              <line x1="9" y1="20" x2="15" y2="20"></line>
+              <line x1="12" y1="4" x2="12" y2="20"></line>
+            </svg>
+            <span id="section-font-text">文字设置</span>
           </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-font-weight">
-              <option value="normal" selected></option>
-              <option value="bold"></option>
-            </select>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-font-weight">字体粗细</div>
+              <div class="setting-description" id="desc-font-weight">设置文字的粗细程度</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-font-weight" style="width: 120px">
+                <option value="normal" selected></option>
+                <option value="bold"></option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <!-- font size -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-font-size"></label>
-          </div>
-          <div class="col-4">
-            <input type="number" class="form-control" min="0" value="1" step="0.1" id="input-font-size" />
-          </div>
-        </div>
-
-        <br />
-
-        <!-- dialog space -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-dialog-spacing"></label>
-          </div>
-          <div class="col-4">
-            <input type="number" class="form-control" min="0" value="1" step="0.1" id="input-dialog-spacing" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-font-size">字体大小</div>
+              <div class="setting-description" id="desc-font-size">设置文字的显示大小</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control" min="0" value="1" step="0.1" id="input-font-size" style="width: 80px" />
+            </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- dialog radius -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-dialog-radius"></label>
+        <!-- 对话框样式分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span id="section-dialog-style">对话框样式</span>
           </div>
-          <div class="col-4">
-            <input type="number" class="form-control" min="0" value="0" step="0.1" id="input-dialog-radius" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-dialog-spacing">对话间距</div>
+              <div class="setting-description" id="desc-dialog-spacing">对话框之间的间隔距离</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control" min="0" value="1" step="0.1" id="input-dialog-spacing" style="width: 80px" />
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <!-- dialog color -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-dialog-color"></label>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-dialog-radius">圆角大小</div>
+              <div class="setting-description" id="desc-dialog-radius">对话框的圆角半径</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control" min="0" value="0" step="0.1" id="input-dialog-radius" style="width: 80px" />
+            </div>
           </div>
-          <div class="col-auto">
-            <span id="span-dialog-color"></span>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-dialog-color">对话框颜色</div>
+              <div class="setting-description" id="desc-dialog-color">设置对话框的背景色</div>
+            </div>
+            <div class="setting-control">
+              <span id="span-dialog-color" class="setting-value"></span>
+              <input type="color" class="form-control form-control-color" id="input-dialog-color" />
+            </div>
           </div>
-          <div class="col-auto">
-            <input type="color" class="form-control form-control-color" id="input-dialog-color" />
-          </div>
-        </div>
-
-        <br />
-
-        <!-- dialog transparency -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-dialog-transparency"></label>
-          </div>
-          <div class="col-auto">
-            <span id="span-dialog-transparency"></span>
-          </div>
-          <div class="col-auto">
-            <input type="range" class="form-range" min="0" max="255" id="input-dialog-transparency" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-dialog-transparency">对话框透明度</div>
+              <div class="setting-description" id="desc-dialog-transparency">调整对话框的透明程度</div>
+            </div>
+            <div class="setting-control">
+              <span id="span-dialog-transparency" class="setting-value"></span>
+              <input type="range" class="form-range" min="0" max="255" id="input-dialog-transparency" style="width: 120px" />
+            </div>
           </div>
         </div>
       </div>
 
       <!-- channel page -->
       <div id="div-channel" class="config-page" hidden>
-        <div>
-          <span class="text-warning" id="span-channel-comment"></span>
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 11a9 9 0 0 1 9 9"></path>
+              <path d="M4 4a16 16 0 0 1 16 16"></path>
+              <circle cx="5" cy="19" r="1"></circle>
+            </svg>
+            <span id="section-channel-list">频道列表</span>
+          </div>
+          <div style="padding: 1rem 1.25rem;">
+            <p class="text-warning" style="margin-bottom: 0.75rem; font-size: 0.85rem;" id="span-channel-comment"></p>
+            <div id="div-channel-list"></div>
+          </div>
         </div>
-        <div id="div-channel-list"></div>
-        <br />
       </div>
 
       <!-- translation page -->
       <div id="div-translation" class="config-page" hidden>
-        <!-- auto change -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-auto-change" />
-              <label class="form-check-label" for="checkbox-auto-change"></label>
+        <!-- 自动化设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span id="section-auto-settings">自动化设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-auto-change">自动切换</div>
+              <div class="setting-description" id="desc-auto-change">根据内容自动切换翻译引擎</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-auto-change" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-fix-translation">翻译修正</div>
+              <div class="setting-description" id="desc-fix-translation">使用对照表修正专有名词</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-fix-translation" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-skip-system">跳过系统消息</div>
+              <div class="setting-description" id="desc-skip-system">不翻译系统提示信息</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-skip-system" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-skip-chinese">跳过中文</div>
+              <div class="setting-description" id="desc-skip-chinese">不翻译中文内容</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-skip-chinese" />
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- text fix -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-fix-translation" />
-              <label class="form-check-label" for="checkbox-fix-translation"></label>
+        <!-- 翻译引擎分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span id="section-translation-engine">翻译引擎</span>
+          </div>
+          <p class="text-warning" style="padding: 0.5rem 1.25rem; margin: 0; font-size: 0.85rem;" id="p-ai-warning"></p>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-engine">主翻译引擎</div>
+              <div class="setting-description" id="desc-engine">选择主要使用的翻译服务</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-engine" style="width: 180px"></select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-engine-alternate">备用引擎</div>
+              <div class="setting-description" id="desc-engine-alternate">主引擎失败时使用的备用服务</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-engine-alternate" style="width: 180px"></select>
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- skip system message -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-skip-system" />
-              <label class="form-check-label" for="checkbox-skip-system"></label>
+        <!-- 语言设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 8l6 6"></path>
+              <path d="M4 14l6-6 2-3"></path>
+              <path d="M2 5h12"></path>
+              <path d="M7 2h1"></path>
+              <path d="M22 22l-5-10-5 10"></path>
+              <path d="M14 18h6"></path>
+            </svg>
+            <span id="section-language-settings">语言设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-from">来源语言</div>
+              <div class="setting-description" id="desc-from">NPC 对话的语言</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-from" style="width: 160px"></select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-from-player">玩家语言</div>
+              <div class="setting-description" id="desc-from-player">玩家发送消息的语言</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-from-player" style="width: 160px"></select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-to">目标语言</div>
+              <div class="setting-description" id="desc-to">翻译后显示的语言</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-to" style="width: 160px"></select>
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- skip chinese message -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-skip-chinese" />
-              <label class="form-check-label" for="checkbox-skip-chinese"></label>
+        <!-- 高级设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="21" x2="4" y2="14"></line>
+              <line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line>
+              <line x1="20" y1="12" x2="20" y2="3"></line>
+              <line x1="1" y1="14" x2="7" y2="14"></line>
+              <line x1="9" y1="8" x2="15" y2="8"></line>
+              <line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
+            <span id="section-advanced">高级设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-tts-engine-translation">语音引擎</div>
+              <div class="setting-description" id="desc-tts-engine-translation">TTS 语音合成服务</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-tts-engine-translation" style="width: 160px">
+                <option value="google">Google TTS</option>
+                <option value="elevenlabs">ElevenLabs</option>
+                <option value="speechify">Speechify</option>
+              </select>
             </div>
           </div>
-        </div>
-
-        <br />
-
-        <p class="text-warning" id="p-ai-warning"></p>
-
-        <!-- select translator -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-engine"></label>
-          </div>
-          <div class="col-6">
-            <select class="form-select" id="select-engine"></select>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- select alternate translator -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-engine-alternate"></label>
-          </div>
-          <div class="col-6">
-            <select class="form-select" id="select-engine-alternate"></select>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- select from -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-from"></label>
-          </div>
-          <div class="col-6">
-            <select class="form-select" id="select-from"></select>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- select from player -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-from-player"></label>
-          </div>
-          <div class="col-6">
-            <select class="form-select" id="select-from-player"></select>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- select to -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-to"></label>
-          </div>
-          <div class="col-6">
-            <select class="form-select" id="select-to"></select>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- TTS engine selection (translation page) -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-tts-engine-translation">语音引擎 (TTS)</label>
-          </div>
-          <div class="col-6">
-            <select class="form-select" id="select-tts-engine-translation">
-              <option value="google">Google TTS</option>
-              <option value="elevenlabs">ElevenLabs Reader</option>
-              <option value="speechify">Speechify</option>
-            </select>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- translation timeout -->
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-translation-timeout"></label>
-          </div>
-          <div class="col-6">
-            <input class="form-control" type="number" name="" id="input-translation-timeout" min="10" step="1" value="10" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-translation-timeout">翻译超时</div>
+              <div class="setting-description" id="desc-translation-timeout">翻译请求的等待秒数</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="number" id="input-translation-timeout" min="10" step="1" value="10" style="width: 80px" />
+            </div>
           </div>
         </div>
       </div>
@@ -1046,295 +1100,386 @@
 
       <!-- AI -->
       <div id="div-ai" class="config-page" hidden>
-        <div class="row align-items-center">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="input-ai-chat-enable" />
-              <label class="form-check-label" for="input-ai-chat-enable"></label>
+        <!-- 对话设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span id="section-ai-chat">对话设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-ai-chat-enable">启用对话历史</div>
+              <div class="setting-description" id="desc-ai-chat-enable">保留上下文提高翻译质量</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="input-ai-chat-enable" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-ai-chat-length">对话历史长度</div>
+              <div class="setting-description" id="desc-ai-chat-length">保留的历史对话条数</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="number" min="0" step="1" id="input-ai-chat-length" style="width: 80px" />
             </div>
           </div>
         </div>
 
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-ai-chat-length"></label>
+        <!-- 模型参数分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="21" x2="4" y2="14"></line>
+              <line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line>
+              <line x1="20" y1="12" x2="20" y2="3"></line>
+            </svg>
+            <span id="section-ai-params">模型参数</span>
           </div>
-          <div class="col-6">
-            <input class="form-control" type="number" name="" min="0" step="1" id="input-ai-chat-length" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-ai-temperature">Temperature</div>
+              <div class="setting-description" id="desc-ai-temperature">控制输出的随机性 (0-2)</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="number" min="0" step="0.1" id="input-ai-temperature" style="width: 80px" />
+            </div>
           </div>
-        </div>
-
-        <hr />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-ai-temperature"></label>
-          </div>
-          <div class="col-6">
-            <input class="form-control" type="number" name="" min="0" step="0.1" id="input-ai-temperature" />
-          </div>
-        </div>
-
-        <hr />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-ai-streaming" />
-              <label class="form-check-label" for="checkbox-ai-streaming"></label>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-ai-streaming">流式输出</div>
+              <div class="setting-description" id="desc-ai-streaming">实时显示翻译结果 (OpenRouter/GPT/Gemini)</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-ai-streaming" />
             </div>
           </div>
         </div>
 
-        <p class="text-info">Enable streaming for faster perceived response (OpenRouter/GPT/Gemini)</p>
-
-        <hr />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="textarea-ai-custom-translation-prompt"></label>
+        <!-- 提示词设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span id="section-ai-prompt">提示词设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-prompt-preset">预设模板</div>
+              <div class="setting-description" id="desc-prompt-preset">选择翻译提示词模板</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-prompt-preset" style="width: 140px">
+                <option value="default" id="option-prompt-default"></option>
+                <option value="game" id="option-prompt-game"></option>
+                <option value="story" id="option-prompt-story"></option>
+                <option value="simple" id="option-prompt-simple"></option>
+                <option value="custom" id="option-prompt-custom"></option>
+              </select>
+            </div>
+          </div>
+          <div style="padding: 0.875rem 1.25rem;">
+            <textarea class="form-control" id="textarea-ai-custom-translation-prompt" rows="4" style="font-size: 0.85rem;"></textarea>
+            <p class="text-warning" style="margin: 0.5rem 0 0 0; font-size: 0.8rem;">${source} = 来源语言, ${target} = 目标语言</p>
+            <p class="text-warning" style="margin: 0.25rem 0 0 0; font-size: 0.8rem;" id="p-prompt-tip"></p>
           </div>
         </div>
-
-        <div class="row align-items-center mb-3">
-          <div class="col-auto">
-            <label for="select-prompt-preset" id="label-prompt-preset"></label>
-          </div>
-          <div class="col">
-            <select class="form-select" id="select-prompt-preset">
-              <option value="default" id="option-prompt-default"></option>
-              <option value="game" id="option-prompt-game"></option>
-              <option value="story" id="option-prompt-story"></option>
-              <option value="simple" id="option-prompt-simple"></option>
-              <option value="custom" id="option-prompt-custom"></option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col">
-            <textarea class="form-control" name="" id="textarea-ai-custom-translation-prompt" rows="5"></textarea>
-          </div>
-        </div>
-
-        <p class="text-warning">${source} = Source language from settings</p>
-        <p class="text-warning">${target} = Target language from settings</p>
-        <p class="text-warning" id="p-prompt-tip"></p>
       </div>
 
       <!-- system page -->
       <div id="div-system" class="config-page" hidden>
-        <!-- select app language -->
-        <div class="row align-items-center">
-          <div class="col-auto">
-            <label for="select-app-language"></label>
+        <!-- 外观设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span id="section-system-appearance">外观设置</span>
           </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-app-language">
-              <option value="app-zht" selected>繁體中文</option>
-              <option value="app-zhs">简体中文</option>
-              <option value="app-en">English</option>
-            </select>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-app-language">界面语言</div>
+              <div class="setting-description" id="desc-app-language">应用界面显示的语言</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-app-language" style="width: 140px">
+                <option value="app-zht" selected>繁體中文</option>
+                <option value="app-zhs">简体中文</option>
+                <option value="app-en">English</option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <!-- select theme -->
-        <div class="row align-items-center">
-          <div class="col-auto">
-            <label for="select-theme"></label>
-          </div>
-          <div class="col-auto">
-            <select class="form-select" id="select-theme">
-              <option value="dark" selected>深色主題 (Dark)</option>
-              <option value="light">淺色主題 (Light)</option>
-            </select>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- shortcut -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-shortcut" />
-              <label class="form-check-label" for="checkbox-shortcut"></label>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-theme">主题</div>
+              <div class="setting-description" id="desc-theme">选择深色或浅色主题</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-theme" style="width: 140px">
+                <option value="dark" selected>深色主題 (Dark)</option>
+                <option value="light">淺色主題 (Light)</option>
+              </select>
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- auto download json -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-auto-download-json" />
-              <label class="form-check-label" for="checkbox-auto-download-json"></label>
+        <!-- 功能设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <span id="section-system-features">功能设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-shortcut">启用快捷键</div>
+              <div class="setting-description" id="desc-shortcut">使用键盘快捷键控制应用</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-shortcut" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-auto-download-json">自动更新数据</div>
+              <div class="setting-description" id="desc-auto-download-json">启动时自动下载翻译数据</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-auto-download-json" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-ssl-certificate">SSL 验证</div>
+              <div class="setting-description" id="desc-ssl-certificate">验证 HTTPS 连接的证书</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="checkbox-ssl-certificate" />
             </div>
           </div>
         </div>
 
-        <br />
-
-        <!-- SSL certificate -->
-        <div class="row">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="checkbox-ssl-certificate" />
-              <label class="form-check-label" for="checkbox-ssl-certificate"></label>
+        <!-- 维护工具分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg>
+            <span id="section-system-tools">维护工具</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-download-json">下载翻译数据</div>
+              <div class="setting-description" id="desc-download-json">手动更新游戏翻译对照表</div>
+            </div>
+            <div class="setting-control">
+              <button class="btn btn-primary btn-sm" id="button-download-json" style="min-width: 80px">下载</button>
             </div>
           </div>
-        </div>
-
-        <br />
-
-        <!-- download json -->
-        <div class="row">
-          <div class="col">
-            <button class="btn btn-primary" id="button-download-json"></button>
+          <div class="setting-item" hidden>
+            <div class="setting-info">
+              <div class="setting-label">清除临时文件</div>
+              <div class="setting-description">删除应用产生的临时文件</div>
+            </div>
+            <div class="setting-control">
+              <button class="btn btn-primary btn-sm" id="button-delete-temp" style="min-width: 80px">清除</button>
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <!-- delete temp -->
-        <div class="row">
-          <div class="col">
-            <button class="btn btn-primary" id="button-delete-temp" hidden></button>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-restart-sharlayan">重启 Sharlayan</div>
+              <div class="setting-description" id="desc-restart-sharlayan">重新启动游戏数据读取器</div>
+            </div>
+            <div class="setting-control">
+              <button id="button-restart-sharlayan-reader" class="btn btn-primary btn-sm" style="min-width: 80px">重启</button>
+            </div>
           </div>
-        </div>
-
-        <br hidden />
-
-        <!-- restart sharlayan reader -->
-        <div class="row">
-          <div class="col">
-            <button id="button-restart-sharlayan-reader" class="btn btn-primary"></button>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-fix-reader">修复阅读器</div>
+              <div class="setting-description" id="desc-fix-reader">重置并修复数据读取组件</div>
+            </div>
+            <div class="setting-control">
+              <button id="button-fix-reader" class="btn btn-danger btn-sm" style="min-width: 80px">修复</button>
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <!-- fix reader -->
-        <div class="row">
-          <div class="col">
-            <button id="button-fix-reader" class="btn btn-danger"></button>
-          </div>
-        </div>
-
-        <br />
-
-        <!-- version check -->
-        <div class="row" hidden>
-          <div class="col">
-            <button id="button-version-check" class="btn btn-primary"></button>
+          <div class="setting-item" hidden>
+            <div class="setting-info">
+              <div class="setting-label">检查更新</div>
+              <div class="setting-description">检查应用新版本</div>
+            </div>
+            <div class="setting-control">
+              <button id="button-version-check" class="btn btn-primary btn-sm" style="min-width: 80px">检查</button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- proxy -->
       <div id="div-proxy" class="config-page" hidden>
-        <div class="row align-items-center">
-          <div class="col">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch" value="" id="input-proxy-enable" />
-              <label class="form-check-label" for="input-proxy-enable"></label>
+        <!-- 代理设置分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span id="section-proxy-settings">代理设置</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-proxy-enable">启用代理</div>
+              <div class="setting-description" id="desc-proxy-enable">通过代理服务器连接网络</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-check-input" type="checkbox" role="switch" id="input-proxy-enable" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-proxy-protocol">协议</div>
+              <div class="setting-description" id="desc-proxy-protocol">代理服务器使用的协议</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-proxy-protocol" style="width: 100px">
+                <option value="http:" selected>http:</option>
+                <option value="https:">https:</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-proxy-hostname">主机名</div>
+              <div class="setting-description" id="desc-proxy-hostname">代理服务器的 IP 或域名</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="text" id="input-proxy-hostname" style="width: 160px" placeholder="127.0.0.1" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-proxy-port">端口</div>
+              <div class="setting-description" id="desc-proxy-port">代理服务器的端口号</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="number" id="input-proxy-port" style="width: 100px" placeholder="7890" />
             </div>
           </div>
         </div>
 
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="select-proxy-protocol"></label>
+        <!-- 认证信息分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span id="section-proxy-auth">认证信息</span>
           </div>
-          <div class="col">
-            <select class="form-select" name="" id="select-proxy-protocol">
-              <option value="http:" selected>http:</option>
-              <option value="https:">https:</option>
-            </select>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-proxy-username">用户名</div>
+              <div class="setting-description" id="desc-proxy-username">代理服务器的用户名（可选）</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="text" id="input-proxy-username" style="width: 160px" />
+            </div>
           </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-proxy-hostname"></label>
-          </div>
-          <div class="col">
-            <input class="form-control" type="text" name="" id="input-proxy-hostname" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-proxy-port"></label>
-          </div>
-          <div class="col">
-            <input class="form-control" type="number" name="" id="input-proxy-port" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-proxy-username"></label>
-          </div>
-          <div class="col">
-            <input class="form-control" type="text" name="" id="input-proxy-username" />
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row align-items-center">
-          <div class="col">
-            <label for="input-proxy-password"></label>
-          </div>
-          <div class="col">
-            <input class="form-control" type="text" name="" id="input-proxy-password" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-proxy-password">密码</div>
+              <div class="setting-description" id="desc-proxy-password">代理服务器的密码（可选）</div>
+            </div>
+            <div class="setting-control">
+              <input class="form-control" type="password" id="input-proxy-password" style="width: 160px" />
+            </div>
           </div>
         </div>
       </div>
 
       <!-- about page -->
       <div id="div-about" class="config-page" hidden>
-        <div class="row">
-          <div class="col">
-            <span>Ver.</span>
-            <span id="span-version"></span>
+        <!-- 应用信息分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span id="section-about-info">应用信息</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">版本号</div>
+              <div class="setting-description">当前应用版本</div>
+            </div>
+            <div class="setting-control">
+              <span style="color: var(--text-secondary); font-size: 0.9rem;">Ver. <span id="span-version"></span></span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">开发者</div>
+              <div class="setting-description">应用开发与维护</div>
+            </div>
+            <div class="setting-control">
+              <span id="span-author" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
+            </div>
           </div>
         </div>
 
-        <div class="row">
-          <div class="col">
-            <span id="span-author"></span>
+        <!-- 链接分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <span id="section-about-links">相关链接</span>
           </div>
-        </div>
-
-        <hr />
-
-        <div class="row">
-          <div class="col">
-            <ul class="nav flex-column">
-              <li class="nav-item">
-                <a class="nav-link" href="#" id="a-readme"></a>
-              </li>
-
-              <li class="nav-item">
-                <a class="nav-link" href="#" id="a-github"></a>
-              </li>
-            </ul>
+          <div class="setting-item" style="cursor: pointer;" onclick="document.getElementById('a-readme').click()">
+            <div class="setting-info">
+              <div class="setting-label" id="label-readme">使用说明</div>
+              <div class="setting-description" id="desc-readme">查看应用使用文档</div>
+            </div>
+            <div class="setting-control">
+              <a class="nav-link" href="#" id="a-readme" style="color: var(--accent-color); font-size: 0.85rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="setting-item" style="cursor: pointer;" onclick="document.getElementById('a-github').click()">
+            <div class="setting-info">
+              <div class="setting-label" id="label-github">GitHub</div>
+              <div class="setting-description" id="desc-github">查看源代码和提交问题</div>
+            </div>
+            <div class="setting-control">
+              <a class="nav-link" href="#" id="a-github" style="color: var(--accent-color); font-size: 0.85rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
       </div>

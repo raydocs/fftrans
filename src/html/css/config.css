@@ -6,15 +6,127 @@ body {
   background-color: var(--bg-primary);
 }
 
+/* ========== Header 样式 ========== */
+.settings-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem 1.5rem;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-drag {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.settings-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-save {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save:hover {
+  background: var(--bg-elevated);
+  transform: translateY(-1px);
+}
+
+.btn-save-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ========== 标签导航栏 ========== */
+.settings-tabs {
+  position: fixed;
+  top: 5.5rem;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.75rem 1.5rem;
+  overflow-x: auto;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-tabs::-webkit-scrollbar {
+  height: 0;
+}
+
+.tab-item {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.tab-item:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.tab-item.active {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ========== Main 内容区 ========== */
 main {
   scroll-behavior: smooth;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-top: 8rem;
+  padding-top: 9.5rem;
   padding-bottom: 3rem;
   height: 100vh;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
   color: var(--text-primary);
 }
 
@@ -141,26 +253,132 @@ main {
 
 /* 配置页面容器 */
 .config-page {
-  padding: 1rem;
-  background: var(--bg-secondary);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  border: 1px solid var(--border-subtle);
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 12px var(--shadow-color);
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
+  padding: 0;
+  background: transparent;
 }
 
-.config-page:hover {
-  background: var(--bg-elevated);
-  box-shadow: 0 6px 16px var(--shadow-color);
+/* ========== 设置分组卡片 ========== */
+.settings-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.settings-section:hover {
   border-color: var(--border-color);
 }
 
-/* 行间距优化 */
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.settings-section-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* 设置项行样式 */
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s ease;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item:hover {
+  background: var(--bg-elevated);
+}
+
+.setting-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 0.125rem;
+}
+
+.setting-description {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.setting-control {
+  margin-left: 1rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 设置项内嵌内容（如紧凑模式的尺寸设置） */
+.setting-nested {
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setting-nested:last-child {
+  border-bottom: none;
+}
+
+.setting-nested-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.setting-nested-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-nested-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.setting-nested-control {
+  width: 100px;
+}
+
+.setting-nested-control .form-control {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* 数值显示 */
+.setting-value {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  min-width: 3rem;
+  text-align: right;
+}
+
+/* 行间距优化 - 旧样式兼容 */
 .row {
   margin-bottom: 0.8rem;
 }

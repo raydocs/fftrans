@@ -113,6 +113,20 @@ function getElementTextList() {
         // config
         'button-save-config': ['儲存', '储存', 'Save'],
         'button-save-default-config': ['預設', '预设', 'Default'],
+        
+        // 新标签导航栏
+        'tab-window': ['視窗', '视窗', 'Window'],
+        'tab-font': ['字體', '字体', 'Font'],
+        'tab-channel': ['頻道', '频道', 'Channel'],
+        'tab-translation': ['翻譯', '翻译', 'Translation'],
+        'tab-api': ['API', 'API', 'API'],
+        'tab-ai': ['AI', 'AI', 'AI'],
+        'tab-system': ['系統', '系统', 'System'],
+        'tab-proxy': ['代理', '代理', 'Proxy'],
+        'tab-about': ['關於', '关于', 'About'],
+        
+        // 保存按钮文本
+        'btn-save-text': ['儲存設定', '储存设定', 'Save Settings'],
 
         'button-google-credential': ['開啟Google憑證檔案', '开启Google凭证档案', 'Open Google Credential File'],
         'button-google-credential-view': ['查看檔案', '查看档案', 'View File'],
@@ -264,7 +278,7 @@ function getElementTextList() {
         'select-log': ['選擇對話紀錄', '选择对话纪录', 'Chat Log'],
       },
       option: {
-        // config
+        // config (旧下拉菜单，保留兼容性)
         '#option-layout': ['#外觀', '#外观', '#Layout'],
         'div-window': ['視窗設定', '视窗设定', 'Window'],
         'div-font': ['文字設定', '文字设定', 'Font'],
@@ -365,7 +379,8 @@ function getElementTextList() {
       span: {
         // window title
         'span-title-capture-edit': ['編輯擷取文字', '编辑撷取文字', 'Edit Text'],
-        'span-title-config': ['設定', '设定', 'Config'],
+        'span-title-config': ['設定', '设定', 'Settings'],
+        'settings-subtitle': ['配置 FFTrans 偏好設定', '配置 FFTrans 偏好设置', 'Configure FFTrans preferences'],
         'span-title-custom': ['自訂翻譯', '自订翻译', 'Custom Translation'],
         'span-title-dictionary': ['翻譯查詢', '翻译查询', 'Translator'],
         'span-title-edit': ['編輯翻譯', '编辑翻译', 'Edit Translation'],
@@ -376,6 +391,41 @@ function getElementTextList() {
 
         // config
         'span-channel-comment': ['滾動滑鼠中鍵可以捲動頻道清單', '滚动鼠标中键可以捲动频道清单', 'Use middle mouse button to sroll the page'],
+        
+        // Window 页面分组标题
+        'section-window-behavior': ['視窗行為', '窗口行为', 'Window Behavior'],
+        'section-compact-mode': ['緊湊模式', '紧凑模式', 'Compact Mode'],
+        'section-display': ['顯示設定', '显示设置', 'Display'],
+        'section-background': ['背景樣式', '背景样式', 'Background'],
+        'section-speech': ['語音設定', '语音设置', 'Speech'],
+        
+        // Window 页面设置标签
+        'label-checkbox-top': ['置頂顯示', '置顶显示', 'Always on Top'],
+        'label-checkbox-focusable': ['可聚焦', '可聚焦', 'Focusable'],
+        'label-checkbox-min-size': ['最小尺寸', '最小尺寸', 'Minimum Size'],
+        'label-checkbox-compact-mode': ['緊湊模式', '紧凑模式', 'Compact Mode'],
+        'label-compact-width': ['寬度', '宽度', 'Width'],
+        'label-compact-height': ['高度', '高度', 'Height'],
+        'label-checkbox-hide-button': ['隱藏按鈕', '隐藏按钮', 'Hide Buttons'],
+        'label-checkbox-hide-dialog': ['自動隱藏對話', '自动隐藏对话', 'Auto Hide Dialog'],
+        'label-hide-dialog-timeout': ['隱藏超時', '隐藏超时', 'Hide Timeout'],
+        'label-background-color': ['背景顏色', '背景颜色', 'Background Color'],
+        'label-background-transparency': ['背景透明度', '背景透明度', 'Transparency'],
+        'label-speech-speed': ['語音速度', '语音速度', 'Speech Speed'],
+        'label-tts-engine': ['語音引擎', '语音引擎', 'TTS Engine'],
+        
+        // Window 页面设置描述
+        'desc-checkbox-top': ['視窗始終顯示在最前面', '窗口始终显示在最前面', 'Window stays on top of other windows'],
+        'desc-checkbox-focusable': ['允許視窗獲取焦點', '允许窗口获取焦点', 'Allow window to receive focus'],
+        'desc-checkbox-min-size': ['限制視窗最小大小', '限制窗口最小大小', 'Limit minimum window size'],
+        'desc-checkbox-compact-mode': ['適用於掌機設備的小視窗模式', '适用于掌机设备的小窗口模式', 'Small window mode for handheld devices'],
+        'desc-checkbox-hide-button': ['隱藏視窗控制按鈕', '隐藏窗口控制按钮', 'Hide window control buttons'],
+        'desc-checkbox-hide-dialog': ['超時後自動隱藏對話框', '超时后自动隐藏对话框', 'Auto hide dialog after timeout'],
+        'desc-hide-dialog-timeout': ['對話框自動隱藏的等待秒數', '对话框自动隐藏的等待秒数', 'Seconds before dialog auto-hides'],
+        'desc-background-color': ['設定視窗背景色', '设置窗口背景色', 'Set window background color'],
+        'desc-background-transparency': ['調整背景的透明程度', '调整背景的透明程度', 'Adjust background transparency'],
+        'desc-speech-speed': ['TTS 播放速度倍率', 'TTS 播放速度倍率', 'TTS playback speed multiplier'],
+        'desc-tts-engine': ['選擇 TTS 語音合成引擎', '选择 TTS 语音合成引擎', 'Select TTS speech synthesis engine'],
         'span-author': [
           '作者: raydocs',
           '作者: raydocs',

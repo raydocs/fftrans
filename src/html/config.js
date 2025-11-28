@@ -203,14 +203,38 @@ function setButton() {
     ipcRenderer.send('close-window');
   };
 
-  // page
+  // page - 原有下拉菜单逻辑（保留兼容性）
   document.getElementById('select-option').onchange = () => {
     const value = document.getElementById('select-option').value;
-    document.querySelectorAll('.config-page').forEach((page) => {
-      document.getElementById(page.id).hidden = true;
-    });
-    document.getElementById(value).hidden = false;
+    switchTab(value);
   };
+
+  // 标签导航栏点击事件
+  document.querySelectorAll('.tab-item').forEach((tab) => {
+    tab.onclick = () => {
+      const target = tab.getAttribute('data-target');
+      switchTab(target);
+      // 同步更新隐藏的 select
+      document.getElementById('select-option').value = target;
+    };
+  });
+
+  // 切换标签页函数
+  function switchTab(targetId) {
+    // 隐藏所有页面
+    document.querySelectorAll('.config-page').forEach((page) => {
+      page.hidden = true;
+    });
+    // 显示目标页面
+    document.getElementById(targetId).hidden = false;
+    // 更新标签激活状态
+    document.querySelectorAll('.tab-item').forEach((tab) => {
+      tab.classList.remove('active');
+      if (tab.getAttribute('data-target') === targetId) {
+        tab.classList.add('active');
+      }
+    });
+  }
 
   // download json
   document.getElementById('button-download-json').onclick = () => {
