@@ -621,16 +621,16 @@ function setButton() {
     }
   };
 
-  // 折叠区域切换 - 绑定到整个 collapsible section
+  // 折叠区域切换
   const collapsibleSection = document.querySelector('.settings-section.collapsible');
   const toggleMoreEngines = document.getElementById('toggle-more-engines');
   const divMoreEngines = document.getElementById('div-more-engines');
   if (collapsibleSection && toggleMoreEngines && divMoreEngines) {
-    collapsibleSection.onclick = () => {
+    collapsibleSection.addEventListener('click', () => {
       const isHidden = divMoreEngines.hidden;
       divMoreEngines.hidden = !isHidden;
       toggleMoreEngines.classList.toggle('expanded', isHidden);
-    };
+    });
   }
 }
 
