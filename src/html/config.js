@@ -3,6 +3,17 @@
 // electron
 const { ipcRenderer } = require('electron');
 
+// 折叠切换函数 - 暴露到 window 供 HTML onclick 调用
+window.toggleMoreEnginesClick = function() {
+  const header = document.getElementById('toggle-more-engines');
+  const content = document.getElementById('div-more-engines');
+  if (header && content) {
+    const isHidden = content.hidden;
+    content.hidden = !isHidden;
+    header.classList.toggle('expanded', isHidden);
+  }
+};
+
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
   setIPC();
@@ -621,17 +632,6 @@ function setButton() {
     }
   };
 
-  // 折叠区域切换
-  const collapsibleSection = document.querySelector('.settings-section.collapsible');
-  const toggleMoreEngines = document.getElementById('toggle-more-engines');
-  const divMoreEngines = document.getElementById('div-more-engines');
-  if (collapsibleSection && toggleMoreEngines && divMoreEngines) {
-    collapsibleSection.addEventListener('click', () => {
-      const isHidden = divMoreEngines.hidden;
-      divMoreEngines.hidden = !isHidden;
-      toggleMoreEngines.classList.toggle('expanded', isHidden);
-    });
-  }
 }
 
 // read config
