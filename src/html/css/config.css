@@ -310,7 +310,7 @@ main {
 
 .setting-info {
   flex: 1;
-  min-width: 0;
+  min-width: 120px;
 }
 
 .setting-label {
@@ -431,15 +431,15 @@ main::-webkit-scrollbar-thumb:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
-.api-key-control input,
-.api-key-control textarea {
-  width: 260px;
+.api-key-control input {
+  width: 200px;
 }
 
 .api-key-control textarea {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   line-height: 1.4;
   resize: none;
 }
@@ -466,8 +466,8 @@ main::-webkit-scrollbar-thumb:hover {
 
 /* Token 长文本输入 */
 .token-textarea {
-  width: 320px !important;
-  font-size: 0.75rem !important;
+  width: 220px !important;
+  font-size: 0.7rem !important;
   font-family: monospace;
 }
 
