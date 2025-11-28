@@ -277,19 +277,12 @@ function getElementTextList() {
         'select-log': ['選擇對話紀錄', '选择对话纪录', 'Chat Log'],
       },
       option: {
-        // config (旧下拉菜单，保留兼容性)
-        '#option-layout': ['#外觀', '#外观', '#Layout'],
-        'div-window': ['視窗設定', '视窗设定', 'Window'],
-        'div-font': ['文字設定', '文字设定', 'Font'],
-        '#option-translation': ['#翻譯', '#翻译', '#Translation'],
-        'div-channel': ['頻道設定', '频道设定', 'Channel'],
-        'div-translation': ['翻譯設定', '翻译设定', 'Translation'],
-        '#option-api': ['#API', '#API', '#API'],
-        'div-api': ['API設定', 'API设定', 'API'],
-        'div-ai': ['AI設定', 'AI设定', 'AI Settings'],
-        '#option-system': ['#系統', '#系统', '#System'],
-        'div-system': ['系統設定', '系统设定', 'System'],
-        'div-proxy': ['Proxy設定', 'Proxy设定', 'Proxy'],
+        // config (新 Tab 结构)
+        'div-appearance': ['外觀', '外观', 'Appearance'],
+        'div-translation': ['翻譯', '翻译', 'Translation'],
+        'div-api': ['API', 'API', 'API'],
+        'div-ai': ['AI', 'AI', 'AI'],
+        'div-system': ['系統', '系统', 'System'],
         'div-about': ['關於', '关于', 'About'],
 
         normal: ['細', '细', 'Normal'],

@@ -55,33 +55,27 @@
 
     <!-- 水平标签导航栏 -->
     <nav class="settings-tabs">
-      <button class="tab-item active" data-target="div-window" id="tab-window">Window</button>
-      <button class="tab-item" data-target="div-font" id="tab-font">Font</button>
-      <button class="tab-item" data-target="div-channel" id="tab-channel">Channel</button>
-      <button class="tab-item" data-target="div-translation" id="tab-translation">Translation</button>
+      <button class="tab-item active" data-target="div-appearance" id="tab-appearance">外观</button>
+      <button class="tab-item" data-target="div-translation" id="tab-translation">翻译</button>
       <button class="tab-item" data-target="div-api" id="tab-api">API</button>
       <button class="tab-item" data-target="div-ai" id="tab-ai">AI</button>
-      <button class="tab-item" data-target="div-system" id="tab-system">System</button>
-      <button class="tab-item" data-target="div-proxy" id="tab-proxy">Proxy</button>
-      <button class="tab-item" data-target="div-about" id="tab-about">About</button>
+      <button class="tab-item" data-target="div-system" id="tab-system">系统</button>
+      <button class="tab-item" data-target="div-about" id="tab-about">关于</button>
     </nav>
 
     <!-- 兼容旧代码的隐藏 select -->
     <select class="form-select" name="" id="select-option" hidden>
-      <option value="div-window" selected></option>
-      <option value="div-font"></option>
-      <option value="div-channel"></option>
+      <option value="div-appearance" selected></option>
       <option value="div-translation"></option>
       <option value="div-api"></option>
       <option value="div-ai"></option>
       <option value="div-system"></option>
-      <option value="div-proxy"></option>
       <option value="div-about"></option>
     </select>
 
     <main class="container-fluid">
-      <!-- window page -->
-      <div id="div-window" class="config-page">
+      <!-- appearance page (原 window + font) -->
+      <div id="div-appearance" class="config-page">
         <!-- 窗口行为分组 -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -264,11 +258,8 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- font page -->
-      <div id="div-font" class="config-page" hidden>
-        <!-- 文字设置分组 -->
+        <!-- 文字设置分组 (原 font page) -->
         <div class="settings-section">
           <div class="settings-section-header">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -346,24 +337,6 @@
               <span id="span-dialog-transparency" class="setting-value"></span>
               <input type="range" class="form-range" min="0" max="255" id="input-dialog-transparency" style="width: 120px" />
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- channel page -->
-      <div id="div-channel" class="config-page" hidden>
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 11a9 9 0 0 1 9 9"></path>
-              <path d="M4 4a16 16 0 0 1 16 16"></path>
-              <circle cx="5" cy="19" r="1"></circle>
-            </svg>
-            <span id="section-channel-list">频道列表</span>
-          </div>
-          <div style="padding: 1rem 1.25rem;">
-            <p class="text-warning" style="margin-bottom: 0.75rem; font-size: 0.85rem;" id="span-channel-comment"></p>
-            <div id="div-channel-list"></div>
           </div>
         </div>
       </div>
@@ -486,6 +459,22 @@
             <div class="setting-control">
               <select class="form-select" id="select-to" style="width: 160px"></select>
             </div>
+          </div>
+        </div>
+
+        <!-- 频道列表分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 11a9 9 0 0 1 9 9"></path>
+              <path d="M4 4a16 16 0 0 1 16 16"></path>
+              <circle cx="5" cy="19" r="1"></circle>
+            </svg>
+            <span id="section-channel-list">频道列表</span>
+          </div>
+          <div style="padding: 1rem 1.25rem;">
+            <p class="text-warning" style="margin-bottom: 0.75rem; font-size: 0.85rem;" id="span-channel-comment"></p>
+            <div id="div-channel-list"></div>
           </div>
         </div>
 
@@ -1169,11 +1158,8 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- proxy -->
-      <div id="div-proxy" class="config-page" hidden>
-        <!-- 代理设置分组 -->
+        <!-- 代理设置分组 (原 proxy page) -->
         <div class="settings-section">
           <div class="settings-section-header">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1221,17 +1207,6 @@
             <div class="setting-control">
               <input class="form-control" type="number" id="input-proxy-port" style="width: 100px" placeholder="7890" />
             </div>
-          </div>
-        </div>
-
-        <!-- 认证信息分组 -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <span id="section-proxy-auth">认证信息</span>
           </div>
           <div class="setting-item">
             <div class="setting-info">

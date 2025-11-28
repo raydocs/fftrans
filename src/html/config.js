@@ -771,7 +771,7 @@ function saveChannel(config = {}, chatCode = {}) {
   config.channel = {};
 
   // save checked name
-  const checkedArray = document.querySelectorAll('#div-channel input[type="checkbox"]:checked');
+  const checkedArray = document.querySelectorAll('#div-channel-list input[type="checkbox"]:checked');
   for (let index = 0; index < checkedArray.length; index++) {
     const code = checkedArray[index].id.replaceAll('checkbox-', '');
     const label = document.getElementById(`label-${code}`);
@@ -782,7 +782,7 @@ function saveChannel(config = {}, chatCode = {}) {
   }
 
   // save color
-  const channelArray = document.querySelectorAll('#div-channel input[type="checkbox"]');
+  const channelArray = document.querySelectorAll('#div-channel-list input[type="checkbox"]');
   for (let index = 0; index < channelArray.length; index++) {
     const code = channelArray[index].id.replaceAll('checkbox-', '');
     const input = document.getElementById(`input-${code}`);
