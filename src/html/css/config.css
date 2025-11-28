@@ -466,14 +466,14 @@ main::-webkit-scrollbar-thumb:hover {
 
 /* Token 长文本输入 */
 .token-textarea {
-  width: 220px !important;
-  font-size: 0.7rem !important;
+  width: 160px !important;
+  font-size: 0.65rem !important;
   font-family: monospace;
 }
 
 /* 语音选择下拉框 */
 .voice-select {
-  width: 220px;
+  width: 140px;
 }
 
 /* 设置项内多控件布局 */
