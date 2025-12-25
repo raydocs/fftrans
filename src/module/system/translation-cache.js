@@ -26,15 +26,27 @@ class TranslationCache {
   constructor(maxSize = 10000) {
     this.cache = new Map();
     this.maxSize = maxSize;
+    this.isDirty = false; // Track if cache needs saving
+
+    // OPTIMIZATION: Multi-level cache strategy
+    this.sessionCache = new Map();  // L1: High-priority session cache (current quest/instance)
+    this.frequencyMap = new Map();  // Track access frequency for smart eviction
+    this.sessionMaxSize = 500;      // Session cache size (current gameplay context)
+
     this.stats = {
       hits: 0,
       misses: 0,
       evictions: 0,
       totalSaved: 0,  // Time saved in ms
+      sessionHits: 0, // Session cache hits
+      frequencyPromotions: 0, // Items promoted due to frequency
     };
 
-    // Auto-save interval (5 minutes)
+    // Auto-save interval (5 minutes) - only saves if dirty
     this.autoSaveInterval = setInterval(() => this.save(), 5 * 60 * 1000);
+
+    // Session cleanup interval (10 minutes) - demote low-frequency items
+    this.sessionCleanupInterval = setInterval(() => this.cleanupSession(), 10 * 60 * 1000);
 
     // Load cache on startup
     this.load();
@@ -67,14 +79,19 @@ class TranslationCache {
   }
 
   /**
-   * Save cache to disk
+   * Save cache to disk (only if dirty)
    */
   async save() {
+    if (!this.isDirty) {
+      return; // Skip save if cache hasn't changed
+    }
+
     try {
       const path = this.getCachePath();
       // Convert Map to array of entries for JSON serialization
       const data = Array.from(this.cache.entries());
       await fileModule.writeAsync(path, data, 'json');
+      this.isDirty = false; // Clear dirty flag after successful save
       if (process.env.NODE_ENV !== 'production') {
         console.log(`💾 Translation cache saved: ${this.cache.size} entries`);
       }
@@ -137,6 +154,66 @@ class TranslationCache {
   }
 
   /**
+   * Get translation from cache using pre-computed key
+   * OPTIMIZATION: Multi-level cache lookup (session → main)
+   * Tracks frequency for smart promotion/eviction
+   */
+  getByKey(key) {
+    // OPTIMIZATION: L1 - Check session cache first (hot items)
+    if (this.sessionCache.has(key)) {
+      const value = this.sessionCache.get(key);
+
+      // Track frequency
+      this.trackAccess(key);
+
+      // Update statistics
+      this.stats.sessionHits++;
+      this.stats.hits++;
+      this.stats.totalSaved += 1000;
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`⚡ Session Cache HIT: ${key.substring(0, 60)}`);
+      }
+
+      return value.translation;
+    }
+
+    // OPTIMIZATION: L2 - Check main LRU cache
+    if (this.cache.has(key)) {
+      // LRU: Move to end (most recently used)
+      const value = this.cache.get(key);
+      this.cache.delete(key);
+      this.cache.set(key, value);
+
+      // Track frequency and potentially promote to session cache
+      const frequency = this.trackAccess(key);
+      if (frequency >= 3) {  // Accessed 3+ times → promote to session cache
+        this.promoteToSession(key, value);
+      }
+
+      // Update statistics
+      this.stats.hits++;
+      this.stats.totalSaved += 1000;
+
+      if (process.env.NODE_ENV !== 'production') {
+        const preview = key.substring(0, 60);
+        console.log(`✅ Cache HIT [${this.stats.hits}/${this.stats.hits + this.stats.misses}]: "${preview}${key.length > 60 ? '...' : ''}"`);
+      }
+
+      return value.translation;
+    }
+
+    this.stats.misses++;
+
+    if (process.env.NODE_ENV !== 'production') {
+      const preview = key.substring(0, 60);
+      console.log(`❌ Cache MISS [${this.stats.hits}/${this.stats.hits + this.stats.misses}]: "${preview}${key.length > 60 ? '...' : ''}"`);
+    }
+
+    return null;
+  }
+
+  /**
    * Store translation in cache
    * Implements LRU eviction when full
    * OPTIMIZED: Simplified parameters and value structure
@@ -153,6 +230,29 @@ class TranslationCache {
 
     // Simplified cache value (only translation)
     this.cache.set(key, { translation });
+
+    // Mark cache as dirty (needs saving)
+    this.isDirty = true;
+  }
+
+  /**
+   * Store translation in cache using pre-computed key
+   * OPTIMIZATION: Avoids double key generation when caller already has key
+   * Implements LRU eviction when full
+   */
+  setByKey(key, translation) {
+    // LRU eviction: Remove oldest (first) entry
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+      this.stats.evictions++;
+    }
+
+    // Simplified cache value (only translation)
+    this.cache.set(key, { translation });
+
+    // Mark cache as dirty (needs saving)
+    this.isDirty = true;
   }
 
   /**
@@ -187,10 +287,12 @@ class TranslationCache {
 
   /**
    * Get cache statistics
+   * OPTIMIZATION: Includes multi-level cache stats
    */
   getStats() {
     const total = this.stats.hits + this.stats.misses;
     const hitRate = total > 0 ? (this.stats.hits / total * 100).toFixed(1) : 0;
+    const sessionHitRate = this.stats.hits > 0 ? (this.stats.sessionHits / this.stats.hits * 100).toFixed(1) : 0;
 
     return {
       size: this.cache.size,
@@ -203,6 +305,12 @@ class TranslationCache {
       evictions: this.stats.evictions,
       timeSaved: this.formatTime(this.stats.totalSaved),
       timeSavedMs: this.stats.totalSaved,
+      // Multi-level cache stats
+      sessionCacheSize: this.sessionCache.size,
+      sessionHits: this.stats.sessionHits,
+      sessionHitRate: sessionHitRate + '%',
+      frequencyPromotions: this.stats.frequencyPromotions,
+      trackedItems: this.frequencyMap.size,
     };
   }
 
@@ -222,6 +330,7 @@ class TranslationCache {
   clear() {
     const size = this.cache.size;
     this.cache.clear();
+    this.isDirty = true; // Mark dirty
     this.save(); // Save empty cache
     console.log(`🗑️  Cache cleared: ${size} entries removed`);
   }
@@ -234,6 +343,83 @@ class TranslationCache {
     this.stats.misses = 0;
     this.stats.evictions = 0;
     this.stats.totalSaved = 0;
+    this.stats.sessionHits = 0;
+    this.stats.frequencyPromotions = 0;
+  }
+
+  /**
+   * OPTIMIZATION: Track access frequency for smart caching
+   * Returns current frequency count
+   */
+  trackAccess(key) {
+    const currentCount = this.frequencyMap.get(key) || 0;
+    const newCount = currentCount + 1;
+    this.frequencyMap.set(key, newCount);
+    return newCount;
+  }
+
+  /**
+   * OPTIMIZATION: Promote frequently accessed item to session cache
+   */
+  promoteToSession(key, value) {
+    // Check if already in session cache
+    if (this.sessionCache.has(key)) {
+      return;
+    }
+
+    // Session cache full - evict least frequently used item
+    if (this.sessionCache.size >= this.sessionMaxSize) {
+      // Find item with lowest frequency
+      let minFreq = Infinity;
+      let minKey = null;
+
+      for (const sessionKey of this.sessionCache.keys()) {
+        const freq = this.frequencyMap.get(sessionKey) || 0;
+        if (freq < minFreq) {
+          minFreq = freq;
+          minKey = sessionKey;
+        }
+      }
+
+      if (minKey) {
+        this.sessionCache.delete(minKey);
+      }
+    }
+
+    // Add to session cache
+    this.sessionCache.set(key, value);
+    this.stats.frequencyPromotions++;
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`📈 Promoted to session cache: ${key.substring(0, 60)} (freq: ${this.frequencyMap.get(key)})`);
+    }
+  }
+
+  /**
+   * OPTIMIZATION: Clean up session cache periodically
+   * Demote items with low frequency back to main cache
+   */
+  cleanupSession() {
+    const threshold = 2; // Keep items accessed 2+ times in last period
+    let demoted = 0;
+
+    for (const [key, value] of this.sessionCache.entries()) {
+      const frequency = this.frequencyMap.get(key) || 0;
+
+      if (frequency < threshold) {
+        // Demote to main cache
+        this.sessionCache.delete(key);
+        this.frequencyMap.delete(key);
+        demoted++;
+      } else {
+        // Decay frequency (halve it) to allow new items to rise
+        this.frequencyMap.set(key, Math.floor(frequency / 2));
+      }
+    }
+
+    if (demoted > 0 && process.env.NODE_ENV !== 'production') {
+      console.log(`🧹 Session cache cleanup: ${demoted} items demoted`);
+    }
   }
 
   /**
@@ -246,6 +432,12 @@ class TranslationCache {
       if (this.autoSaveInterval) {
         clearInterval(this.autoSaveInterval);
         this.autoSaveInterval = null;
+      }
+
+      // Clear session cleanup interval
+      if (this.sessionCleanupInterval) {
+        clearInterval(this.sessionCleanupInterval);
+        this.sessionCleanupInterval = null;
       }
 
       // Final save

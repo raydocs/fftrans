@@ -14,7 +14,49 @@ const chatHistoryList = {};
 const axiosInstance = axios.create({
   httpAgent: requestModule.getHttpAgent(),
   httpsAgent: requestModule.getHttpsAgent(),
+  headers: {
+    'Accept-Encoding': 'gzip, deflate, br',  // OPTIMIZATION: Enable compression
+  },
+  decompress: true,  // Automatically decompress responses
 });
+
+// OPTIMIZATION: Connection warmup state
+let connectionWarmedUp = false;
+
+/**
+ * OPTIMIZATION: Warm up connection to OpenRouter
+ * Establishes TCP+TLS connection in advance to reduce first request latency
+ * Call this during application startup
+ */
+async function warmupConnection() {
+  if (connectionWarmedUp) {
+    return;
+  }
+
+  try {
+    console.log('[OpenRouter] Warming up connection...');
+    const config = configModule.getConfig();
+
+    // Make a lightweight request to establish connection
+    // Using /models endpoint which is fast and doesn't consume tokens
+    const apiUrl = 'https://openrouter.ai/api/v1/models';
+
+    await axiosInstance.get(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${config.api.openRouterApiKey}`,
+        'HTTP-Referer': 'https://github.com/raydocs/tataru',
+        'X-Title': 'Tataru Assistant',
+      },
+      timeout: 5000,
+    });
+
+    connectionWarmedUp = true;
+    console.log('[OpenRouter] ✅ Connection warmed up successfully');
+  } catch (error) {
+    // Warmup failure is non-critical
+    console.warn('[OpenRouter] ⚠️  Warmup failed (non-critical):', error.message);
+  }
+}
 
 function buildProxyConfig(config) {
   if (!config.proxy?.enable) {
@@ -156,9 +198,11 @@ async function translateStream(text, source, target, type, onChunk) {
     .then(response => {
       let fullText = '';
       let buffer = '';
-      // Buffer small deltas before triggering callback
+      // OPTIMIZATION: Buffer small deltas before triggering callback
       let pendingDelta = '';
-      const MIN_CHUNK_SIZE = 1; // Trigger update on each character for smooth streaming
+      const MIN_CHUNK_SIZE = 3;  // Increased from 1 to reduce callback frequency
+      const MIN_TIME_BETWEEN_UPDATES = 50;  // Minimum 50ms between updates
+      let lastUpdateTime = 0;
 
       response.data.on('data', (chunk) => {
         buffer += chunk.toString();
@@ -183,11 +227,19 @@ async function translateStream(text, source, target, type, onChunk) {
                 fullText += delta;
                 pendingDelta += delta;
 
-                // OPTIMIZATION: Only trigger callback when we have enough content
-                // This reduces callback frequency and improves performance
-                if (pendingDelta.length >= MIN_CHUNK_SIZE || pendingDelta.includes('\n')) {
+                // OPTIMIZATION: Trigger callback based on:
+                // 1. Chunk size threshold (reduce frequency)
+                // 2. Newline character (sentence boundary)
+                // 3. Time threshold (ensure smooth streaming)
+                const now = Date.now();
+                const timeSinceLastUpdate = now - lastUpdateTime;
+
+                if (pendingDelta.length >= MIN_CHUNK_SIZE ||
+                    pendingDelta.includes('\n') ||
+                    timeSinceLastUpdate >= MIN_TIME_BETWEEN_UPDATES) {
                   if (onChunk) {
                     onChunk(fullText);
+                    lastUpdateTime = now;
                   }
                   pendingDelta = '';
                 }
@@ -243,4 +295,5 @@ module.exports = {
   exec,
   translate,
   translateStream,
+  warmupConnection,  // OPTIMIZATION: Export warmup function
 };

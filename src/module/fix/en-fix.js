@@ -16,6 +16,10 @@ const translateModule = require('../system/translate-module');
 // engine module
 const { aiList } = require('../system/engine-module');
 
+// OPTIMIZATION: Pre-compile frequently used regex patterns
+const MIXED_CASE_REGEX = /(?<=[a-z])[A-Z](?=[a-z\b])/g;
+const STUTTER_REGEX = /(?<=\b)(\w{1,2})-\1/gi;
+
 // npc channel
 const npcChannel = ['003D', '0044', '2AB9'];
 
@@ -66,8 +70,8 @@ async function start(dialogData = {}) {
       }
     }
 
-    // fix audio text
-    if (/(?<=[a-z])[A-Z](?=[a-z\b])/g.test(text)) {
+    // fix audio text (OPTIMIZED: Use pre-compiled regex)
+    if (MIXED_CASE_REGEX.test(text)) {
       const audioTextArray = text.split(' ');
 
       for (let index = 0; index < audioTextArray.length; index++) {
@@ -278,8 +282,8 @@ function specialFix(name = '', text = '') {
       .replaceAll('The Fallen', 'The Fallen#');
   }
 
-  // ApPlE => Apple
-  if (/(?<=[a-z])[A-Z](?=[a-z\b])/g.test(text)) {
+  // ApPlE => Apple (OPTIMIZED: Use pre-compiled regex)
+  if (MIXED_CASE_REGEX.test(text)) {
     let textArray = text.split(' ');
     for (let index = 0; index < textArray.length; index++) {
       const element = textArray[index];
@@ -288,10 +292,10 @@ function specialFix(name = '', text = '') {
     text = textArray.join(' ');
   }
 
-  // A-Apple => Apple
+  // A-Apple => Apple (OPTIMIZED: Use pre-compiled regex)
   loopCount = 0;
-  while (/(?<=\b)(\w{1,2})-\1/gi.test(text) && loopCount < 10) {
-    text = text.replace(/(?<=\b)(\w{1,2})-\1/gi, '$1');
+  while (STUTTER_REGEX.test(text) && loopCount < 10) {
+    text = text.replace(STUTTER_REGEX, '$1');
     loopCount++;
   }
 

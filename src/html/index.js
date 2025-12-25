@@ -362,12 +362,20 @@ function addDialog(id = '', code = '') {
   return dialog;
 }
 
-// set dialog content
+// set dialog content (OPTIMIZED: reuse span to avoid DOM reconstruction)
 function setDialogContent(dialog, text = '') {
   if (dialog) {
-    const content = document.createElement('span');
+    // Try to reuse existing span element
+    let content = dialog.querySelector('span');
+
+    if (!content) {
+      // Create new span only if it doesn't exist
+      content = document.createElement('span');
+      dialog.appendChild(content);
+    }
+
+    // Update innerHTML without rebuilding DOM
     content.innerHTML = text;
-    dialog.innerHTML = content.outerHTML;
   }
 }
 

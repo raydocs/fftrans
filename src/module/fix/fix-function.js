@@ -93,7 +93,10 @@ function replaceWord(text = '', table = []) {
     wordTable.push([code, target[index]]);
   }
 
-  console.log('replaceWord before:', text);
+  // OPTIMIZED: Only log in development mode
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('replaceWord before:', text);
+  }
 
   for (let index = 0; index < wordTable.length; index++) {
     const element = wordTable[index];
@@ -111,7 +114,10 @@ function replaceWord(text = '', table = []) {
     }
   }
 
-  console.log('replaceWord after:', text);
+  // OPTIMIZED: Only log in development mode
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('replaceWord after:', text);
+  }
 
   return text;
 }

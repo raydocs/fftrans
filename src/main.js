@@ -23,8 +23,20 @@ const windowModule = require('./module/system/window-module');
 // sharlayan module
 const sharlayanModule = require('./module/system/sharlayan-module');
 
+// translate module (for cleanup)
+const translateModule = require('./module/system/translate-module');
+
+// performance monitor
+const { globalMonitor } = require('./module/system/performance-monitor');
+
 // translation cache
 const { globalCache } = require('./module/system/translation-cache');
+
+// text detect module
+const textDetectModule = require('./module/system/text-detect-module');
+
+// ipc module
+const ipcModule = require('./module/system/ipc-module');
 
 // on ready
 app.on('ready', () => {
@@ -53,8 +65,20 @@ app.on('before-quit', async (event) => {
     // Stop Sharlayan reader process (don't restart)
     sharlayanModule.stop(false);
 
+    // Cleanup translation batch processor (flush pending batches)
+    await translateModule.cleanup();
+
     // Cleanup translation cache (stop auto-save interval, final save)
     await globalCache.cleanup();
+
+    // Cleanup OCR worker
+    await textDetectModule.cleanup();
+
+    // Cleanup IPC handlers (prevent memory leaks)
+    ipcModule.cleanupIPC();
+
+    // Performance monitor final report
+    globalMonitor.cleanup();
 
     // Unregister all global shortcuts
     globalShortcut.unregisterAll();

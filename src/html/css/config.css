@@ -269,6 +269,10 @@ main {
   background: transparent;
 }
 
+.config-page[hidden] {
+  display: none !important;
+}
+
 /* ========== 设置分组卡片 ========== */
 .settings-section {
   background: var(--bg-secondary);

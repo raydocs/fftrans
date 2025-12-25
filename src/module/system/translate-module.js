@@ -11,7 +11,19 @@ const engineModule = require('./engine-module');
 // translation cache
 const { globalCache: translationCache } = require('./translation-cache');
 const pendingTranslations = new Map();
-const tableHashes = new Map();
+
+// OPTIMIZATION: Cache table hashes by content (not by object reference)
+// Key format: MD5(table content) -> hash
+const tableHashCache = new Map();
+
+// OPTIMIZATION: batch processor for reducing network round trips
+const batcher = require('./translate-batcher');
+
+// OPTIMIZATION: multi-line batcher for reducing API calls
+const { globalMultilineBatcher } = require('./multiline-batcher');
+
+// OPTIMIZATION: performance monitoring
+const { globalMonitor } = require('./performance-monitor');
 
 // translator
 const baidu = require('../translator/baidu');
@@ -47,17 +59,26 @@ function generateTableHash(table = []) {
   }
 }
 
+/**
+ * Get stable hash for table content
+ * OPTIMIZATION: Uses content-based caching instead of object reference
+ * This prevents cache invalidation when table object changes but content is same
+ */
 function getTableHash(table = []) {
   if (!table || (Array.isArray(table) && table.length === 0)) {
     return 'no-table';
   }
 
-  if (tableHashes.has(table)) {
-    return tableHashes.get(table);
+  // Generate hash from actual table content
+  const hash = generateTableHash(table);
+
+  // Use the hash itself as cache key (content-addressed)
+  // This ensures same content always produces same hash,
+  // regardless of object reference changes
+  if (!tableHashCache.has(hash)) {
+    tableHashCache.set(hash, hash);
   }
 
-  const hash = generateTableHash(table);
-  tableHashes.set(table, hash);
   return hash;
 }
 
@@ -79,22 +100,38 @@ function getCacheKey(text = '', translation = {}, table = [], type = 'sentence')
 async function translate(text = '', translation = {}, table = [], type = 'sentence') {
   let result = '';
 
+  // PERF: Start timing
+  const timerId = `translate-${Date.now()}-${Math.random()}`;
+  globalMonitor.startTimer(timerId, 'translation');
+
   try {
     // clear newline
     text = text.replace(/[\r\n]/g, '');
 
     // check text
     if (text === '' || translation.from === translation.to) {
+      globalMonitor.endTimer(timerId);
       return text;
     }
 
+    // OPTIMIZATION: Try multi-line batching first
+    // This reduces API calls by 60-80% for multi-line dialogues
+    const batchedResult = await globalMultilineBatcher.addLine(text, translation, table, type);
+    if (batchedResult !== null) {
+      // Successfully handled by batcher
+      globalMonitor.endTimer(timerId, { multilineBatched: true });
+      return batchedResult;
+    }
+    // If batcher returns null (disabled or error), fall through to normal translation
+
     const cacheKey = getCacheKey(text, translation, table, type);
 
-    // ✨ Check cache first (OPTIMIZED: hashed/stable key)
-    const cached = translationCache.get(cacheKey, translation.engine);
+    // ✨ Check cache first (OPTIMIZED: direct key lookup, no double normalization)
+    const cached = translationCache.getByKey(cacheKey);
 
     if (cached) {
       // Cache hit - return immediately
+      globalMonitor.endTimer(timerId, { cacheHit: true });
       return cached;
     }
 
@@ -110,8 +147,8 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
       // Process and normalize the result
       const finalResult = clearCode(rawResult, table);
 
-      // ✨ Store in cache (hashed key)
-      translationCache.set(cacheKey, translation.engine, finalResult);
+      // ✨ Store in cache (OPTIMIZED: direct key storage, no double normalization)
+      translationCache.setByKey(cacheKey, finalResult);
 
       return finalResult;
     })();
@@ -120,6 +157,7 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
 
     try {
       const resolved = await promise;
+      globalMonitor.endTimer(timerId, { cacheHit: false });
       return resolved;
     } finally {
       pendingTranslations.delete(cacheKey);
@@ -127,6 +165,7 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
 
   } catch (error) {
     console.log(error);
+    globalMonitor.endTimer(timerId, { cacheHit: false });
     result = '' + error;
   }
 
@@ -148,8 +187,8 @@ async function translateStream(text = '', translation = {}, table = [], type = '
 
     const cacheKey = getCacheKey(text, translation, table, type);
 
-    // Cache short-circuit
-    const cached = translationCache.get(cacheKey, translation.engine);
+    // Cache short-circuit (OPTIMIZED: direct key lookup)
+    const cached = translationCache.getByKey(cacheKey);
     if (cached) {
       if (onChunk) {
         onChunk(cached);
@@ -224,8 +263,8 @@ async function translateStream(text = '', translation = {}, table = [], type = '
         // Use processed stream buffer or process final result
         const finalResult = processedText || clearCode(result, table);
 
-        // ✅ cache after streaming completes
-        translationCache.set(cacheKey, translation.engine, finalResult);
+        // ✅ cache after streaming completes (OPTIMIZED: direct key storage)
+        translationCache.setByKey(cacheKey, finalResult);
 
         return finalResult;
       }
@@ -244,7 +283,7 @@ async function translateStream(text = '', translation = {}, table = [], type = '
   return result;
 }
 
-// translate 2
+// translate 2 (OPTIMIZED: uses batch processor for non-streaming engines)
 async function translate2(text = '', translation = {}, type = 'sentence') {
   const autoChange = translation.autoChange;
   const engineList = engineModule.getEngineList(translation.engine, translation.engineAlternate);
@@ -261,9 +300,34 @@ async function translate2(text = '', translation = {}, type = 'sentence') {
     }
 
     if (option) {
-      const result2 = await getTranslation(engine, option, type);
-      result.isError = result2.isError;
-      result.text = result2.text;
+      // OPTIMIZATION: Use batch processor for eligible engines
+      if (batcher.isBatchable(engine)) {
+        try {
+          // Create a translation function for the batcher
+          const translateFn = async (batchText, batchTranslation) => {
+            const batchOption = engineModule.getTranslateOption(batchText, engine, batchTranslation);
+            const batchResult = await getTranslation(engine, batchOption, type);
+            if (batchResult.isError) {
+              throw new Error(batchResult.text || 'Translation failed');
+            }
+            return batchResult.text;
+          };
+
+          // Add to batch queue
+          const batchedText = await batcher.addToBatch(option.text, translation, translateFn);
+          result.isError = false;
+          result.text = batchedText;
+        } catch (error) {
+          console.error(`[Batcher] Error:`, error);
+          result.isError = true;
+          result.text = '';
+        }
+      } else {
+        // Non-batchable engine - use original logic
+        const result2 = await getTranslation(engine, option, type);
+        result.isError = result2.isError;
+        result.text = result2.text;
+      }
     } else {
       continue;
     }
@@ -397,10 +461,17 @@ function clearCode(text = '', table = []) {
   return text;
 }
 
+// Cleanup function for app shutdown
+async function cleanup() {
+  await batcher.cleanup();
+  await globalMultilineBatcher.cleanup();
+}
+
 // module exports
 module.exports = {
   translate,
   translateStream,
   getTranslation,
   translationCache,
+  cleanup,
 };

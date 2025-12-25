@@ -125,41 +125,54 @@ async function entry() {
     const config = configModule.getConfig();
     const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini'];
     const useStreaming = config.ai?.useStreaming !== false && streamingSupportedEngines.includes(dialogData.translation.engine);
+    const hasNpcName = npcChannel.includes(dialogData.code);
 
-    // translate name
-    if (npcChannel.includes(dialogData.code)) {
-      dialogData.translatedName = await translateModule.translate(dialogData.name, dialogData.translation, [], 'name');
+    // Parallelize name + text translation for non-streaming (faster response)
+    if (!useStreaming && hasNpcName) {
+      const [translatedName, translatedText] = await Promise.all([
+        translateModule.translate(dialogData.name, dialogData.translation, [], 'name'),
+        translateModule.translate(dialogData.text, dialogData.translation)
+      ]);
+      dialogData.translatedName = translatedName;
+      dialogData.translatedText = translatedText;
     }
+    // Sequential for streaming (can't parallelize with real-time UI updates)
+    else {
+      // translate name first if needed
+      if (hasNpcName) {
+        dialogData.translatedName = await translateModule.translate(dialogData.name, dialogData.translation, [], 'name');
+      }
 
-    // translate text (with streaming support for OpenRouter, GPT, Gemini)
-    if (useStreaming) {
-      // Initialize throttle state for this dialog
-      streamingUpdateState.set(dialogData.id, { lastUpdate: 0 });
+      // translate text (with streaming support for OpenRouter, GPT, Gemini)
+      if (useStreaming) {
+        // Initialize throttle state for this dialog
+        streamingUpdateState.set(dialogData.id, { lastUpdate: 0 });
 
-      dialogData.translatedText = await translateModule.translateStream(
-        dialogData.text,
-        dialogData.translation,
-        [],
-        'sentence',
-        (chunk) => {
-          // Update dialog in real-time as chunks arrive (THROTTLED to reduce CPU)
-          dialogData.translatedText = chunk;
+        dialogData.translatedText = await translateModule.translateStream(
+          dialogData.text,
+          dialogData.translation,
+          [],
+          'sentence',
+          (chunk) => {
+            // Update dialog in real-time as chunks arrive (THROTTLED to reduce CPU)
+            dialogData.translatedText = chunk;
 
-          const now = Date.now();
-          const state = streamingUpdateState.get(dialogData.id);
+            const now = Date.now();
+            const state = streamingUpdateState.get(dialogData.id);
 
-          // Only update UI if enough time has passed since last update
-          if (state && now - state.lastUpdate >= UI_UPDATE_INTERVAL_MS) {
-            state.lastUpdate = now;
-            dialogModule.updateDialog(dialogData);
+            // Only update UI if enough time has passed since last update
+            if (state && now - state.lastUpdate >= UI_UPDATE_INTERVAL_MS) {
+              state.lastUpdate = now;
+              dialogModule.updateDialog(dialogData);
+            }
           }
-        }
-      );
+        );
 
-      // Clean up throttle state
-      streamingUpdateState.delete(dialogData.id);
-    } else {
-      dialogData.translatedText = await translateModule.translate(dialogData.text, dialogData.translation);
+        // Clean up throttle state
+        streamingUpdateState.delete(dialogData.id);
+      } else {
+        dialogData.translatedText = await translateModule.translate(dialogData.text, dialogData.translation);
+      }
     }
 
     // set audio text

@@ -489,7 +489,7 @@
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
             <span id="p-gemini">Google Gemini</span>
-            <a href="#" id="a-set-gemini-api" class="header-link">获取 API Key</a>
+            <a href="#" id="a-test-gemini-api" class="header-link">测试链接</a>
           </div>
           <div class="setting-item">
             <div class="setting-info">
@@ -512,39 +512,6 @@
           </div>
         </div>
 
-        <!-- GPT -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <circle cx="15.5" cy="8.5" r="1.5"></circle>
-              <path d="M9 15h6"></path>
-            </svg>
-            <span id="p-chat-gpt">OpenAI GPT</span>
-            <a href="#" id="a-set-gpt-api" class="header-link">获取 API Key</a>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-gpt-api-key">API Key</div>
-              <div class="setting-description" id="desc-gpt-api-key">OpenAI Platform API Key</div>
-            </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-gpt-api-key" />
-              <input type="password" class="form-control" id="input-gpt-api-key" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-gpt-model">模型</div>
-              <div class="setting-description" id="desc-gpt-model">如 gpt-4.1-mini</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-gpt-model" style="width: 200px" />
-            </div>
-          </div>
-        </div>
-
         <!-- OpenRouter -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -554,7 +521,7 @@
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
             </svg>
             <span id="p-openrouter">OpenRouter</span>
-            <a href="#" id="a-set-openrouter-api" class="header-link">获取 API Key</a>
+            <a href="#" id="a-test-openrouter-api" class="header-link">测试链接</a>
           </div>
           <div class="setting-item">
             <div class="setting-info">
@@ -569,7 +536,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-label" id="label-openrouter-model">模型</div>
-              <div class="setting-description" id="desc-openrouter-model">如 google/gemini-2.5-flash</div>
+              <div class="setting-description" id="desc-openrouter-model">如 z-ai/glm-4-32b</div>
             </div>
             <div class="setting-control">
               <input type="text" class="form-control" id="input-openrouter-model" style="width: 220px" />
@@ -593,6 +560,39 @@
 
         <!-- 折叠内容 -->
         <div id="div-more-engines" class="collapsible-content" hidden>
+          <!-- GPT -->
+          <div class="settings-section nested">
+            <div class="settings-section-header">
+              <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <circle cx="15.5" cy="8.5" r="1.5"></circle>
+                <path d="M9 15h6"></path>
+              </svg>
+              <span id="p-chat-gpt">OpenAI GPT</span>
+              <a href="#" id="a-test-gpt-api" class="header-link">测试链接</a>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-gpt-api-key">API Key</div>
+                <div class="setting-description" id="desc-gpt-api-key">OpenAI Platform API Key</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-gpt-api-key" />
+                <input type="password" class="form-control" id="input-gpt-api-key" />
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-gpt-model">模型</div>
+                <div class="setting-description" id="desc-gpt-model">如 gpt-4.1-mini</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" id="input-gpt-model" style="width: 200px" />
+              </div>
+            </div>
+          </div>
+
           <!-- Cohere -->
           <div class="settings-section nested">
             <div class="settings-section-header">
@@ -602,7 +602,7 @@
                 <path d="M2 12l10 5 10-5"></path>
               </svg>
               <span id="p-cohere">Cohere</span>
-              <a href="#" id="a-set-cohere-api" class="header-link">获取 API Key</a>
+              <a href="#" id="a-test-cohere-api" class="header-link">测试链接</a>
             </div>
             <div class="setting-item">
               <div class="setting-info">
@@ -632,7 +632,7 @@
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               </svg>
               <span id="p-kimi">Kimi (Moonshot)</span>
-              <a href="#" id="a-set-kimi-api" class="header-link">获取 API Key</a>
+              <a href="#" id="a-test-kimi-api" class="header-link">测试链接</a>
             </div>
             <div class="setting-item">
               <div class="setting-info">
@@ -671,7 +671,7 @@
                 <line x1="1" y1="14" x2="4" y2="14"></line>
               </svg>
               <span id="p-llm-api">自定义 LLM API</span>
-              <a href="#" id="a-set-llm-api" class="header-link">文档</a>
+              <a href="#" id="a-test-llm-api" class="header-link">测试链接</a>
             </div>
             <p id="p-ssl-warning" class="text-warning" style="padding: 0.5rem 1.25rem; margin: 0; font-size: 0.8rem;"></p>
             <div class="setting-item">
@@ -748,8 +748,6 @@
             </div>
           </div>
         </div>
-        </div>
-        <!-- 上面的 </div> 关闭 div-more-engines -->
 
         <!-- Speechify TTS -->
         <div class="settings-section">
@@ -1028,6 +1026,7 @@
             <p class="text-warning" style="margin: 0.25rem 0 0 0; font-size: 0.8rem;" id="p-prompt-tip"></p>
           </div>
         </div>
+
       </div>
 
       <!-- system page -->

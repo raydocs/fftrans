@@ -38,23 +38,60 @@ function getLogLocation() {
 // dialog timeout
 let hideDialogTimeout = null;
 
+// OPTIMIZATION: Batch update mechanism for streaming translations
+const pendingUpdates = new Map(); // dialogId -> { dialogData, scroll, save, timerId }
+const UPDATE_BATCH_DELAY = 16; // ms (roughly 60 FPS)
+
 // add dialog
 function addDialog(dialogData = {}) {
   windowModule.sendIndex('add-dialog', dialogData);
 }
 
-// update dialog
+// update dialog (OPTIMIZED: batched updates to reduce IPC frequency)
 function updateDialog(dialogData = {}, scroll = true, save = true) {
-  // send
-  windowModule.sendIndex('update-dialog', dialogData, getStyle(dialogData.code), scroll);
+  const dialogId = dialogData.id;
 
-  // show dialog
-  showDialog();
+  // Check if there's a pending update for this dialog
+  if (pendingUpdates.has(dialogId)) {
+    const pending = pendingUpdates.get(dialogId);
 
-  // save dialog
-  if (save) {
-    saveDialog(dialogData);
+    // Clear the existing timer
+    clearTimeout(pending.timerId);
+
+    // Update with the latest data (merge behavior)
+    pending.dialogData = dialogData;
+    pending.scroll = scroll; // Keep latest scroll preference
+    pending.save = save || pending.save; // Save if any update requested it
+  } else {
+    // Create new pending update entry
+    pendingUpdates.set(dialogId, {
+      dialogData,
+      scroll,
+      save,
+      timerId: null,
+    });
   }
+
+  // Schedule the actual update
+  const pending = pendingUpdates.get(dialogId);
+  pending.timerId = setTimeout(() => {
+    // Execute the batched update
+    const { dialogData: data, scroll: shouldScroll, save: shouldSave } = pending;
+
+    // send
+    windowModule.sendIndex('update-dialog', data, getStyle(data.code), shouldScroll);
+
+    // show dialog
+    showDialog();
+
+    // save dialog
+    if (shouldSave) {
+      saveDialog(data);
+    }
+
+    // Remove from pending map
+    pendingUpdates.delete(dialogId);
+  }, UPDATE_BATCH_DELAY);
 }
 
 // add notification

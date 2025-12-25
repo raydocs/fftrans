@@ -33,6 +33,10 @@ function startApp() {
   // directory check
   fileModule.directoryCheck();
 
+  // Initialize logger with file rotation
+  const logPath = fileModule.getUserDataPath('config', 'log.txt');
+  Logger.init(logPath);
+
   // load config
   configModule.loadConfig();
 
@@ -42,11 +46,18 @@ function startApp() {
   // detect user language
   detectUserLanguage();
 
-  // 🆕 Preload translation cache with common phrases
-  preloadCache();
-
   // set IPC
   ipcModule.setIPC();
+
+  // 🆕 Defer cache preload to idle time (3 seconds after startup)
+  setTimeout(() => {
+    preloadCache();
+  }, 3000);
+
+  // OPTIMIZATION: Warm up OpenRouter connection early (non-blocking)
+  setTimeout(() => {
+    warmupOpenRouterConnection();
+  }, 1000);  // Start warmup earlier than cache preload
 
   // set global shortcut
   setGlobalShortcut();
@@ -62,11 +73,11 @@ function preloadCache() {
   try {
     const config = configModule.getConfig();
 
-    // Preload for the selected engine AND common fallback engines to boost first-hit latency
+    // Only preload for current engine + alternate (not all engines)
     const engines = new Set([
       config.translation?.engine || 'OpenRouter',
-      'Google', 'DeepL', 'OpenAI', 'Gemini', 'Kimi', 'Cohere', 'Baidu', 'Youdao', 'Papago'
-    ]);
+      config.translation?.engineAlternate
+    ].filter(Boolean)); // Remove undefined/null values
 
     // Load common phrases dictionary
     const commonPhrasesPath = fileModule.getRootPath('src', 'data', 'text', 'cache', FILE_NAMES.COMMON_PHRASES);
@@ -85,6 +96,21 @@ function preloadCache() {
     }
   } catch (error) {
     Logger.error('app-module', 'Cache preload failed', error);
+  }
+}
+
+// OPTIMIZATION: Warm up OpenRouter connection
+async function warmupOpenRouterConnection() {
+  try {
+    const config = configModule.getConfig();
+
+    // Only warmup if OpenRouter is the current engine
+    if (config.translation?.engine === 'OpenRouter') {
+      const openRouter = require('../translator/openrouter');
+      await openRouter.warmupConnection();
+    }
+  } catch (error) {
+    Logger.warn('app-module', 'OpenRouter warmup failed (non-critical)', error);
   }
 }
 

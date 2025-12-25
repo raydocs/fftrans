@@ -99,12 +99,12 @@ function getElementTextList() {
       a: {
         // config
         'a-set-google-vision': ['說明', '说明', 'Guide'],
-        'a-set-gemini-api': ['說明', '说明', 'Guide'],
-        'a-set-cohere-api': ['說明', '说明', 'Guide'],
-        'a-set-kimi-api': ['說明', '说明', 'Guide'],
-        'a-set-openrouter-api': ['說明', '说明', 'Guide'],
-        'a-set-gpt-api': ['說明', '说明', 'Guide'],
-        'a-set-llm-api': ['說明', '说明', 'Guide'],
+        'a-test-gemini-api': ['測試連結', '测试链接', 'Test Connection'],
+        'a-test-cohere-api': ['測試連結', '测试链接', 'Test Connection'],
+        'a-test-kimi-api': ['測試連結', '测试链接', 'Test Connection'],
+        'a-test-openrouter-api': ['測試連結', '测试链接', 'Test Connection'],
+        'a-test-gpt-api': ['測試連結', '测试链接', 'Test Connection'],
+        'a-test-llm-api': ['測試連結', '测试链接', 'Test Connection'],
 
         'a-readme': ['使用說明書', '使用说明书', 'User Guide'],
         'a-github': ['GitHub', 'GitHub', 'GitHub'],
@@ -237,11 +237,6 @@ function getElementTextList() {
           'Custom Translation Prompt(System Role)',
         ],
         'label-prompt-preset': ['Prompt預設', 'Prompt预设', 'Prompt Preset'],
-        'option-prompt-default': ['使用預設', '使用预设', 'Use Default'],
-        'option-prompt-game': ['遊戲對話（自然）', '游戏对话（自然）', 'Game Dialogue (Natural)'],
-        'option-prompt-story': ['劇情翻譯（保留情感）', '剧情翻译（保留情感）', 'Story (Preserve Emotion)'],
-        'option-prompt-simple': ['簡潔翻譯（最快）', '简洁翻译（最快）', 'Simple (Fastest)'],
-        'option-prompt-custom': ['自訂', '自定义', 'Custom'],
         'p-prompt-tip': [
           '留空使用預設prompt，或選擇上方預設模板',
           '留空使用预设prompt，或选择上方预设模板',
@@ -287,6 +282,13 @@ function getElementTextList() {
 
         normal: ['細', '细', 'Normal'],
         bold: ['粗', '粗', 'Bold'],
+
+        // 提示词预设
+        'default': ['使用預設', '使用预设', 'Use Default'],
+        'game': ['遊戲對話', '游戏对话', 'Game Dialogue'],
+        'story': ['劇情翻譯', '剧情翻译', 'Story'],
+        'simple': ['簡潔翻譯', '简洁翻译', 'Simple'],
+        'custom': ['自訂', '自定义', 'Custom'],
 
         '#Web-Translator': ['#線上翻譯', '#在线翻译', '#Web'],
         Youdao: ['有道翻譯', '有道翻译', 'Youdao'],

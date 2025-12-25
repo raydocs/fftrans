@@ -28,6 +28,30 @@ const gptModule = require('../translator/gpt');
 const PromiseQueue = require('../../utils/promise-queue');
 const ocrQueue = new PromiseQueue(1); // Max 1 concurrent OCR request
 
+// Singleton OCR Worker
+let ocrWorkerPromise = null;
+
+// Get or create OCR worker (singleton)
+async function getOcrWorker() {
+  if (!ocrWorkerPromise) {
+    ocrWorkerPromise = createWorker('eng');
+  }
+  return ocrWorkerPromise;
+}
+
+// Cleanup OCR worker
+async function cleanup() {
+  if (ocrWorkerPromise) {
+    try {
+      const worker = await ocrWorkerPromise;
+      await worker.terminate();
+      ocrWorkerPromise = null;
+    } catch (error) {
+      console.warn('[TextDetect] Worker cleanup failed:', error.message);
+    }
+  }
+}
+
 // start reconizing
 async function startReconizing(captureData) {
   captureData.text = '';
@@ -87,8 +111,8 @@ async function tesseractOCR(captureData) {
   let text = '';
 
   try {
-    // set worker - 只使用英文OCR引擎
-    const worker = await createWorker('eng');
+    // Get singleton worker - reuse across all OCR requests
+    const worker = await getOcrWorker();
 
     // recognize text
     const ret = await worker.recognize(captureData.imageBuffer);
@@ -96,8 +120,7 @@ async function tesseractOCR(captureData) {
     // fix or show error
     text = ret.data.text;
 
-    // terminate worker
-    await worker.terminate();
+    // Worker is kept alive for reuse - no terminate
   } catch (error) {
     console.log(error);
     dialogModule.addNotification(error);
@@ -161,4 +184,5 @@ async function translateImageText(captureData) {
 module.exports = {
   startReconizing,
   translateImageText,
+  cleanup,
 };

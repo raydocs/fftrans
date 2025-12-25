@@ -6,6 +6,14 @@ const fixFunction = require('./fix-function');
 // en json
 const enJson = require('./en-json');
 
+// OPTIMIZATION: Cache for plural and adjective forms to avoid recalculation
+const morphologyCache = new Map(); // "word" -> { plural, adjective }
+
+// OPTIMIZATION: Pre-compile common regex patterns
+const WORD_BOUNDARY_REGEX = /\b[A-Za-z]+\b/gi;
+const CAPITALIZED_WORD_REGEX = /\b[A-Z]+[a-z]+\b/g;
+const UPPERCASE_CHAR_REGEX = /[A-Z]/g;
+
 // en text function (OPTIMIZED: Uses Set for faster lookups)
 function replaceTextByCode(text = '', array = []) {
   if (text === '' || !Array.isArray(array) || !array.length > 0) {
@@ -24,23 +32,32 @@ function replaceTextByCode(text = '', array = []) {
   let tempText = text;
 
   // OPTIMIZED: Pre-filter using word boundaries to reduce items to check
-  const wordsInText = new Set(text.match(/\b[A-Za-z]+\b/gi) || []);
+  const wordsInText = new Set(text.match(WORD_BOUNDARY_REGEX) || []);
   let tempTable = [];
 
   // OPTIMIZED: Only check items that might match (instead of all items)
+  // Convert words to lowercase for faster comparison
+  const lowerText = text.toLowerCase();
+  const lowerWords = new Set(Array.from(wordsInText).map(w => w.toLowerCase()));
+
   for (const item of array) {
     const word = item[srcIndex];
     if (word && typeof word === 'string') {
-      // Quick check: does any word in text match (case-insensitive)?
       const wordLower = word.toLowerCase();
+
+      // Quick check: does text contain this word?
+      if (!lowerText.includes(wordLower)) continue;
+
+      // Check if any word in text matches
       let found = false;
-      for (const textWord of wordsInText) {
-        if (textWord.toLowerCase().includes(wordLower) || wordLower.includes(textWord.toLowerCase())) {
+      for (const textWord of lowerWords) {
+        if (textWord.includes(wordLower) || wordLower.includes(textWord)) {
           found = true;
           break;
         }
       }
-      if (found && text.toLowerCase().includes(wordLower)) {
+
+      if (found) {
         tempTable.push(item);
       }
     }
@@ -52,8 +69,8 @@ function replaceTextByCode(text = '', array = []) {
   // sort temp table (longer matches first to avoid conflicts)
   tempTable = tempTable.sort((a, b) => b[0].length - a[0].length);
 
-  // set temp text
-  const tempTextArray = tempText.match(/\b[A-Z]+[a-z]+\b/g);
+  // set temp text (OPTIMIZED: Use pre-compiled regex)
+  const tempTextArray = tempText.match(CAPITALIZED_WORD_REGEX);
   if (tempTextArray) {
     for (let index = 0; index < tempTextArray.length; index++) {
       const element = tempTextArray[index];
@@ -61,8 +78,8 @@ function replaceTextByCode(text = '', array = []) {
     }
   }
 
-  // clear code
-  const characters = tempText.match(/[A-Z]/g);
+  // clear code (OPTIMIZED: Use pre-compiled regex)
+  const characters = tempText.match(UPPERCASE_CHAR_REGEX);
   if (characters) {
     for (let index = 0; index < characters.length; index++) {
       codeString = codeString.replaceAll(characters[index].toUpperCase(), '');
@@ -73,8 +90,19 @@ function replaceTextByCode(text = '', array = []) {
   for (let index = 0; index < tempTable.length && codeIndex < codeString.length; index++) {
     const element = tempTable[index];
     const searchElement = fixFunction.removeRegSymbol(element[srcIndex]);
-    const searchElementPlural = getPluralType(searchElement);
-    const searchElementAdjective = getAdjectiveType(searchElement);
+
+    // OPTIMIZED: Check cache for morphology forms
+    let morphology = morphologyCache.get(searchElement);
+    if (!morphology) {
+      morphology = {
+        plural: getPluralType(searchElement),
+        adjective: getAdjectiveType(searchElement),
+      };
+      morphologyCache.set(searchElement, morphology);
+    }
+
+    const searchElementPlural = morphology.plural;
+    const searchElementAdjective = morphology.adjective;
     let searchReg = null;
 
     if (enJson.getEnArray().uncountable.includes(searchElement)) {
@@ -114,7 +142,11 @@ function needTranslation(text = '', table = []) {
 
   // remove marks
   text = text.replace(/[^A-Za-z]/g, '');
-  console.log('needTranslation:', text !== '');
+
+  // OPTIMIZED: Only log in development mode
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('needTranslation:', text !== '');
+  }
 
   return text !== '';
 }

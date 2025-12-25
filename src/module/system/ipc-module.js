@@ -88,8 +88,42 @@ const appVersion = app.getVersion();
 // No kanji
 const regNoKanji = /^[^\u3100-\u312F\u3400-\u4DBF\u4E00-\u9FFF]+$/;
 
+// Track registered IPC channels for cleanup
+const registeredChannels = {
+  handlers: new Set(),
+  listeners: new Set()
+};
+
+// Clean up all IPC handlers before re-registering (prevents memory leaks)
+function cleanupIPC() {
+  // Remove all handlers
+  registeredChannels.handlers.forEach(channel => {
+    try {
+      ipcMain.removeHandler(channel);
+    } catch {
+      // Handler might not exist, ignore
+    }
+  });
+
+  // Remove all listeners
+  registeredChannels.listeners.forEach(channel => {
+    try {
+      ipcMain.removeAllListeners(channel);
+    } catch {
+      // Listener might not exist, ignore
+    }
+  });
+
+  // Clear tracking sets
+  registeredChannels.handlers.clear();
+  registeredChannels.listeners.clear();
+}
+
 // set ipc
 function setIPC() {
+  // Clean up old handlers first (prevent memory leaks on reload)
+  cleanupIPC();
+
   setSystemChannel();
   setWindowChannel();
   setDialogChannel();
@@ -629,6 +663,54 @@ function setTranslateChannel() {
     return engineModule.aiList;
   });
 
+  ipcMain.handle('test-ai-translation', async (event, engine) => {
+    const engineName = typeof engine === 'string' ? engine.trim() : '';
+    if (!engineName || !engineModule.aiList.includes(engineName)) {
+      return { success: false, message: 'Invalid AI engine' };
+    }
+
+    const config = configModule.getConfig();
+    const from = config.translation?.from || 'English';
+    let to = config.translation?.to || 'Simplified-Chinese';
+    if (from === to) {
+      to = from === 'English' ? 'Simplified-Chinese' : 'English';
+    }
+
+    const translation = {
+      ...config.translation,
+      engine: engineName,
+      engineAlternate: engineName,
+      autoChange: false,
+      from,
+      to,
+    };
+
+    const sampleText = 'Test connection.';
+    const startTime = Date.now();
+
+    try {
+      const result = await withTimeout(
+        translateModule.translate(sampleText, translation, [], 'sentence'),
+        30000,
+        'AI translation test'
+      );
+      const durationMs = Date.now() - startTime;
+
+      if (typeof result !== 'string' || result.trim().length === 0) {
+        return { success: false, message: 'Empty response from translation' };
+      }
+
+      return {
+        success: true,
+        engine: engineName,
+        durationMs,
+        result,
+      };
+    } catch (error) {
+      return { success: false, message: error.message || String(error) };
+    }
+  });
+
   // add task
   ipcMain.on('add-task', (event, dialogData) => {
     addTask(dialogData);
@@ -924,4 +1006,7 @@ function setFileChannel() {
 }
 
 // module exports
-module.exports = { setIPC };
+module.exports = {
+  setIPC,
+  cleanupIPC
+};

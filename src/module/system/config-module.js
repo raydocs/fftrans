@@ -9,10 +9,19 @@ const fileModule = require('./file-module');
 // engine module
 const engineModule = require('./engine-module');
 
+// crypto helper
+const cryptoHelper = require('../../utils/crypto-helper');
+
+// config validator
+const configValidator = require('../../utils/config-validator');
+
 // Lazily resolve config location to avoid touching app paths before Electron is ready
 function getConfigLocation() {
   return fileModule.getUserDataPath('config', 'config.json');
 }
+
+// Dirty flag to track if config needs saving
+let isConfigDirty = false;
 
 // default config
 const defaultConfig = {
@@ -89,7 +98,7 @@ const defaultConfig = {
     llmApiKey: '',
     llmApiModel: '',
     openRouterApiKey: '',
-    openRouterModel: 'openrouter/polaris-alpha',
+    openRouterModel: 'z-ai/glm-4-32b',
     speechify: {
       bearerToken: '',
       voiceId: 'gwyneth',
@@ -137,6 +146,9 @@ function loadConfig() {
   try {
     currentConfig = fileModule.read(getConfigLocation(), 'json');
 
+    // Decrypt API keys after loading
+    currentConfig = cryptoHelper.decryptApiKeys(currentConfig);
+
     // fix old bug
     if (
       typeof currentConfig !== 'object' ||
@@ -148,9 +160,11 @@ function loadConfig() {
     }
 
     // fix config 1
+    const configBeforeFix = JSON.stringify(currentConfig);
     fixConfig1(currentConfig);
+    fixConfig2(currentConfig);
 
-    // fix options
+    // fix options (property migration)
     const mainNames = Object.keys(defaultConfig);
     mainNames.forEach((mainName) => {
       if (
@@ -188,25 +202,51 @@ function loadConfig() {
       }
     });
 
-    // fix config 2
-    fixConfig2(currentConfig);
+    // Mark dirty if config was modified by fixes or property migration
+    const configAfterFix = JSON.stringify(currentConfig);
+    if (configBeforeFix !== configAfterFix) {
+      isConfigDirty = true;
+    }
 
-    // set first time off
-    currentConfig.system.firstTime = false;
+    // set first time off (mark dirty if it was true)
+    if (currentConfig.system.firstTime === true) {
+      currentConfig.system.firstTime = false;
+      isConfigDirty = true;
+    }
   } catch (error) {
     console.log(error);
     currentConfig = getDefaultConfig();
+    isConfigDirty = true; // Mark dirty when using default config
+  }
+
+  // Validate configuration
+  const validationResult = configValidator.validate(currentConfig, defaultConfig);
+  if (!validationResult.valid) {
+    console.warn('[ConfigModule] Configuration validation warnings:', validationResult.errors);
+    // Log but don't block - config will use default values for invalid fields
   }
 
   setSSLCertificate();
-  saveConfig();
+
+  // Only save if config was modified (dirty flag will prevent unnecessary saves)
+  if (isConfigDirty) {
+    saveConfig();
+  }
+
   return currentConfig;
 }
 
-// save config
+// save config (only if dirty)
 async function saveConfig() {
+  if (!isConfigDirty) {
+    return; // Skip save if config hasn't changed
+  }
+
   try {
-    await fileModule.writeAsync(getConfigLocation(), currentConfig, 'json');
+    // Encrypt API keys before saving
+    const encryptedConfig = cryptoHelper.encryptApiKeys(currentConfig);
+    await fileModule.writeAsync(getConfigLocation(), encryptedConfig, 'json');
+    isConfigDirty = false; // Clear dirty flag after successful save
   } catch (error) {
     console.log(error);
   }
@@ -220,6 +260,7 @@ function getConfig() {
 // set config
 function setConfig(newConfig) {
   currentConfig = newConfig;
+  isConfigDirty = true; // Mark config as dirty
   setSSLCertificate();
   saveConfig();
 }

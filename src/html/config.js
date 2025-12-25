@@ -281,39 +281,62 @@ function setButton() {
     ipcRenderer.send('execute-command', `explorer "${path}"`);
   };
 
-  // set cohere api
-  document.getElementById('a-set-gemini-api').onclick = async () => {
-    const path = await ipcRenderer.invoke('get-root-path', 'src', 'data', 'text', 'readme', 'sub-gemini-api.html');
-    ipcRenderer.send('execute-command', `explorer "${path}"`);
-  };
+  const aiTestLinks = [
+    { id: 'a-test-gemini-api', engine: 'Gemini' },
+    { id: 'a-test-openrouter-api', engine: 'OpenRouter' },
+    { id: 'a-test-gpt-api', engine: 'GPT' },
+    { id: 'a-test-cohere-api', engine: 'Cohere' },
+    { id: 'a-test-kimi-api', engine: 'Kimi' },
+    { id: 'a-test-llm-api', engine: 'LLM-API' },
+  ];
 
-  // set cohere api
-  document.getElementById('a-set-cohere-api').onclick = async () => {
-    const path = await ipcRenderer.invoke('get-root-path', 'src', 'data', 'text', 'readme', 'sub-cohere-api.html');
-    ipcRenderer.send('execute-command', `explorer "${path}"`);
-  };
+  const TEST_TIMEOUT_MS = 35000;
 
-  document.getElementById('a-set-kimi-api').onclick = async () => {
-    const path = await ipcRenderer.invoke('get-root-path', 'src', 'data', 'text', 'readme', 'sub-kimi-api.html');
-    ipcRenderer.send('execute-command', `explorer "${path}"`);
-  };
+  function invokeWithTimeout(channel, args, timeoutMs) {
+    return Promise.race([
+      ipcRenderer.invoke(channel, ...(args || [])),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`请求超时 (${timeoutMs}ms)`)), timeoutMs);
+      }),
+    ]);
+  }
 
-  // set openrouter api
-  document.getElementById('a-set-openrouter-api').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://openrouter.ai/"');
-  };
+  async function runAiTest(engine, link) {
+    const originalText = link.innerText;
+    link.style.pointerEvents = 'none';
+    link.innerText = '测试中...';
 
-  // set gpt api
-  document.getElementById('a-set-gpt-api').onclick = async () => {
-    const path = await ipcRenderer.invoke('get-root-path', 'src', 'data', 'text', 'readme', 'sub-gpt-api.html');
-    ipcRenderer.send('execute-command', `explorer "${path}"`);
-  };
+    try {
+      const config = await ipcRenderer.invoke('get-config');
+      saveOptions(config);
+      await ipcRenderer.invoke('set-config', config);
 
-  // set LLM API
-  document.getElementById('a-set-llm-api').onclick = async () => {
-    const path = await ipcRenderer.invoke('get-root-path', 'src', 'data', 'text', 'readme', 'sub-llm-api.html');
-    ipcRenderer.send('execute-command', `explorer "${path}"`);
-  };
+      const result = await invokeWithTimeout('test-ai-translation', [engine], TEST_TIMEOUT_MS);
+
+      if (result.success) {
+        alert(`测试成功\n引擎: ${result.engine}\n耗时: ${result.durationMs}ms\n结果: ${result.result}`);
+      } else {
+        alert(`测试失败\n${result.message || '未知错误'}`);
+      }
+    } catch (error) {
+      alert(`测试出错\n${error.message}`);
+    } finally {
+      link.style.pointerEvents = '';
+      link.innerText = originalText;
+    }
+  }
+
+  aiTestLinks.forEach(({ id, engine }) => {
+    const link = document.getElementById(id);
+    if (!link) {
+      return;
+    }
+
+    link.onclick = (event) => {
+      event.preventDefault();
+      runAiTest(engine, link);
+    };
+  });
 
   // open google credential
   document.getElementById('button-google-credential').onclick = () => {
