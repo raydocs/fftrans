@@ -85,8 +85,8 @@ const googleTTS = require('../translator/google-tts');
 // app version
 const appVersion = app.getVersion();
 
-// No kanji
-const regNoKanji = /^[^\u3100-\u312F\u3400-\u4DBF\u4E00-\u9FFF]+$/;
+// All kanji/katakana
+const regAllKanjikatakana = /^[\u3100-\u312F\u3400-\u4DBF\u4E00-\u9FFFァ-ヺ]+ー?$/;
 
 // Track registered IPC channels for cleanup
 const registeredChannels = {
@@ -422,6 +422,11 @@ function setDialogChannel() {
   ipcMain.handle('create-log-name', (event, milliseconds) => {
     return dialogModule.createLogName(milliseconds);
   });
+
+  // remove dialog
+  ipcMain.on('remove-dialog', (event, id) => {
+    windowModule.sendIndex('remove-dialog', id);
+  });
 }
 
 // set capture channel
@@ -579,7 +584,7 @@ function setJsonChannel() {
     let textBefore2 = textBefore;
     let array = [];
 
-    if (type !== 'custom-overwrite' && textBefore2.length < 3 && regNoKanji.test(textBefore2)) textBefore2 += '#';
+    if (type !== 'custom-overwrite' && !regAllKanjikatakana.test(textBefore2) && textBefore2.length < 3) textBefore2 += '#';
 
     if (type === 'custom-source') {
       fileName = 'custom-source.json';
@@ -605,7 +610,7 @@ function setJsonChannel() {
     let fileName = '';
     let textBefore2 = textBefore;
 
-    if (type !== 'custom-overwrite' && textBefore2.length < 3 && regNoKanji.test(textBefore2)) {
+    if (type !== 'custom-overwrite' && !regAllKanjikatakana.test(textBefore2) && textBefore2.length < 3) {
       textBefore2 += '#';
     }
 

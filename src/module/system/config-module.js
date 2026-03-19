@@ -161,6 +161,7 @@ function loadConfig() {
 
     // fix config 1
     const configBeforeFix = JSON.stringify(currentConfig);
+    fixConfig0(currentConfig);
     fixConfig1(currentConfig);
     fixConfig2(currentConfig);
 
@@ -283,6 +284,27 @@ function setSSLCertificate() {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 1;
   } else {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  }
+}
+
+// fix config 0 - parse window sizes as integers
+function fixConfig0(config) {
+  try {
+    if (config?.indexWindow) {
+      config.indexWindow.width = parseInt(config.indexWindow.width);
+      config.indexWindow.height = parseInt(config.indexWindow.height);
+    }
+  } catch (error) {
+    console.warn('[ConfigModule] fixConfig0 - fix index window size failed:', error.message);
+  }
+
+  try {
+    if (config?.captureWindow) {
+      config.captureWindow.width = parseInt(config.captureWindow.width);
+      config.captureWindow.height = parseInt(config.captureWindow.height);
+    }
+  } catch (error) {
+    console.warn('[ConfigModule] fixConfig0 - fix capture window size failed:', error.message);
   }
 }
 

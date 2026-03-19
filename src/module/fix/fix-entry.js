@@ -175,9 +175,7 @@ async function entry() {
       }
     }
 
-    // set audio text
-    dialogData.audioText = dialogData.text;
-  }
+    }
 
   // update dialog
   if (dialogData.translatedText === '') {

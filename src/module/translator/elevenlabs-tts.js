@@ -8,49 +8,12 @@
 const axios = require('axios');
 const configModule = require('../system/config-module');
 const elevenLabsAuth = require('./elevenlabs-auth');
+const { splitText } = require('../../utils/text-splitter');
 
 // ElevenLabs API configuration
 const API_BASE_URL = 'https://api.elevenlabs.io/v1';
-const VOICES_ENDPOINT = `${API_BASE_URL}/reader/voices`;
 const TTS_ENDPOINT = `${API_BASE_URL}/text-to-speech`;
 const USER_AGENT = 'readerapp/405 CFNetwork/3860.100.1 Darwin/25.0.0';
-
-// punctuations for text splitting (same as Google TTS)
-const punctuations = {
-  first: /。|！|？|\.|!|\?/i,
-  second: /、|,/i,
-  third: /\u3000| /i,
-};
-
-/**
- * Get list of available voices
- * @param {Object|string} config - Config override or bearer token
- * @returns {Promise<Array>} Array of voice objects
- */
-async function getVoices(config) {
-  try {
-    const authConfig = await elevenLabsAuth.resolveAuthConfig(
-      typeof config === 'string' ? { bearerToken: config } : (config || {}),
-      { persistTokens: true }
-    );
-
-    const response = await axios.get(VOICES_ENDPOINT, {
-      headers: {
-        'Authorization': `Bearer ${authConfig.bearerToken}`,
-        'Accept': '*/*',
-        'User-Agent': USER_AGENT,
-        ...(authConfig.deviceId ? { 'Device-ID': authConfig.deviceId } : {}),
-        ...(authConfig.appCheckToken ? { 'xi-app-check-token': authConfig.appCheckToken } : {}),
-      },
-      timeout: 10000
-    });
-
-    return response.data.voices || [];
-  } catch (error) {
-    console.error('[ElevenLabs TTS] Failed to fetch voices:', error.message);
-    throw error;
-  }
-}
 
 /**
  * Synthesize speech using ElevenLabs API
@@ -160,24 +123,15 @@ async function getAudioUrl(text = '', from = 'English') {
   };
   const language = languageMap[from] || 'en';
 
-  // Split text using the same logic as Google TTS
+  // Split text and synthesize chunks in parallel
   const texts = splitText(text);
+  const results = await Promise.allSettled(
+    texts.map(chunk => synthesizeSpeech(chunk, language, authConfig, { skipAuthResolve: true }))
+  );
 
-  // Synthesize each chunk
-  const audioUrls = [];
-  for (const chunk of texts) {
-    try {
-      const audioUrl = await synthesizeSpeech(chunk, language, authConfig, { skipAuthResolve: true });
-      if (audioUrl) {
-        audioUrls.push(audioUrl);
-      }
-    } catch (error) {
-      console.error('[ElevenLabs TTS] Failed to synthesize chunk:', error.message);
-      // Continue with next chunk instead of failing completely
-    }
-  }
-
-  return audioUrls;
+  return results
+    .filter(r => r.status === 'fulfilled' && r.value)
+    .map(r => r.value);
 }
 
 /**
@@ -208,64 +162,7 @@ async function testConfiguration() {
   }
 }
 
-/**
- * Split text into chunks (same logic as Google TTS)
- * @param {string} text - Text to split
- * @returns {Array<string>} Array of text chunks
- */
-function splitText(text = '') {
-  let startIndex = 0;
-  let textArray = [text];
-
-  // Split if text exceeds 200 characters (same as Google TTS)
-  while (textArray[startIndex] && textArray[startIndex].length >= 200) {
-    const result = splitText2(textArray[startIndex]);
-
-    textArray[startIndex] = result[0].trim();
-    textArray.push(result[1].trim());
-
-    startIndex++;
-  }
-
-  return textArray.filter(t => t.length > 0);
-}
-
-/**
- * Split text at punctuation boundaries
- * @param {string} text - Text to split
- * @returns {Array<string>} Two-element array [before, after]
- */
-function splitText2(text = '') {
-  // Try to split at primary punctuation (。！？.!?)
-  for (let index = 199; index >= 0; index--) {
-    const char = text[index];
-    if (punctuations.first.test(char)) {
-      return [text.slice(0, index + 1), text.slice(index + 1)];
-    }
-  }
-
-  // Try to split at secondary punctuation (、,)
-  for (let index = 199; index >= 0; index--) {
-    const char = text[index];
-    if (punctuations.second.test(char)) {
-      return [text.slice(0, index + 1), text.slice(index + 1)];
-    }
-  }
-
-  // Try to split at spaces
-  for (let index = 199; index >= 0; index--) {
-    const char = text[index];
-    if (punctuations.third.test(char)) {
-      return [text.slice(0, index + 1), text.slice(index + 1)];
-    }
-  }
-
-  // If no good split point found, split at 200 characters
-  return [text.slice(0, 200), text.slice(200)];
-}
-
 module.exports = {
-  getVoices,
   synthesizeSpeech,
   getAudioUrl,
   testConfiguration

@@ -115,6 +115,13 @@ function setButton() {
     ipcRenderer.send('add-task', dialogData);
   };
 
+  // remove dialog
+  document.getElementById('button-remove-dialog').onclick = () => {
+    if (targetLog) {
+      ipcRenderer.send('remove-dialog', targetLog.id);
+    }
+  };
+
   // load json
   document.getElementById('button-load-json').onclick = () => {
     ipcRenderer.send('load-json');

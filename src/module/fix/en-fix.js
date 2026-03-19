@@ -45,7 +45,6 @@ async function start(dialogData = {}) {
 
   let translatedName = '';
   let translatedText = '';
-  let audioText = '';
 
   try {
     // fix name
@@ -70,19 +69,6 @@ async function start(dialogData = {}) {
       }
     }
 
-    // fix audio text (OPTIMIZED: Use pre-compiled regex)
-    if (MIXED_CASE_REGEX.test(text)) {
-      const audioTextArray = text.split(' ');
-
-      for (let index = 0; index < audioTextArray.length; index++) {
-        const word = audioTextArray[index];
-        audioTextArray[index] = word[0].toUpperCase + word.slice(1).toLowerCase();
-      }
-
-      audioText = audioTextArray.join(' ');
-    } else {
-      audioText = text;
-    }
   } catch (error) {
     console.log(error);
     translatedName = '';
@@ -92,7 +78,6 @@ async function start(dialogData = {}) {
   // set text
   dialogData.translatedName = translatedName;
   dialogData.translatedText = translatedText;
-  dialogData.audioText = audioText;
 
   return dialogData;
 }

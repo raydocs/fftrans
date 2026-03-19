@@ -6,6 +6,9 @@ const axios = require('axios');
 // config module
 const configModule = require('../system/config-module');
 
+// text splitter
+const { splitText } = require('../../utils/text-splitter');
+
 // Speechify API endpoint (fixed)
 const SPEECHIFY_API_URL = 'https://audio.api.speechify.com/v3/synthesis/get';
 
@@ -15,13 +18,6 @@ const voiceMapping = {
   English: 'gwyneth',
   'Traditional-Chinese': 'gwyneth',
   'Simplified-Chinese': 'gwyneth',
-};
-
-// punctuations for text splitting
-const punctuations = {
-  first: /。|！|？|\.|!|\?/i,
-  second: /、|,/i,
-  third: /\u3000| /i,
 };
 
 /**
@@ -40,27 +36,17 @@ async function getAudioUrl(text = '', from = 'English') {
     return [];
   }
 
-  // Split text into chunks
+  // Split text into chunks and synthesize in parallel
   const textArray = splitText(text);
-  const urlArray = [];
+  const results = await Promise.allSettled(
+    textArray
+      .filter(chunk => chunk.length > 0)
+      .map(chunk => synthesizeSpeech(chunk, from, speechifyConfig))
+  );
 
-  for (let index = 0; index < textArray.length; index++) {
-    const textChunk = textArray[index];
-
-    if (textChunk.length > 0) {
-      try {
-        const audioDataUrl = await synthesizeSpeech(textChunk, from, speechifyConfig);
-        if (audioDataUrl) {
-          urlArray.push(audioDataUrl);
-        }
-      } catch (error) {
-        console.error(`[Speechify TTS] Error synthesizing chunk ${index}:`, error.message);
-        // Don't stop on error, continue with next chunk
-      }
-    }
-  }
-
-  return urlArray;
+  return results
+    .filter(r => r.status === 'fulfilled' && r.value)
+    .map(r => r.value);
 }
 
 /**
@@ -155,55 +141,6 @@ function convertBinaryToDataUrl(binaryData, format = 'ogg') {
 }
 
 /**
- * Split text into chunks (max 200 chars at punctuation)
- */
-function splitText(text = '') {
-  let startIndex = 0;
-  let textArray = [text];
-
-  while (textArray[startIndex] && textArray[startIndex].length >= 200) {
-    const result = splitText2(textArray[startIndex]);
-    textArray[startIndex] = result[0].trim();
-    textArray.push(result[1].trim());
-    startIndex++;
-  }
-
-  return textArray.filter(t => t.length > 0);
-}
-
-/**
- * Split text at punctuation (internal helper)
- */
-function splitText2(text = '') {
-  // Try to split at first-level punctuation
-  for (let index = 199; index >= 0; index--) {
-    const char = text[index];
-    if (punctuations.first.test(char)) {
-      return [text.slice(0, index + 1), text.slice(index + 1)];
-    }
-  }
-
-  // Try second-level punctuation
-  for (let index = 199; index >= 0; index--) {
-    const char = text[index];
-    if (punctuations.second.test(char)) {
-      return [text.slice(0, index + 1), text.slice(index + 1)];
-    }
-  }
-
-  // Try third-level punctuation (spaces)
-  for (let index = 199; index >= 0; index--) {
-    const char = text[index];
-    if (punctuations.third.test(char)) {
-      return [text.slice(0, index + 1), text.slice(index + 1)];
-    }
-  }
-
-  // Force split at 200
-  return [text.slice(0, 200), text.slice(200)];
-}
-
-/**
  * Test Speechify configuration
  * @returns {Promise<object>} Test result
  */
@@ -236,5 +173,6 @@ async function testConfiguration() {
 // module exports
 module.exports = {
   getAudioUrl,
+  synthesizeSpeech,
   testConfiguration,
 };
