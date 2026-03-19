@@ -56,14 +56,24 @@ async function setCookie() {
 // set authentication
 async function setAuthentication() {
   const response1 = await requestModule.get('https://papago.naver.com/');
-  const fileName = regFileName.exec(response1.data).groups.target;
+  const fileNameMatch = regFileName.exec(response1.data);
+  if (!fileNameMatch?.groups?.target) {
+    throw new Error('[Papago] Failed to extract JS bundle filename from page');
+  }
+  const fileName = fileNameMatch.groups.target;
 
   const response2 = await requestModule.get('https://papago.naver.com/' + fileName);
-  const ppg = regPpg.exec(response2.data).groups.target;
-  const version = regVersion.exec(ppg).groups.target;
+  const ppgMatch = regPpg.exec(response2.data);
+  if (!ppgMatch?.groups?.target) {
+    throw new Error('[Papago] Failed to extract PPG signature from bundle');
+  }
+  const versionMatch = regVersion.exec(ppgMatch.groups.target);
+  if (!versionMatch?.groups?.target) {
+    throw new Error('[Papago] Failed to extract version from PPG signature');
+  }
 
   authentication.deviceId = papagoFunction.generateDeviceId();
-  authentication.papagoVersion = version;
+  authentication.papagoVersion = versionMatch.groups.target;
 }
 
 // translate
@@ -81,21 +91,19 @@ async function translate(option) {
 
   const response = await requestModule.post(
     'https://papago.naver.com/apis/n2mt/translate',
-    encodeURI(
-      requestModule.toParameters({
-        deviceId: authentication.deviceId,
-        locale: 'en-US',
-        agree: false,
-        dict: 'true',
-        dictDisplay: 30,
-        honorific: false,
-        instant: false,
-        paging: false,
-        source: option.from,
-        target: option.to,
-        text: option.text,
-      })
-    ),
+    requestModule.toParameters({
+      deviceId: authentication.deviceId,
+      locale: 'en-US',
+      agree: false,
+      dict: 'true',
+      dictDisplay: 30,
+      honorific: false,
+      instant: false,
+      paging: false,
+      source: option.from,
+      target: option.to,
+      text: option.text,
+    }),
     {
       Accept: 'application/json',
       'Accept-Encoding': 'gzip, deflate, br, zstd',

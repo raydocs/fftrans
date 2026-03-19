@@ -16,6 +16,7 @@
  *   const result = await batcher.addLine(text, translation, table, type);
  */
 
+const crypto = require('crypto');
 const configModule = require('./config-module');
 const Logger = require('../../utils/logger');
 
@@ -157,16 +158,19 @@ class MultilineBatcher {
     const combinedText = items.map(item => item.text).join(this.config.separator);
 
     try {
-      // Import translate module (avoid circular dependency)
+      // Use getTranslation directly to avoid re-entering addLine
       const translateModule = require('./translate-module');
-
-      // Single translation request for all lines
-      const combinedResult = await translateModule.translate(
-        combinedText,
-        items[0].translation,
-        items[0].table,
+      const engineModule = require('../system/engine-module');
+      const option = engineModule.getTranslateOption(combinedText, items[0].translation.engine, items[0].translation);
+      const rawResult = await translateModule.getTranslation(
+        items[0].translation.engine,
+        option,
         items[0].type
       );
+      if (rawResult.isError) {
+        throw new Error(rawResult.text || 'Batch translation failed');
+      }
+      const combinedResult = translateModule.clearCode(rawResult.text, items[0].table);
 
       // Split result back into individual lines
       const results = combinedResult.split(this.config.separator);
@@ -197,17 +201,21 @@ class MultilineBatcher {
 
   /**
    * Process a single item (no batching needed)
+   * Calls translate2 directly to avoid re-entering addLine → infinite recursion
    */
   async _processSingleItem(item) {
     try {
       const translateModule = require('./translate-module');
-      const result = await translateModule.translate(
-        item.text,
-        item.translation,
-        item.table,
+      const result = await translateModule.getTranslation(
+        item.translation.engine,
+        require('../system/engine-module').getTranslateOption(item.text, item.translation.engine, item.translation),
         item.type
       );
-      item.resolve(result);
+      if (result.isError) {
+        item.reject(new Error(result.text || 'Translation failed'));
+      } else {
+        item.resolve(translateModule.clearCode(result.text, item.table));
+      }
     } catch (error) {
       item.reject(error);
     }
@@ -215,19 +223,25 @@ class MultilineBatcher {
 
   /**
    * Fallback: Process items individually when batching fails
+   * Calls getTranslation directly to avoid re-entering addLine
    */
   async _processFallbackIndividual(items) {
     const translateModule = require('./translate-module');
+    const engineModule = require('../system/engine-module');
 
     for (const item of items) {
       try {
-        const result = await translateModule.translate(
-          item.text,
-          item.translation,
-          item.table,
+        const option = engineModule.getTranslateOption(item.text, item.translation.engine, item.translation);
+        const result = await translateModule.getTranslation(
+          item.translation.engine,
+          option,
           item.type
         );
-        item.resolve(result);
+        if (result.isError) {
+          item.reject(new Error(result.text || 'Translation failed'));
+        } else {
+          item.resolve(translateModule.clearCode(result.text, item.table));
+        }
       } catch (error) {
         item.reject(error);
       }
@@ -256,13 +270,18 @@ class MultilineBatcher {
 
   /**
    * Generate a unique key for a translation configuration
+   * Includes table hash to prevent merging items with different replacement tables
    */
   _getConfigKey(item) {
+    const tableHash = item.table && item.table.length > 0
+      ? crypto.createHash('md5').update(JSON.stringify(item.table)).digest('hex').slice(0, 8)
+      : 'no-table';
     return [
       item.translation.engine || 'unknown',
       item.translation.from || '',
       item.translation.to || '',
-      item.type || 'sentence'
+      item.type || 'sentence',
+      tableHash
     ].join(':');
   }
 

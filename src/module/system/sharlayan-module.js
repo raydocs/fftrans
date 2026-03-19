@@ -76,6 +76,9 @@ const rootSignaturesPath = fileModule.getRootPath('signatures.json');
 // reader process
 let readerProcess = null;
 
+// stdout line buffer for handling chunked data
+let stdoutBuffer = '';
+
 // do restart
 let restartReader = true;
 
@@ -131,42 +134,40 @@ function start() {
     // spawn reader process
     readerProcess = childProcess.spawn(sharlayanExePath);
 
-    // on reader close
-    readerProcess.on('close', (code) => {
+    // reset line buffer on new process
+    stdoutBuffer = '';
+
+    // event handlers (stored for cleanup)
+    const onClose = (code) => {
       console.log(`${readerName}.exe closed (code: ${code})`);
-
-      // write history
-      // fileModule.write(sharlayanHistoryPath, { dialogHistory, textHistory }, 'json');
-
-      // restart if app is not closed
+      cleanup();
       if (restartReader) {
         start();
       }
-    });
+    };
 
-    // on reader error
-    readerProcess.on('error', (err) => {
+    const onError = (err) => {
       console.log(err.message);
-    });
+    };
 
-    // on reader stdout error
-    readerProcess.stdout.on('error', (err) => {
+    const onStdoutError = (err) => {
       console.log(err.message);
-    });
+    };
 
-    // on reader stdout data
-    readerProcess.stdout.on('data', (data) => {
-      // split data string by \r\n
-      const dataArray = data.toString().split('\r\n');
+    const onStdoutData = (data) => {
+      // Append to buffer to handle chunked JSON lines
+      stdoutBuffer += data.toString();
+      const lines = stdoutBuffer.split('\r\n');
 
-      // read data
-      for (let index = 0; index < dataArray.length; index++) {
+      // Keep the last potentially incomplete line in the buffer
+      stdoutBuffer = lines.pop() || '';
+
+      for (let index = 0; index < lines.length; index++) {
         try {
-          const jsonString = dataArray[index];
+          const jsonString = lines[index];
 
           if (jsonString.length > 0) {
-            // get dialog data
-            const dialogData = JSON.parse(jsonString.toString());
+            const dialogData = JSON.parse(jsonString);
             console.log('\r\nDialog Data:', dialogData);
 
             // skip invalid characters(EF BF BD, DEL)
@@ -174,10 +175,8 @@ function start() {
               continue;
             }
 
-            // fix dialog data text
             fixText(dialogData);
 
-            // check repetition
             if (isNotRepeated(dialogData)) {
               serverModule.dataProcess(dialogData);
             } else {
@@ -188,7 +187,24 @@ function start() {
           console.log(error);
         }
       }
-    });
+    };
+
+    // cleanup function to remove all listeners
+    function cleanup() {
+      if (readerProcess) {
+        readerProcess.removeListener('close', onClose);
+        readerProcess.removeListener('error', onError);
+        if (readerProcess.stdout) {
+          readerProcess.stdout.removeListener('error', onStdoutError);
+          readerProcess.stdout.removeListener('data', onStdoutData);
+        }
+      }
+    }
+
+    readerProcess.on('close', onClose);
+    readerProcess.on('error', onError);
+    readerProcess.stdout.on('error', onStdoutError);
+    readerProcess.stdout.on('data', onStdoutData);
   } catch (error) {
     console.log(error);
   }

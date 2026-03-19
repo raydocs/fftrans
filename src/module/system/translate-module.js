@@ -472,6 +472,7 @@ module.exports = {
   translate,
   translateStream,
   getTranslation,
+  clearCode,
   translationCache,
   cleanup,
 };

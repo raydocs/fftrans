@@ -6,6 +6,7 @@ const aiFunction = require('./ai-function');
 
 const configModule = require('../system/config-module');
 const requestModule = require('../system/request-module');
+const { extractChoicesContent } = require('../../utils/safe-extract');
 
 const chatHistoryList = {};
 
@@ -65,7 +66,7 @@ async function translate(text, source, target, type) {
     temperature: parseFloat(config.ai.temperature),
   });
 
-  const responseText = response.choices[0].message.content;
+  const responseText = extractChoicesContent({ data: response }, 'GPT');
   const totalTokens = response?.usage?.total_tokens;
 
   // push history
@@ -190,7 +191,7 @@ async function getImageText(imageBase64 = '') {
       ],
     });
 
-    return response.choices[0].message.content;
+    return extractChoicesContent({ data: response }, 'GPT Vision');
   } catch (error) {
     console.log(error);
     return '';

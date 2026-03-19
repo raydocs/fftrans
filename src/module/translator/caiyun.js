@@ -2,9 +2,16 @@
 
 // request module
 const requestModule = require('../system/request-module');
+const configModule = require('../system/config-module');
+
+// Default public token (may be rate-limited or revoked)
+const DEFAULT_TOKEN = 'token lqkr1tfixq1wa9kmj9po';
 
 // translate
 async function exec(option) {
+  const config = configModule.getConfig();
+  const token = config.api.caiyunToken || DEFAULT_TOKEN;
+
   const response = await requestModule.post(
     'https://api.interpreter.caiyunai.com/v1/translator',
     {
@@ -17,7 +24,7 @@ async function exec(option) {
     },
     {
       'Content-Type': 'application/json',
-      'x-authorization': 'token lqkr1tfixq1wa9kmj9po',
+      'x-authorization': token.startsWith('token ') ? token : `token ${token}`,
     }
   );
 

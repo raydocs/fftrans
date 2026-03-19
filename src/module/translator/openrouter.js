@@ -9,6 +9,7 @@ const configModule = require('../system/config-module');
 
 // Retry utility for resilient API calls
 const { retryWithBackoff } = require('../../utils/retry');
+const { extractChoicesContent } = require('../../utils/safe-extract');
 
 const chatHistoryList = {};
 const axiosInstance = axios.create({
@@ -129,7 +130,7 @@ async function translate(text, source, target, type) {
     }
   );
 
-  const responseText = response.data.choices[0].message.content;
+  const responseText = extractChoicesContent(response, 'OpenRouter');
   const totalTokens = response?.data?.usage?.total_tokens;
 
   // push history

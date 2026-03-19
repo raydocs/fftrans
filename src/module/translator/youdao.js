@@ -47,12 +47,10 @@ async function setCookie() {
 async function setAuthentication() {
   const response = await requestModule.get(
     'https://dict.youdao.com/webtranslate/key?' +
-      encodeURI(
-        requestModule.toParameters({
-          ...{ keyid: 'webfanyi-key-getter' },
-          ...youdaoFunction.createParams('asdjnjfenknafdfsdfsd'),
-        })
-      ),
+      requestModule.toParameters({
+        ...{ keyid: 'webfanyi-key-getter' },
+        ...youdaoFunction.createParams('asdjnjfenknafdfsdfsd'),
+      }),
     {
       Accept: 'application/json, text/plain, */*',
       'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -71,7 +69,11 @@ async function setAuthentication() {
     }
   );
 
-  authentication.secretKey = response.data.data.secretKey;
+  const secretKey = response?.data?.data?.secretKey;
+  if (!secretKey) {
+    throw new Error('[Youdao] Failed to get secretKey from response');
+  }
+  authentication.secretKey = secretKey;
 }
 
 // translate
@@ -83,18 +85,16 @@ async function translate(option) {
 
   const response = await requestModule.post(
     'https://dict.youdao.com/webtranslate',
-    encodeURI(
-      requestModule.toParameters({
-        ...{
-          i: option.text,
-          from: option.from,
-          to: option.to,
-          dictResult: 'true',
-          keyid: 'webfanyi',
-        },
-        ...youdaoFunction.createParams(authentication.secretKey),
-      })
-    ),
+    requestModule.toParameters({
+      ...{
+        i: option.text,
+        from: option.from,
+        to: option.to,
+        dictResult: 'true',
+        keyid: 'webfanyi',
+      },
+      ...youdaoFunction.createParams(authentication.secretKey),
+    }),
     {
       Accept: 'application/json, text/plain, */*',
       'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -114,8 +114,17 @@ async function translate(option) {
     }
   );
 
-  const data = JSON.parse(youdaoFunction.decodeData(response.data));
-  const resultArray = data.translateResult[0];
+  let data;
+  try {
+    data = JSON.parse(youdaoFunction.decodeData(response.data));
+  } catch (error) {
+    throw new Error('[Youdao] Failed to decode/parse response: ' + error.message);
+  }
+
+  const resultArray = data?.translateResult?.[0];
+  if (!Array.isArray(resultArray)) {
+    throw new Error('[Youdao] Unexpected response structure: missing translateResult');
+  }
 
   let result = '';
 

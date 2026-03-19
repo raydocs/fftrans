@@ -5,6 +5,7 @@ const requestModule = require('../system/request-module');
 const aiFunction = require('./ai-function');
 
 const configModule = require('../system/config-module');
+const { extractChoicesContent } = require('../../utils/safe-extract');
 
 const chatHistoryList = {};
 
@@ -46,7 +47,7 @@ async function translate(text, source, target, type) {
 
   // get response
   const response = await requestModule.post(apiUrl, payload, headers);
-  const responseText = response.data.choices[0].message.content;
+  const responseText = extractChoicesContent(response, 'Kimi');
   const totalTokens = response?.data?.usage?.total_tokens;
 
   // push history

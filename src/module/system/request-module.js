@@ -90,6 +90,16 @@ async function cachedDnsLookup(hostname, options, callback) {
   }
 }
 
+// Periodically evict expired DNS cache entries (every 10 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of dnsCache) {
+    if (now - entry.timestamp >= DNS_CACHE_TTL) {
+      dnsCache.delete(key);
+    }
+  }
+}, 10 * 60 * 1000);
+
 // restricted headers of Chromium
 // Additionally, setting the Connection header to the value upgrade is also disallowed.
 // const restrictedHeaders = ['Content-Length', 'Host', 'Trailer', 'Te', 'Upgrade', 'Cookie2', 'Keep-Alive', 'Transfer-Encoding'];
@@ -145,7 +155,11 @@ function post(url = '', data = '', headers = {}) {
 // get cookie
 async function getCookie(url = '', regArray = []) {
   const response = await get(url);
-  const setCookie = response.headers['set-cookie'].join('; ');
+  const rawCookies = response.headers['set-cookie'];
+  if (!rawCookies || !Array.isArray(rawCookies) || rawCookies.length === 0) {
+    throw `No set-cookie header in response from [${url}].`;
+  }
+  const setCookie = rawCookies.join('; ');
   const cookie = [];
   const unusedIndex = [];
 
@@ -250,14 +264,14 @@ function setUA(scuValue = [], uaValue = '') {
   }
 }
 
-// to parameters
+// to parameters (properly encodes values to prevent & = + # from breaking payload)
 function toParameters(data = {}) {
   const dataNames = Object.keys(data);
   let parameters = [];
 
   for (let index = 0; index < dataNames.length; index++) {
     const dataName = dataNames[index];
-    parameters.push(`${dataName}=${data[dataName]}`);
+    parameters.push(`${encodeURIComponent(dataName)}=${encodeURIComponent(data[dataName])}`);
   }
 
   return parameters.join('&');

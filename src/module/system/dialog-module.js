@@ -165,6 +165,7 @@ function getStyle(code = '003D') {
 // log cache
 let cachedLog = null;
 let cachedLogPath = '';
+let logWriteChain = Promise.resolve(); // Serialize async writes to prevent race conditions
 
 // save dialog
 function saveDialog(dialogData) {
@@ -243,8 +244,10 @@ function saveDialog(dialogData) {
     // update log in memory
     cachedLog[item.id] = item;
 
-    // write log file asynchronously
-    fileModule.writeAsync(filePath, cachedLog, 'json');
+    // write log file asynchronously (serialized to prevent race conditions)
+    logWriteChain = logWriteChain
+      .then(() => fileModule.writeAsync(filePath, cachedLog, 'json'))
+      .catch(err => console.error('[DialogModule] Log write error:', err));
   } catch (error) {
     console.error(error);
   }

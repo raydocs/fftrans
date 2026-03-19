@@ -5,6 +5,7 @@ const requestModule = require('../system/request-module');
 const aiFunction = require('./ai-function');
 
 const configModule = require('../system/config-module');
+const { extractCohereContent } = require('../../utils/safe-extract');
 
 const chatHistoryList = {};
 
@@ -50,7 +51,7 @@ async function translate(text, source, target, type) {
 
   // get response
   const response = await requestModule.post('https://api.cohere.com/v2/chat', payload, headers);
-  const responseText = response.data.message.content[0].text;
+  const responseText = extractCohereContent(response);
   const totalTokens = response?.data?.usage?.tokens;
 
   // push history

@@ -81,18 +81,21 @@ async function translate(option) {
     }
   );
 
-  const responseArray = response.data.split('\n') || [];
+  const responseArray = (response.data || '').split('\n');
   let list = [];
   let text = '';
 
   for (let index = 0; index < responseArray.length; index++) {
     const element = responseArray[index];
     if (/^data:/i.test(element)) {
-      const data = JSON.parse(element.replace(/^data:/i, ''));
-
-      if (data.data.list) {
-        list = data.data.list;
-        break;
+      try {
+        const data = JSON.parse(element.replace(/^data:/i, ''));
+        if (data?.data?.list) {
+          list = data.data.list;
+          break;
+        }
+      } catch {
+        // Skip unparseable SSE lines
       }
     }
   }
