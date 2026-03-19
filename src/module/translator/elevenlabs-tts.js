@@ -9,11 +9,13 @@ const axios = require('axios');
 const configModule = require('../system/config-module');
 const elevenLabsAuth = require('./elevenlabs-auth');
 const { splitText } = require('../../utils/text-splitter');
+const PromiseQueue = require('../../utils/promise-queue');
 
 // ElevenLabs API configuration
 const API_BASE_URL = 'https://api.elevenlabs.io/v1';
 const TTS_ENDPOINT = `${API_BASE_URL}/text-to-speech`;
 const USER_AGENT = 'readerapp/405 CFNetwork/3860.100.1 Darwin/25.0.0';
+const SYNTHESIS_CONCURRENCY = 4;
 
 /**
  * Synthesize speech using ElevenLabs API
@@ -125,8 +127,9 @@ async function getAudioUrl(text = '', from = 'English') {
 
   // Split text and synthesize chunks in parallel
   const texts = splitText(text);
+  const queue = new PromiseQueue(SYNTHESIS_CONCURRENCY);
   const results = await Promise.allSettled(
-    texts.map(chunk => synthesizeSpeech(chunk, language, authConfig, { skipAuthResolve: true }))
+    texts.map(chunk => queue.add(() => synthesizeSpeech(chunk, language, authConfig, { skipAuthResolve: true })))
   );
 
   return results

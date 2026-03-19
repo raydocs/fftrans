@@ -8,6 +8,7 @@ const configModule = require('../system/config-module');
 
 // text splitter
 const { splitText } = require('../../utils/text-splitter');
+const PromiseQueue = require('../../utils/promise-queue');
 
 // Speechify API endpoint (fixed)
 const SPEECHIFY_API_URL = 'https://audio.api.speechify.com/v3/synthesis/get';
@@ -19,6 +20,8 @@ const voiceMapping = {
   'Traditional-Chinese': 'gwyneth',
   'Simplified-Chinese': 'gwyneth',
 };
+
+const SYNTHESIS_CONCURRENCY = 4;
 
 /**
  * Get audio URLs from Speechify API
@@ -38,10 +41,11 @@ async function getAudioUrl(text = '', from = 'English') {
 
   // Split text into chunks and synthesize in parallel
   const textArray = splitText(text);
+  const queue = new PromiseQueue(SYNTHESIS_CONCURRENCY);
   const results = await Promise.allSettled(
     textArray
       .filter(chunk => chunk.length > 0)
-      .map(chunk => synthesizeSpeech(chunk, from, speechifyConfig))
+      .map(chunk => queue.add(() => synthesizeSpeech(chunk, from, speechifyConfig)))
   );
 
   return results

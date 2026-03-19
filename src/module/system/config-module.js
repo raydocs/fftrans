@@ -291,8 +291,10 @@ function setSSLCertificate() {
 function fixConfig0(config) {
   try {
     if (config?.indexWindow) {
-      config.indexWindow.width = parseInt(config.indexWindow.width);
-      config.indexWindow.height = parseInt(config.indexWindow.height);
+      const width = parseInt(config.indexWindow.width, 10);
+      const height = parseInt(config.indexWindow.height, 10);
+      config.indexWindow.width = Number.isNaN(width) ? defaultConfig.indexWindow.width : width;
+      config.indexWindow.height = Number.isNaN(height) ? defaultConfig.indexWindow.height : height;
     }
   } catch (error) {
     console.warn('[ConfigModule] fixConfig0 - fix index window size failed:', error.message);
@@ -300,8 +302,10 @@ function fixConfig0(config) {
 
   try {
     if (config?.captureWindow) {
-      config.captureWindow.width = parseInt(config.captureWindow.width);
-      config.captureWindow.height = parseInt(config.captureWindow.height);
+      const width = parseInt(config.captureWindow.width, 10);
+      const height = parseInt(config.captureWindow.height, 10);
+      config.captureWindow.width = Number.isNaN(width) ? defaultConfig.captureWindow.width : width;
+      config.captureWindow.height = Number.isNaN(height) ? defaultConfig.captureWindow.height : height;
     }
   } catch (error) {
     console.warn('[ConfigModule] fixConfig0 - fix capture window size failed:', error.message);
