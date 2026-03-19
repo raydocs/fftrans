@@ -1,9 +1,15 @@
-name: Manual Build
+name: Manual Windows Release Build
 on:
-  # workflow_dispatch disabled
-  push:
-    branches:
-      - disabled
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to build (tag, branch, or commit)
+        required: true
+        default: v0.1.1
+      release_tag:
+        description: Existing GitHub release tag to upload assets to
+        required: true
+        default: v0.1.1
 
 permissions:
   contents: write
@@ -14,29 +20,50 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build Windows x64
+      - name: Build Windows x64 installer
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist -- --win --x64
 
-      - name: Upload artifact
+      - name: Resolve build outputs
+        id: resolve_outputs
+        shell: powershell
+        run: |
+          $exe = Get-ChildItem build -Recurse -Filter '*.exe' |
+            Where-Object { $_.Name -notmatch 'uninstall' } |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+          if (-not $exe) {
+            Write-Error 'No Windows installer (.exe) found in build output.'
+            exit 1
+          }
+
+          "exe_path=$($exe.FullName)" >> $env:GITHUB_OUTPUT
+          "exe_name=$($exe.Name)" >> $env:GITHUB_OUTPUT
+          Write-Host "Resolved installer: $($exe.FullName)"
+
+      - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tataru-assistant-windows-x64
-          path: build/Tataru Assistant Setup 2.8.19.exe
+          name: windows-installer-${{ inputs.release_tag }}
+          path: ${{ steps.resolve_outputs.outputs.exe_path }}
           if-no-files-found: error
 
-      - name: Update Release v2.8.19
+      - name: Upload installer to existing GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload v2.8.19 "build/Tataru Assistant Setup 2.8.19.exe" --clobber
+          gh release upload "${{ inputs.release_tag }}" "${{ steps.resolve_outputs.outputs.exe_path }}" --clobber
