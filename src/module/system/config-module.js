@@ -1,29 +1,17 @@
 'use strict';
 
-// electron
 const { app } = require('electron');
-
-// file module
 const fileModule = require('./file-module');
-
-// engine module
 const engineModule = require('./engine-module');
-
-// crypto helper
 const cryptoHelper = require('../../utils/crypto-helper');
-
-// config validator
 const configValidator = require('../../utils/config-validator');
 
-// Lazily resolve config location to avoid touching app paths before Electron is ready
 function getConfigLocation() {
   return fileModule.getUserDataPath('config', 'config.json');
 }
 
-// Dirty flag to track if config needs saving
 let isConfigDirty = false;
 
-// default config
 const defaultConfig = {
   indexWindow: {
     x: -1,
@@ -42,10 +30,10 @@ const defaultConfig = {
     lock: false,
     speech: false,
     speechSpeed: '1',
-    ttsEngine: 'google', // 'google' or 'speechify'
-    compactMode: false, // Compact mode for handheld devices (ROG Ally, Steam Deck, etc.)
-    compactWidth: 320,  // Default width in compact mode (pixels)
-    compactHeight: 200, // Default height in compact mode (pixels)
+    ttsEngine: 'google',
+    compactMode: false,
+    compactWidth: 320,
+    compactHeight: 200,
   },
   dialog: {
     weight: 'normal',
@@ -103,6 +91,7 @@ const defaultConfig = {
       bearerToken: '',
       voiceId: 'gwyneth',
       audioFormat: 'mp3',
+      sentenceSplitting: false,
     },
     elevenlabs: {
       bearerToken: '',
@@ -110,8 +99,12 @@ const defaultConfig = {
       refreshToken: '',
       appCheckToken: '',
       deviceId: '',
-      voiceId: 'nPczCjzI2devNBz1zQrb',  // Brian - default voice
+      voiceId: 'nPczCjzI2devNBz1zQrb',
       modelId: 'eleven_turbo_v2_5',
+      stability: '0.5',
+      similarityBoost: '0.75',
+      style: '0',
+      useSpeakerBoost: true,
     },
   },
   ai: {
@@ -119,7 +112,7 @@ const defaultConfig = {
     chatLength: '0',
     temperature: '0.7',
     customTranslationPrompt: '',
-    useStreaming: true,  // Enable streaming for faster perceived response (OpenRouter only)
+    useStreaming: true,
   },
   proxy: {
     enable: false,
@@ -138,18 +131,49 @@ const defaultConfig = {
   },
 };
 
-// current config
 let currentConfig = getDefaultConfig();
 
-// load config
+function isPlainObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function mergeWithDefaults(currentNode, defaultNode, path = []) {
+  if (Array.isArray(defaultNode)) {
+    return Array.isArray(currentNode) ? deepClone(currentNode) : deepClone(defaultNode);
+  }
+
+  if (!isPlainObject(defaultNode)) {
+    return typeof currentNode === typeof defaultNode ? currentNode : deepClone(defaultNode);
+  }
+
+  const preserveUnknownKeys = path.length === 1 && path[0] === 'channel';
+  const merged = preserveUnknownKeys && isPlainObject(currentNode) ? { ...currentNode } : {};
+  const sourceNode = isPlainObject(currentNode) ? currentNode : {};
+
+  Object.keys(defaultNode).forEach((key) => {
+    merged[key] = mergeWithDefaults(sourceNode[key], defaultNode[key], [...path, key]);
+  });
+
+  return merged;
+}
+
+function normalizeConfigShape(config) {
+  if (!isPlainObject(config)) {
+    return getDefaultConfig();
+  }
+
+  return mergeWithDefaults(config, defaultConfig);
+}
+
 function loadConfig() {
   try {
     currentConfig = fileModule.read(getConfigLocation(), 'json');
-
-    // Decrypt API keys after loading
     currentConfig = cryptoHelper.decryptApiKeys(currentConfig);
 
-    // fix old bug
     if (
       typeof currentConfig !== 'object' ||
       currentConfig === null ||
@@ -159,57 +183,17 @@ function loadConfig() {
       throw 'Use default config.';
     }
 
-    // fix config 1
     const configBeforeFix = JSON.stringify(currentConfig);
     fixConfig0(currentConfig);
     fixConfig1(currentConfig);
     fixConfig2(currentConfig);
+    currentConfig = normalizeConfigShape(currentConfig);
 
-    // fix options (property migration)
-    const mainNames = Object.keys(defaultConfig);
-    mainNames.forEach((mainName) => {
-      if (
-        typeof currentConfig[mainName] === 'undefined' ||
-        typeof currentConfig[mainName] !== typeof defaultConfig[mainName] ||
-        Array.isArray(currentConfig[mainName])
-      ) {
-        currentConfig[mainName] = defaultConfig[mainName];
-      } else {
-        // skip channel
-        if (mainName === 'channel') {
-          return;
-        }
-
-        // add property
-        const subNames = Object.keys(defaultConfig[mainName]);
-        subNames.forEach((subName) => {
-          if (
-            typeof currentConfig[mainName][subName] === 'undefined' ||
-            typeof currentConfig[mainName][subName] !== typeof defaultConfig[mainName][subName]
-          ) {
-            currentConfig[mainName][subName] = defaultConfig[mainName][subName];
-          }
-        });
-
-        // delete redundant property
-        const subNames2 = Object.keys(currentConfig[mainName]);
-        if (subNames.length !== subNames2.length) {
-          subNames2.forEach((subName) => {
-            if (typeof defaultConfig[mainName][subName] === 'undefined') {
-              delete currentConfig[mainName][subName];
-            }
-          });
-        }
-      }
-    });
-
-    // Mark dirty if config was modified by fixes or property migration
     const configAfterFix = JSON.stringify(currentConfig);
     if (configBeforeFix !== configAfterFix) {
       isConfigDirty = true;
     }
 
-    // set first time off (mark dirty if it was true)
     if (currentConfig.system.firstTime === true) {
       currentConfig.system.firstTime = false;
       isConfigDirty = true;
@@ -217,19 +201,16 @@ function loadConfig() {
   } catch (error) {
     console.log(error);
     currentConfig = getDefaultConfig();
-    isConfigDirty = true; // Mark dirty when using default config
+    isConfigDirty = true;
   }
 
-  // Validate configuration
   const validationResult = configValidator.validate(currentConfig, defaultConfig);
   if (!validationResult.valid) {
     console.warn('[ConfigModule] Configuration validation warnings:', validationResult.errors);
-    // Log but don't block - config will use default values for invalid fields
   }
 
   setSSLCertificate();
 
-  // Only save if config was modified (dirty flag will prevent unnecessary saves)
   if (isConfigDirty) {
     saveConfig();
   }
@@ -237,48 +218,41 @@ function loadConfig() {
   return currentConfig;
 }
 
-// save config (only if dirty)
 async function saveConfig() {
   if (!isConfigDirty) {
-    return; // Skip save if config hasn't changed
+    return;
   }
 
   try {
-    // Encrypt API keys before saving
     const encryptedConfig = cryptoHelper.encryptApiKeys(currentConfig);
     await fileModule.writeAsync(getConfigLocation(), encryptedConfig, 'json');
-    isConfigDirty = false; // Clear dirty flag after successful save
+    isConfigDirty = false;
   } catch (error) {
     console.log(error);
   }
 }
 
-// get config
 function getConfig() {
-  return JSON.parse(JSON.stringify(currentConfig));
+  return deepClone(currentConfig);
 }
 
-// set config
 function setConfig(newConfig) {
-  currentConfig = newConfig;
-  isConfigDirty = true; // Mark config as dirty
+  currentConfig = normalizeConfigShape(newConfig);
+  isConfigDirty = true;
   setSSLCertificate();
   saveConfig();
 }
 
-// get default config
 function getDefaultConfig() {
-  return JSON.parse(JSON.stringify(defaultConfig));
+  return deepClone(defaultConfig);
 }
 
-// set default config
 function setDefaultConfig() {
   currentConfig = getDefaultConfig();
   setSSLCertificate();
   setAppLanguage();
 }
 
-// set SSL certificate
 function setSSLCertificate() {
   if (currentConfig.system.sslCertificate) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 1;
@@ -287,7 +261,6 @@ function setSSLCertificate() {
   }
 }
 
-// fix config 0 - parse window sizes as integers
 function fixConfig0(config) {
   try {
     if (config?.indexWindow) {
@@ -312,18 +285,13 @@ function fixConfig0(config) {
   }
 }
 
-// fix config 1
 function fixConfig1(config) {
   try {
-    // fix custom API
     if (config?.api?.unofficialApi) {
-      // set LLM API
       config.translation.engine = 'LLM-API';
       config.api.llmApiUrl = config.api.unofficialApiUrl.replace(/\/$/, '') + '/chat/completions';
       config.api.llmApiKey = config.api.gptApiKey;
       config.api.llmApiModel = config.api.gptModel;
-
-      // reset GPT
       config.api.gptApiKey = '';
       config.api.gptModel = '';
     }
@@ -332,7 +300,6 @@ function fixConfig1(config) {
   }
 
   try {
-    // fix protocol
     if (!['https:', 'http:'].includes(config.proxy.protocol)) {
       if (config.proxy.protocol.includes('https')) {
         config.proxy.protocol = 'https:';
@@ -345,7 +312,6 @@ function fixConfig1(config) {
   }
 
   try {
-    // fix hostname
     if (config.proxy.host) {
       config.proxy.hostname = config.proxy.host;
     }
@@ -354,7 +320,6 @@ function fixConfig1(config) {
   }
 
   try {
-    // fix custom prompt
     if (config.api.kimiCustomPrompt) {
       config.ai.customTranslationPrompt = config.api.kimiCustomPrompt;
     }
@@ -363,10 +328,8 @@ function fixConfig1(config) {
   }
 }
 
-// fix config 2
 function fixConfig2(config) {
   try {
-    // fix engine
     if (!engineModule.engineList.includes(config.translation.engine)) {
       config.translation.engine = defaultConfig.translation.engine;
     }
@@ -375,7 +338,6 @@ function fixConfig2(config) {
   }
 
   try {
-    // fix source
     if (!engineModule.sourceList.includes(config.translation.from)) {
       config.translation.from = defaultConfig.translation.from;
     }
@@ -384,7 +346,6 @@ function fixConfig2(config) {
   }
 
   try {
-    // fix player
     if (!engineModule.sourceList.includes(config.translation.fromPlayer)) {
       config.translation.fromPlayer = defaultConfig.translation.fromPlayer;
     }
@@ -393,7 +354,6 @@ function fixConfig2(config) {
   }
 
   try {
-    // fix target
     if (!engineModule.targetList.includes(config.translation.to)) {
       config.translation.to = defaultConfig.translation.to;
     }
@@ -402,7 +362,6 @@ function fixConfig2(config) {
   }
 
   try {
-    // fix text detect
     if (!engineModule.visionList.includes(config.captureWindow.type)) {
       if (config.captureWindow.type === 'google') {
         config.captureWindow.type = 'google-vision';
@@ -415,7 +374,6 @@ function fixConfig2(config) {
   }
 
   try {
-    // fix google vision
     const googleJsonPath = fileModule.getUserDataPath('config', 'google-credential.json');
     const googleJsonPathNew = fileModule.getUserDataPath('config', 'google-vision-credential.json');
     if (fileModule.exists(googleJsonPath)) {
@@ -429,12 +387,10 @@ function fixConfig2(config) {
   }
 }
 
-// set app language
 function setAppLanguage() {
   const config = getConfig();
-  const locale = app.getSystemLocale(); //Intl.DateTimeFormat().resolvedOptions().locale;
+  const locale = app.getSystemLocale();
 
-  // 默认源语言为英文
   config.translation.from = engineModule.languageEnum.en;
 
   if (/zh-(TW|HK|MO|CHT|Hant)/i.test(locale)) {
@@ -451,7 +407,6 @@ function setAppLanguage() {
   setConfig(config);
 }
 
-// module exports
 module.exports = {
   loadConfig,
   saveConfig,

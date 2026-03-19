@@ -252,16 +252,17 @@ async function playAudio() {
     // Store for download
     currentAudioUrls = urlList;
 
-    // Display audio players
+    if (!Array.isArray(urlList) || urlList.length === 0) {
+      document.getElementById('div-audio').innerHTML = '<p style="color: orange;">⚠️ 未生成可播放音频，请先到设置页测试当前 TTS 配置。</p>';
+      currentAudioUrls = [];
+      return;
+    }
+
     let innerHTML = '';
     for (let index = 0; index < urlList.length; index++) {
       const url = urlList[index];
-
       innerHTML += `
-                <audio controls preload="metadata" autoplay="${index === 0}">
-                    <source src="${url}" type="audio/ogg">
-                    <source src="${url}" type="audio/mpeg">
-                </audio>
+                <audio controls preload="metadata" ${index === 0 ? 'autoplay' : ''} src="${url}"></audio>
                 <br>
             `;
     }
@@ -293,9 +294,11 @@ async function downloadAudio() {
 
       // Determine file extension
       let ext = 'mp3';
-      if (url.includes('data:audio/ogg')) {
+      if (url.startsWith('data:audio/ogg')) {
         ext = 'ogg';
-      } else if (url.includes('elevenlabs')) {
+      } else if (url.startsWith('data:audio/wav') || url.startsWith('data:audio/wave')) {
+        ext = 'wav';
+      } else if (url.startsWith('data:audio/mpeg')) {
         ext = 'mp3';
       }
 

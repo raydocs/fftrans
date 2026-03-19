@@ -31,6 +31,7 @@ const { globalMonitor } = require('./module/system/performance-monitor');
 
 // translation cache
 const { globalCache } = require('./module/system/translation-cache');
+const { globalTTSAudioCache } = require('./module/system/tts-audio-cache');
 
 // text detect module
 const textDetectModule = require('./module/system/text-detect-module');
@@ -70,6 +71,7 @@ app.on('before-quit', async (event) => {
 
     // Cleanup translation cache (stop auto-save interval, final save)
     await globalCache.cleanup();
+    await globalTTSAudioCache.cleanup();
 
     // Cleanup OCR worker
     await textDetectModule.cleanup();

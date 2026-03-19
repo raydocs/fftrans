@@ -35,7 +35,6 @@ function encryptString(value) {
     return value;
   }
 
-  // Already encrypted
   if (value.startsWith(ENCRYPTED_PREFIX)) {
     return value;
   }
@@ -45,13 +44,13 @@ function encryptString(value) {
       const buffer = safeStorage.encryptString(value);
       const base64 = buffer.toString('base64');
       return ENCRYPTED_PREFIX + base64;
-    } else {
-      Logger.warn('crypto-helper', 'Encryption not available, storing in plain text');
-      return value;
     }
+
+    Logger.warn('crypto-helper', 'Encryption not available, storing in plain text');
+    return value;
   } catch (error) {
     Logger.error('crypto-helper', 'Encryption failed', error.message);
-    return value; // Fallback to plain text
+    return value;
   }
 }
 
@@ -65,7 +64,6 @@ function decryptString(value) {
     return value;
   }
 
-  // Not encrypted
   if (!value.startsWith(ENCRYPTED_PREFIX)) {
     return value;
   }
@@ -75,13 +73,13 @@ function decryptString(value) {
       const base64 = value.substring(ENCRYPTED_PREFIX.length);
       const buffer = Buffer.from(base64, 'base64');
       return safeStorage.decryptString(buffer);
-    } else {
-      Logger.warn('crypto-helper', 'Decryption not available');
-      return value.substring(ENCRYPTED_PREFIX.length); // Return without prefix
     }
+
+    Logger.warn('crypto-helper', 'Decryption not available');
+    return value.substring(ENCRYPTED_PREFIX.length);
   } catch (error) {
     Logger.error('crypto-helper', 'Decryption failed', error.message);
-    return ''; // Return empty string on failure
+    return '';
   }
 }
 
@@ -92,6 +90,21 @@ function decryptString(value) {
  */
 function isEncrypted(value) {
   return typeof value === 'string' && value.startsWith(ENCRYPTED_PREFIX);
+}
+
+function cloneNestedApiConfig(config) {
+  const cloned = { ...config };
+  cloned.api = { ...config.api };
+
+  if (config.api?.speechify && typeof config.api.speechify === 'object') {
+    cloned.api.speechify = { ...config.api.speechify };
+  }
+
+  if (config.api?.elevenlabs && typeof config.api.elevenlabs === 'object') {
+    cloned.api.elevenlabs = { ...config.api.elevenlabs };
+  }
+
+  return cloned;
 }
 
 /**
@@ -114,22 +127,28 @@ function encryptApiKeys(config) {
     'openRouterApiKey'
   ];
 
-  const encrypted = { ...config };
-  encrypted.api = { ...config.api };
+  const encrypted = cloneNestedApiConfig(config);
 
-  apiKeyFields.forEach(field => {
+  apiKeyFields.forEach((field) => {
     if (encrypted.api[field]) {
       encrypted.api[field] = encryptString(encrypted.api[field]);
     }
   });
 
-  // Encrypt nested API keys
   if (encrypted.api.speechify?.bearerToken) {
     encrypted.api.speechify.bearerToken = encryptString(encrypted.api.speechify.bearerToken);
   }
 
   if (encrypted.api.elevenlabs?.bearerToken) {
     encrypted.api.elevenlabs.bearerToken = encryptString(encrypted.api.elevenlabs.bearerToken);
+  }
+
+  if (encrypted.api.elevenlabs?.refreshToken) {
+    encrypted.api.elevenlabs.refreshToken = encryptString(encrypted.api.elevenlabs.refreshToken);
+  }
+
+  if (encrypted.api.elevenlabs?.appCheckToken) {
+    encrypted.api.elevenlabs.appCheckToken = encryptString(encrypted.api.elevenlabs.appCheckToken);
   }
 
   return encrypted;
@@ -155,22 +174,28 @@ function decryptApiKeys(config) {
     'openRouterApiKey'
   ];
 
-  const decrypted = { ...config };
-  decrypted.api = { ...config.api };
+  const decrypted = cloneNestedApiConfig(config);
 
-  apiKeyFields.forEach(field => {
+  apiKeyFields.forEach((field) => {
     if (decrypted.api[field]) {
       decrypted.api[field] = decryptString(decrypted.api[field]);
     }
   });
 
-  // Decrypt nested API keys
   if (decrypted.api.speechify?.bearerToken) {
     decrypted.api.speechify.bearerToken = decryptString(decrypted.api.speechify.bearerToken);
   }
 
   if (decrypted.api.elevenlabs?.bearerToken) {
     decrypted.api.elevenlabs.bearerToken = decryptString(decrypted.api.elevenlabs.bearerToken);
+  }
+
+  if (decrypted.api.elevenlabs?.refreshToken) {
+    decrypted.api.elevenlabs.refreshToken = decryptString(decrypted.api.elevenlabs.refreshToken);
+  }
+
+  if (decrypted.api.elevenlabs?.appCheckToken) {
+    decrypted.api.elevenlabs.appCheckToken = decryptString(decrypted.api.elevenlabs.appCheckToken);
   }
 
   return decrypted;

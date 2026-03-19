@@ -8,12 +8,6 @@
 
 const Logger = require('./logger');
 
-/**
- * Validate configuration object
- * @param {object} config - Configuration to validate
- * @param {object} defaultConfig - Default configuration for reference
- * @returns {object} Validation result { valid: boolean, errors: [] }
- */
 function validate(config, defaultConfig) {
   const errors = [];
 
@@ -24,22 +18,18 @@ function validate(config, defaultConfig) {
     };
   }
 
-  // Validate indexWindow
   if (config.indexWindow) {
     validateIndexWindow(config.indexWindow, errors);
   }
 
-  // Validate translation
   if (config.translation) {
     validateTranslation(config.translation, errors);
   }
 
-  // Validate api
   if (config.api) {
     validateAPI(config.api, errors);
   }
 
-  // Validate dialog
   if (config.dialog) {
     validateDialog(config.dialog, errors);
   }
@@ -50,19 +40,14 @@ function validate(config, defaultConfig) {
   };
 }
 
-/**
- * Validate indexWindow configuration
- */
 function validateIndexWindow(indexWindow, errors) {
-  // Validate timeout (must be numeric string)
   if (indexWindow.timeout !== undefined) {
-    const timeout = parseInt(indexWindow.timeout);
-    if (isNaN(timeout) || timeout < 0 || timeout > 300) {
+    const timeout = parseInt(indexWindow.timeout, 10);
+    if (Number.isNaN(timeout) || timeout < 0 || timeout > 300) {
       errors.push('indexWindow.timeout must be a number between 0 and 300');
     }
   }
 
-  // Validate ttsEngine
   if (indexWindow.ttsEngine !== undefined) {
     const validEngines = ['google', 'speechify', 'elevenlabs'];
     if (!validEngines.includes(indexWindow.ttsEngine)) {
@@ -70,70 +55,54 @@ function validateIndexWindow(indexWindow, errors) {
     }
   }
 
-  // Validate boolean fields
   const booleanFields = ['shortcut', 'alwaysOnTop', 'focusable', 'minSize', 'hideButton', 'hideDialog', 'clickThrough', 'lock', 'speech', 'compactMode'];
-  booleanFields.forEach(field => {
+  booleanFields.forEach((field) => {
     if (indexWindow[field] !== undefined && typeof indexWindow[field] !== 'boolean') {
       errors.push(`indexWindow.${field} must be a boolean`);
     }
   });
 
-  // Validate numeric fields
   const numericFields = ['x', 'y', 'width', 'height', 'compactWidth', 'compactHeight'];
-  numericFields.forEach(field => {
+  numericFields.forEach((field) => {
     if (indexWindow[field] !== undefined && typeof indexWindow[field] !== 'number') {
       errors.push(`indexWindow.${field} must be a number`);
     }
   });
 
-  // Validate speechSpeed (must be numeric string)
   if (indexWindow.speechSpeed !== undefined) {
     const speed = parseFloat(indexWindow.speechSpeed);
-    if (isNaN(speed) || speed < 0.1 || speed > 10) {
+    if (Number.isNaN(speed) || speed < 0.1 || speed > 10) {
       errors.push('indexWindow.speechSpeed must be between 0.1 and 10');
     }
   }
 }
 
-/**
- * Validate translation configuration
- */
 function validateTranslation(translation, errors) {
-  // Validate engine (will be checked against engineModule.engineList at runtime)
   if (translation.engine !== undefined && typeof translation.engine !== 'string') {
     errors.push('translation.engine must be a string');
   }
 
-  // Validate languages
-  const langFields = ['from', 'fromPlayer', 'to'];
-  langFields.forEach(field => {
+  ['from', 'fromPlayer', 'to'].forEach((field) => {
     if (translation[field] !== undefined && typeof translation[field] !== 'string') {
       errors.push(`translation.${field} must be a string`);
     }
   });
 
-  // Validate timeout
   if (translation.timeout !== undefined) {
-    const timeout = parseInt(translation.timeout);
-    if (isNaN(timeout) || timeout < 1 || timeout > 120) {
+    const timeout = parseInt(translation.timeout, 10);
+    if (Number.isNaN(timeout) || timeout < 1 || timeout > 120) {
       errors.push('translation.timeout must be between 1 and 120 seconds');
     }
   }
 
-  // Validate boolean fields
-  const booleanFields = ['autoChange', 'fix', 'skip', 'skipChinese', 'replace'];
-  booleanFields.forEach(field => {
+  ['autoChange', 'fix', 'skip', 'skipChinese', 'replace'].forEach((field) => {
     if (translation[field] !== undefined && typeof translation[field] !== 'boolean') {
       errors.push(`translation.${field} must be a boolean`);
     }
   });
 }
 
-/**
- * Validate API configuration
- */
 function validateAPI(api, errors) {
-  // Validate API keys are strings (empty is ok)
   const apiKeyFields = [
     'googleVisionApiKey',
     'geminiApiKey',
@@ -144,21 +113,11 @@ function validateAPI(api, errors) {
     'openRouterApiKey'
   ];
 
-  apiKeyFields.forEach(field => {
-    if (api[field] !== undefined && typeof api[field] !== 'string') {
-      errors.push(`api.${field} must be a string`);
-    }
-  });
+  apiKeyFields.forEach((field) => validateStringField(api[field], `api.${field}`, errors));
 
-  // Validate model names
   const modelFields = ['geminiModel', 'gptModel', 'cohereModel', 'kimiModel', 'llmApiModel', 'openRouterModel'];
-  modelFields.forEach(field => {
-    if (api[field] !== undefined && typeof api[field] !== 'string') {
-      errors.push(`api.${field} must be a string`);
-    }
-  });
+  modelFields.forEach((field) => validateStringField(api[field], `api.${field}`, errors));
 
-  // Validate URLs
   if (api.llmApiUrl !== undefined) {
     if (typeof api.llmApiUrl !== 'string') {
       errors.push('api.llmApiUrl must be a string');
@@ -167,21 +126,53 @@ function validateAPI(api, errors) {
     }
   }
 
-  // Validate nested objects
-  if (api.speechify !== undefined && typeof api.speechify !== 'object') {
-    errors.push('api.speechify must be an object');
+  if (api.speechify !== undefined) {
+    if (!isPlainObject(api.speechify)) {
+      errors.push('api.speechify must be an object');
+    } else {
+      validateSpeechifyConfig(api.speechify, errors);
+    }
   }
 
-  if (api.elevenlabs !== undefined && typeof api.elevenlabs !== 'object') {
-    errors.push('api.elevenlabs must be an object');
+  if (api.elevenlabs !== undefined) {
+    if (!isPlainObject(api.elevenlabs)) {
+      errors.push('api.elevenlabs must be an object');
+    } else {
+      validateElevenLabsConfig(api.elevenlabs, errors);
+    }
   }
 }
 
-/**
- * Validate dialog configuration
- */
+function validateSpeechifyConfig(config, errors) {
+  validateStringField(config.bearerToken, 'api.speechify.bearerToken', errors);
+  validateStringField(config.voiceId, 'api.speechify.voiceId', errors);
+  validateStringField(config.audioFormat, 'api.speechify.audioFormat', errors);
+  validateBooleanField(config.sentenceSplitting, 'api.speechify.sentenceSplitting', errors);
+
+  if (config.audioFormat !== undefined && !['mp3', 'ogg', 'wav'].includes(config.audioFormat)) {
+    errors.push('api.speechify.audioFormat must be one of: mp3, ogg, wav');
+  }
+}
+
+function validateElevenLabsConfig(config, errors) {
+  [
+    'bearerToken',
+    'bearerTokenExpiresAt',
+    'refreshToken',
+    'appCheckToken',
+    'deviceId',
+    'voiceId',
+    'modelId'
+  ].forEach((field) => validateStringField(config[field], `api.elevenlabs.${field}`, errors));
+
+  ['stability', 'similarityBoost', 'style'].forEach((field) => {
+    validateNumberStringField(config[field], `api.elevenlabs.${field}`, errors, 0, 1);
+  });
+
+  validateBooleanField(config.useSpeakerBoost, 'api.elevenlabs.useSpeakerBoost', errors);
+}
+
 function validateDialog(dialog, errors) {
-  // Validate weight
   if (dialog.weight !== undefined) {
     const validWeights = ['normal', 'bold', 'lighter', '100', '200', '300', '400', '500', '600', '700', '800', '900'];
     if (!validWeights.includes(String(dialog.weight))) {
@@ -189,18 +180,15 @@ function validateDialog(dialog, errors) {
     }
   }
 
-  // Validate numeric string fields
-  const numericFields = ['fontSize', 'spacing', 'radius'];
-  numericFields.forEach(field => {
+  ['fontSize', 'spacing', 'radius'].forEach((field) => {
     if (dialog[field] !== undefined) {
       const value = parseFloat(dialog[field]);
-      if (isNaN(value) || value < 0 || value > 10) {
+      if (Number.isNaN(value) || value < 0 || value > 10) {
         errors.push(`dialog.${field} must be between 0 and 10`);
       }
     }
   });
 
-  // Validate backgroundColor (hex color)
   if (dialog.backgroundColor !== undefined) {
     if (typeof dialog.backgroundColor !== 'string' || !isValidHexColor(dialog.backgroundColor)) {
       errors.push('dialog.backgroundColor must be a valid hex color (e.g., #RRGGBBAA)');
@@ -208,9 +196,38 @@ function validateDialog(dialog, errors) {
   }
 }
 
-/**
- * Check if a string is a valid URL
- */
+function validateStringField(value, path, errors) {
+  if (value !== undefined && typeof value !== 'string') {
+    errors.push(`${path} must be a string`);
+  }
+}
+
+function validateBooleanField(value, path, errors) {
+  if (value !== undefined && typeof value !== 'boolean') {
+    errors.push(`${path} must be a boolean`);
+  }
+}
+
+function validateNumberStringField(value, path, errors, min, max) {
+  if (value === undefined) {
+    return;
+  }
+
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    errors.push(`${path} must be a numeric string`);
+    return;
+  }
+
+  const numericValue = Number(value);
+  if (Number.isNaN(numericValue) || numericValue < min || numericValue > max) {
+    errors.push(`${path} must be between ${min} and ${max}`);
+  }
+}
+
+function isPlainObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function isValidURL(str) {
   try {
     const url = new URL(str);
@@ -220,19 +237,10 @@ function isValidURL(str) {
   }
 }
 
-/**
- * Check if a string is a valid hex color
- */
 function isValidHexColor(str) {
   return /^#[0-9A-F]{6}([0-9A-F]{2})?$/i.test(str);
 }
 
-/**
- * Sanitize configuration by removing invalid values
- * @param {object} config - Configuration to sanitize
- * @param {object} defaultConfig - Default configuration to use for invalid values
- * @returns {object} Sanitized configuration
- */
 function sanitize(config, defaultConfig) {
   const result = validate(config, defaultConfig);
 
@@ -240,10 +248,7 @@ function sanitize(config, defaultConfig) {
     return config;
   }
 
-  // Log validation errors
   Logger.warn('config-validator', `Configuration has ${result.errors.length} validation errors:`, result.errors.join('; '));
-
-  // Return a deep copy to avoid mutation
   return JSON.parse(JSON.stringify(config));
 }
 

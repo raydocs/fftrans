@@ -768,7 +768,7 @@
             </div>
             <div class="setting-control api-key-control">
               <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-speechify-bearer-token" />
-              <textarea class="form-control token-textarea" id="input-speechify-bearer-token" rows="2" placeholder="eyJhbGciOiJSUzI1NiIs..."></textarea>
+              <input type="password" class="form-control token-input" id="input-speechify-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
             </div>
           </div>
           <div class="setting-item">
@@ -822,6 +822,17 @@
               </select>
             </div>
           </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">句子分段</div>
+              <div class="setting-description">允许 Speechify 在合成时自动做句子级分段</div>
+            </div>
+            <div class="setting-control">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-speechify-sentence-splitting" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- ElevenLabs TTS -->
@@ -843,7 +854,7 @@
             </div>
             <div class="setting-control api-key-control">
               <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-bearer-token" />
-              <textarea class="form-control token-textarea" id="input-elevenlabs-bearer-token" rows="2" placeholder="eyJhbGciOiJSUzI1NiIs..."></textarea>
+              <input type="password" class="form-control token-input" id="input-elevenlabs-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
             </div>
           </div>
           <div class="setting-item">
@@ -853,7 +864,7 @@
             </div>
             <div class="setting-control api-key-control">
               <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
-              <textarea class="form-control token-textarea" id="input-elevenlabs-refresh-token" rows="2" placeholder="长效 Refresh Token"></textarea>
+              <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="长效 Refresh Token" />
             </div>
           </div>
           <div class="setting-item">
@@ -863,7 +874,7 @@
             </div>
             <div class="setting-control api-key-control">
               <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-app-check-token" />
-              <textarea class="form-control token-textarea" id="input-elevenlabs-app-check-token" rows="2" placeholder="xi-app-check-token JWT"></textarea>
+              <input type="password" class="form-control token-input" id="input-elevenlabs-app-check-token" placeholder="xi-app-check-token JWT" />
               <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">提取</button>
             </div>
           </div>
@@ -926,6 +937,44 @@
                 <option value="eleven_multilingual_v2">Multilingual v2</option>
                 <option value="eleven_monolingual_v1">Monolingual v1</option>
               </select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Stability</div>
+              <div class="setting-description">控制声音稳定度，值越高越平稳</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-stability" min="0" max="1" step="0.05" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Similarity Boost</div>
+              <div class="setting-description">提升与目标音色的相似度</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-similarity-boost" min="0" max="1" step="0.05" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Style</div>
+              <div class="setting-description">调节表达风格强度，过高可能更不稳定</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-style" min="0" max="1" step="0.05" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Speaker Boost</div>
+              <div class="setting-description">增强说话人特征，通常建议开启</div>
+            </div>
+            <div class="setting-control">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-speaker-boost" />
+              </div>
             </div>
           </div>
         </div>

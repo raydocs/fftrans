@@ -349,8 +349,8 @@ function setButton() {
     ipcRenderer.send('execute-command', `explorer "${path}"`);
   };
 
-  // set img-visibility
-  const imgVisibilityButtons = document.getElementsByClassName('img-visibility');
+  // set token visibility
+  const imgVisibilityButtons = document.getElementsByClassName('btn-visibility');
   for (let index = 0; index < imgVisibilityButtons.length; index++) {
     let isVisible = false;
     const element = imgVisibilityButtons[index];
@@ -392,7 +392,7 @@ function setButton() {
 
   // Speechify: Open configuration guide
   document.getElementById('a-open-speechify-guide').onclick = async () => {
-    const path = await ipcRenderer.invoke('get-root-path', 'SPEECHIFY_INTEGRATION_GUIDE.md');
+    const path = await ipcRenderer.invoke('get-root-path', 'src', 'data', 'text', 'readme', 'index.html');
     ipcRenderer.send('execute-command', `explorer "${path}"`);
   };
 
@@ -405,18 +405,19 @@ function setButton() {
     button.innerText = '测试中...';
 
     try {
-      // Save current config first
-      const config = await ipcRenderer.invoke('get-config');
-      saveOptions(config);
-      await ipcRenderer.invoke('set-config', config);
+      const speechifyConfig = collectSpeechifyFormConfig();
+      const validationMessage = validateSpeechifyFormConfig(speechifyConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
+        return;
+      }
 
-      // Test configuration
-      const result = await ipcRenderer.invoke('test-speechify-config');
-
-      if (result.success) {
-        alert(`✅ 测试成功！\n\n音频 URL: ${result.audioUrl || '已生成'}`);
+      const result = await ipcRenderer.invoke('test-speechify-config', speechifyConfig);
+      if (result.success && result.data) {
+        const meta = result.data.meta || {};
+        alert(`✅ 测试成功！\n\n语音: ${meta.voiceId || '默认'}\n格式: ${meta.audioFormat || 'mp3'}\n\n本次测试使用当前表单值，若需正式保存请点击“保存设置”。`);
       } else {
-        alert(`❌ 测试失败\n\n错误信息: ${result.message}`);
+        alert(formatTtsErrorAlert(result, '❌ 测试失败'));
       }
     } catch (error) {
       alert(`❌ 测试出错\n\n${error.message}`);
@@ -432,8 +433,8 @@ function setButton() {
     const voiceSelect = document.getElementById('select-speechify-voice-id');
     const selectedVoice = voiceSelect.value;
     const originalText = button.innerText;
+    let playbackStarted = false;
 
-    // Voice descriptions for preview
     const voiceDescriptions = {
       gwyneth: 'Gwyneth Paltrow - 名人语音',
       joanna: 'Joanna - 清晰自然的女声',
@@ -457,40 +458,27 @@ function setButton() {
     };
 
     try {
-      // Get current bearer token
-      const bearerTokenInput = document.getElementById('input-speechify-bearer-token');
-      const bearerToken = bearerTokenInput.value.trim();
-
-      if (!bearerToken) {
-        alert('❌ 请先填写 Bearer Token');
+      const previewConfig = collectSpeechifyFormConfig();
+      const validationMessage = validateSpeechifyFormConfig(previewConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
         return;
       }
 
       button.disabled = true;
       button.innerText = '🎧 生成中...';
 
-      // Preview text
       const previewText = `Welcome to Final Fantasy XIV! This is ${voiceDescriptions[selectedVoice] || selectedVoice}. I hope you enjoy this voice!`;
-
-      // Create a temporary config for preview
-      const previewConfig = {
-        bearerToken: bearerToken,
-        voiceId: selectedVoice,
-        audioFormat: 'ogg'
-      };
-
-      // Call preview API (we'll need to add this IPC handler)
       const result = await ipcRenderer.invoke('preview-speechify-voice', {
         text: previewText,
         config: previewConfig
       });
 
-      if (result.success) {
-        // Play the audio
-        const audio = new Audio(result.audioUrl);
-        audio.play();
-
+      if (result.success && result.data?.audioUrl) {
+        const audio = new Audio(result.data.audioUrl);
+        playbackStarted = true;
         button.innerText = '🎧 播放中...';
+        audio.play();
 
         audio.onended = () => {
           button.disabled = false;
@@ -503,12 +491,15 @@ function setButton() {
           button.innerText = originalText;
         };
       } else {
-        alert(`❌ 语音生成失败\n\n错误信息: ${result.message}`);
+        alert(formatTtsErrorAlert(result, '❌ 语音生成失败'));
       }
     } catch (error) {
       alert(`❌ 试听出错\n\n${error.message}`);
-      button.disabled = false;
-      button.innerText = originalText;
+    } finally {
+      if (!playbackStarted) {
+        button.disabled = false;
+        button.innerText = originalText;
+      }
     }
   };
 
@@ -521,18 +512,19 @@ function setButton() {
     button.innerText = '测试中...';
 
     try {
-      // Save current config first
-      const config = await ipcRenderer.invoke('get-config');
-      saveOptions(config);
-      await ipcRenderer.invoke('set-config', config);
+      const elevenLabsConfig = collectElevenLabsFormConfig();
+      const validationMessage = validateElevenLabsFormConfig(elevenLabsConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
+        return;
+      }
 
-      // Test configuration
-      const result = await ipcRenderer.invoke('test-elevenlabs-config');
-
-      if (result.success) {
-        alert(`✅ 测试成功！\n\n音频 URL: ${result.audioUrl || '已生成'}`);
+      const result = await ipcRenderer.invoke('test-elevenlabs-config', elevenLabsConfig);
+      if (result.success && result.data) {
+        const meta = result.data.meta || {};
+        alert(`✅ 测试成功！\n\n语音: ${meta.voiceId || '默认'}\n模型: ${meta.modelId || '默认'}\nToken 刷新: ${meta.didRefreshBearer ? '是' : '否'}\n\n本次测试使用当前表单值，若需正式保存请点击“保存设置”。`);
       } else {
-        alert(`❌ 测试失败\n\n错误信息: ${result.message}`);
+        alert(formatTtsErrorAlert(result, '❌ 测试失败'));
       }
     } catch (error) {
       alert(`❌ 测试出错\n\n${error.message}`);
@@ -548,54 +540,34 @@ function setButton() {
     const voiceSelect = document.getElementById('select-elevenlabs-voice-id');
     const selectedVoice = voiceSelect.value;
     const originalText = button.innerText;
+    let playbackStarted = false;
 
     try {
-      // Get current bearer token
-      const bearerTokenInput = document.getElementById('input-elevenlabs-bearer-token');
-      const refreshTokenInput = document.getElementById('input-elevenlabs-refresh-token');
-      const appCheckTokenInput = document.getElementById('input-elevenlabs-app-check-token');
-      const deviceIdInput = document.getElementById('input-elevenlabs-device-id');
-
-      const bearerToken = bearerTokenInput.value.trim();
-      const refreshToken = refreshTokenInput.value.trim();
-      const appCheckToken = appCheckTokenInput.value.trim();
-      const deviceId = deviceIdInput.value.trim();
-
-      if (!bearerToken && !refreshToken) {
-        alert('❌ 请填写 Bearer Token 或 Firebase Refresh Token');
+      const previewConfig = collectElevenLabsFormConfig();
+      const validationMessage = validateElevenLabsFormConfig(previewConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
         return;
       }
 
       button.disabled = true;
       button.innerText = '🎧 生成中...';
 
-      // Preview text
       const voiceName = voiceSelect.options[voiceSelect.selectedIndex].text;
       const previewText = `Welcome to Final Fantasy XIV! This is ${voiceName}. I hope you enjoy this voice!`;
-
-      // Create a temporary config for preview
-      const modelSelect = document.getElementById('select-elevenlabs-model');
-      const previewConfig = {
-        bearerToken: bearerToken,
-        refreshToken: refreshToken,
-        appCheckToken: appCheckToken,
-        deviceId: deviceId,
-        voiceId: selectedVoice,
-        modelId: modelSelect.value
-      };
-
-      // Call preview API
       const result = await ipcRenderer.invoke('preview-elevenlabs-voice', {
         text: previewText,
-        config: previewConfig
+        config: {
+          ...previewConfig,
+          voiceId: selectedVoice,
+        }
       });
 
-      if (result.success) {
-        // Play the audio
-        const audio = new Audio(result.audioUrl);
-        audio.play();
-
+      if (result.success && result.data?.audioUrl) {
+        const audio = new Audio(result.data.audioUrl);
+        playbackStarted = true;
         button.innerText = '🎧 播放中...';
+        audio.play();
 
         audio.onended = () => {
           button.disabled = false;
@@ -608,14 +580,15 @@ function setButton() {
           button.innerText = originalText;
         };
       } else {
-        alert(`❌ 语音生成失败\n\n错误信息: ${result.message}`);
-        button.disabled = false;
-        button.innerText = originalText;
+        alert(formatTtsErrorAlert(result, '❌ 语音生成失败'));
       }
     } catch (error) {
       alert(`❌ 试听出错\n\n${error.message}`);
-      button.disabled = false;
-      button.innerText = originalText;
+    } finally {
+      if (!playbackStarted) {
+        button.disabled = false;
+        button.innerText = originalText;
+      }
     }
   };
 
@@ -655,6 +628,82 @@ function setButton() {
     }
   };
 
+}
+
+function collectSpeechifyFormConfig() {
+  return {
+    bearerToken: document.getElementById('input-speechify-bearer-token').value.trim(),
+    voiceId: document.getElementById('select-speechify-voice-id').value,
+    audioFormat: document.getElementById('select-speechify-audio-format').value,
+    sentenceSplitting: document.getElementById('checkbox-speechify-sentence-splitting').checked,
+  };
+}
+
+function validateSpeechifyFormConfig(config = {}) {
+  if (!config.bearerToken) {
+    return '请先填写 Speechify Bearer Token';
+  }
+
+  if (!['mp3', 'ogg', 'wav'].includes(config.audioFormat)) {
+    return 'Speechify 音频格式无效';
+  }
+
+  return '';
+}
+
+function collectElevenLabsFormConfig() {
+  return {
+    bearerToken: document.getElementById('input-elevenlabs-bearer-token').value.trim(),
+    refreshToken: document.getElementById('input-elevenlabs-refresh-token').value.trim(),
+    appCheckToken: document.getElementById('input-elevenlabs-app-check-token').value.trim(),
+    deviceId: document.getElementById('input-elevenlabs-device-id').value.trim(),
+    voiceId: document.getElementById('select-elevenlabs-voice-id').value,
+    modelId: document.getElementById('select-elevenlabs-model').value,
+    stability: document.getElementById('input-elevenlabs-stability').value,
+    similarityBoost: document.getElementById('input-elevenlabs-similarity-boost').value,
+    style: document.getElementById('input-elevenlabs-style').value,
+    useSpeakerBoost: document.getElementById('checkbox-elevenlabs-speaker-boost').checked,
+  };
+}
+
+function validateZeroToOne(value = '', label = '数值') {
+  const numericValue = Number(value);
+  if (Number.isNaN(numericValue) || numericValue < 0 || numericValue > 1) {
+    return `${label} 必须在 0 到 1 之间`;
+  }
+
+  return '';
+}
+
+function validateElevenLabsFormConfig(config = {}) {
+  if (!config.bearerToken && !config.refreshToken) {
+    return '请填写 Bearer Token 或 Firebase Refresh Token';
+  }
+
+  return [
+    validateZeroToOne(config.stability, 'Stability'),
+    validateZeroToOne(config.similarityBoost, 'Similarity Boost'),
+    validateZeroToOne(config.style, 'Style'),
+  ].find(Boolean) || '';
+}
+
+function formatTtsErrorAlert(result, title = '请求失败') {
+  const details = result?.details || {};
+  const lines = [title, result?.message || '未知错误'];
+
+  if (details.statusCode) {
+    lines.push(`状态码: ${details.statusCode}`);
+  }
+
+  if (details.suggestion) {
+    lines.push(`建议: ${details.suggestion}`);
+  }
+
+  if (typeof details.retryable === 'boolean') {
+    lines.push(`可重试: ${details.retryable ? '是' : '否'}`);
+  }
+
+  return lines.join('\n\n');
 }
 
 // read config
@@ -1124,6 +1173,10 @@ function getOptionList() {
       ['select-speechify-audio-format', 'value'],
       ['api', 'speechify', 'audioFormat'],
     ],
+    [
+      ['checkbox-speechify-sentence-splitting', 'checked'],
+      ['api', 'speechify', 'sentenceSplitting'],
+    ],
 
     // ElevenLabs TTS
     [
@@ -1149,6 +1202,22 @@ function getOptionList() {
     [
       ['select-elevenlabs-model', 'value'],
       ['api', 'elevenlabs', 'modelId'],
+    ],
+    [
+      ['input-elevenlabs-stability', 'value'],
+      ['api', 'elevenlabs', 'stability'],
+    ],
+    [
+      ['input-elevenlabs-similarity-boost', 'value'],
+      ['api', 'elevenlabs', 'similarityBoost'],
+    ],
+    [
+      ['input-elevenlabs-style', 'value'],
+      ['api', 'elevenlabs', 'style'],
+    ],
+    [
+      ['checkbox-elevenlabs-speaker-boost', 'checked'],
+      ['api', 'elevenlabs', 'useSpeakerBoost'],
     ],
 
     // TTS Engine (window page)

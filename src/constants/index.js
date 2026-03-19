@@ -58,6 +58,9 @@ const IPC_CHANNELS = {
     PREVIEW_SPEECHIFY_VOICE: 'preview-speechify-voice',
     TEST_ELEVENLABS_CONFIG: 'test-elevenlabs-config',
     PREVIEW_ELEVENLABS_VOICE: 'preview-elevenlabs-voice',
+    GOOGLE_TTS: 'google-tts',
+    SPEECHIFY_TTS: 'speechify-tts',
+    ELEVENLABS_TTS: 'elevenlabs-tts',
 
     // Global Shortcut
     SET_GLOBAL_SHORTCUT: 'set-global-shortcut',

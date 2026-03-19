@@ -279,20 +279,33 @@ function toParameters(data = {}) {
 
 // get options
 function getOptions(headers = {}) {
-  const config = configModule.getConfig();
+  return buildAxiosConfig({ headers });
+}
 
-  const options = {
-    headers: clearHeaders(headers),
-    timeout: Math.max(requestTimeout, parseInt(config.translation.timeout) * 1000),
-    httpAgent: httpAgent,   // Use persistent HTTP connection pool
-    httpsAgent: httpsAgent, // Use persistent HTTPS connection pool
+function buildAxiosConfig(options = {}) {
+  const config = configModule.getConfig();
+  const {
+    headers = {},
+    timeoutMs = null,
+    ...rest
+  } = options;
+
+  const configuredTimeout = parseInt(config.translation.timeout, 10);
+  const axiosConfig = {
+    headers: clearHeaders({ ...headers }),
+    timeout: Number.isFinite(timeoutMs)
+      ? timeoutMs
+      : Math.max(requestTimeout, (Number.isNaN(configuredTimeout) ? requestTimeout / 1000 : configuredTimeout) * 1000),
+    httpAgent: httpAgent,
+    httpsAgent: httpsAgent,
+    ...rest,
   };
 
   if (config.proxy.enable) {
     const proxy = {
       protocol: config.proxy.protocol.replace(':', ''),
       host: config.proxy.hostname,
-      port: parseInt(config.proxy.port),
+      port: parseInt(config.proxy.port, 10),
     };
 
     if (config.proxy.username && config.proxy.password) {
@@ -302,10 +315,10 @@ function getOptions(headers = {}) {
       };
     }
 
-    options.proxy = proxy;
+    axiosConfig.proxy = proxy;
   }
 
-  return options;
+  return axiosConfig;
 }
 
 // module exports
@@ -318,6 +331,7 @@ module.exports = {
   getUserAgent,
   setUA,
   toParameters,
+  buildAxiosConfig,
   getHttpAgent: () => httpAgent,
   getHttpsAgent: () => httpsAgent,
 };

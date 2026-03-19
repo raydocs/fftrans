@@ -29,9 +29,10 @@ class IPCResponse {
      * Create an error response
      * @param {Error|string} error - Error object or message
      * @param {string} message - Optional custom error message
-     * @returns {{success: false, message: string, error?: string}}
+     * @param {object} details - Optional structured diagnostic details
+     * @returns {{success: false, message: string, error?: string, details?: object}}
      */
-    static error(error, message = '') {
+    static error(error, message = '', details = undefined) {
         const response = { success: false };
 
         if (typeof error === 'string') {
@@ -43,6 +44,10 @@ class IPCResponse {
         } else {
             response.message = message || 'Unknown error occurred';
             response.error = String(error);
+        }
+
+        if (details && typeof details === 'object') {
+            response.details = details;
         }
 
         return response;

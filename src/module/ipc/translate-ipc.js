@@ -1,11 +1,14 @@
 'use strict';
 
 const { ipcMain } = require('electron');
+const { IPC_CHANNELS } = require('../../constants');
 const engineModule = require('../system/engine-module');
 const translateModule = require('../system/translate-module');
 const configModule = require('../system/config-module');
+const ttsRequestQueue = require('../system/tts-request-queue');
 const googleTTS = require('../translator/google-tts');
 const speechifyTTS = require('../translator/speechify-tts');
+const Logger = require('../../utils/logger');
 const { addTask } = require('../fix/fix-entry');
 
 function withTimeout(promise, ms, label) {
@@ -193,24 +196,30 @@ function setTranslateChannel() {
         }
     });
 
-    // TTS Rate Limiter
-    const PromiseQueue = require('../../utils/promise-queue');
-    const ttsQueue = new PromiseQueue(2); // Max 2 concurrent TTS requests
-
     // google tts
-    ipcMain.handle('google-tts', (event, text, from) => {
-        return ttsQueue.add(() => googleTTS.getAudioUrl(text, from));
+    ipcMain.handle(IPC_CHANNELS.GOOGLE_TTS, (event, text, from) => {
+        return googleTTS.getAudioUrl(text, from);
     });
 
     // elevenlabs tts
-    ipcMain.handle('elevenlabs-tts', async (event, text, from) => {
+    ipcMain.handle(IPC_CHANNELS.ELEVENLABS_TTS, async (event, text, from) => {
         const elevenLabsTTS = require('../translator/elevenlabs-tts');
-        return ttsQueue.add(() => elevenLabsTTS.getAudioUrl(text, from));
+        try {
+            return await ttsRequestQueue.enqueue(() => elevenLabsTTS.getAudioUrl(text, from));
+        } catch (error) {
+            Logger.error('translate-ipc', 'Failed to generate ElevenLabs audio', error);
+            throw error;
+        }
     });
 
     // speechify tts
-    ipcMain.handle('speechify-tts', async (event, text, from) => {
-        return ttsQueue.add(() => speechifyTTS.getAudioUrl(text, from));
+    ipcMain.handle(IPC_CHANNELS.SPEECHIFY_TTS, async (event, text, from) => {
+        try {
+            return await ttsRequestQueue.enqueue(() => speechifyTTS.getAudioUrl(text, from));
+        } catch (error) {
+            Logger.error('translate-ipc', 'Failed to generate Speechify audio', error);
+            throw error;
+        }
     });
 
     // translation cache statistics

@@ -107,6 +107,7 @@ function getElementTextList() {
         'a-test-llm-api': ['測試連結', '测试链接', 'Test Connection'],
 
         'a-readme': ['使用說明書', '使用说明书', 'User Guide'],
+        'a-open-speechify-guide': ['配置指南', '配置指南', 'Setup Guide'],
         'a-github': ['GitHub', 'GitHub', 'GitHub'],
       },
       button: {
@@ -167,6 +168,11 @@ function getElementTextList() {
         // read log
         'button-read-log': ['讀取', '读取', 'Open'],
         'button-view-log': ['檢視檔案', '检视档案', 'View Chat Logs'],
+        'btn-test-speechify': ['測試', '测试', 'Test'],
+        'btn-preview-voice': ['試聽', '试听', 'Preview'],
+        'btn-test-elevenlabs': ['測試', '测试', 'Test'],
+        'btn-preview-elevenlabs-voice': ['試聽', '试听', 'Preview'],
+        'btn-import-elevenlabs-app-check': ['提取', '提取', 'Import'],
       },
       label: {
         // config
@@ -408,6 +414,8 @@ function getElementTextList() {
         'label-background-transparency': ['背景透明度', '背景透明度', 'Transparency'],
         'label-speech-speed': ['語音速度', '语音速度', 'Speech Speed'],
         'label-tts-engine': ['語音引擎', '语音引擎', 'TTS Engine'],
+        'p-speechify-tts': ['Speechify TTS', 'Speechify TTS', 'Speechify TTS'],
+        'p-elevenlabs-tts': ['ElevenLabs Reader', 'ElevenLabs Reader', 'ElevenLabs Reader'],
         
         // Window 页面设置描述
         'desc-checkbox-top': ['視窗始終顯示在最前面', '窗口始终显示在最前面', 'Window stays on top of other windows'],
