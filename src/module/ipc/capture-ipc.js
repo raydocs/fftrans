@@ -12,17 +12,17 @@ const { IPC_CHANNELS, NOTIFICATIONS } = require('../../constants');
 
 function setCaptureChannel() {
     // get screen bounds
-    ipcMain.handle('get-screen-bounds', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_SCREEN_BOUNDS, () => {
         return screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).bounds;
     });
 
     // get mouse position
-    ipcMain.handle('get-mouse-position', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_MOUSE_POSITION, () => {
         return screen.getCursorScreenPoint();
     });
 
     // start recognize
-    ipcMain.on('start-recognize', (event, captureData) => {
+    ipcMain.on(IPC_CHANNELS.START_RECOGNIZE, (event, captureData) => {
         // get display nearest point
         const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
 
@@ -35,14 +35,14 @@ function setCaptureChannel() {
     });
 
     // minimize all windows
-    ipcMain.on('minimize-all-windows', () => {
+    ipcMain.on(IPC_CHANNELS.MINIMIZE_ALL_WINDOWS, () => {
         windowModule.forEachWindow((myWindow) => {
             windowModule.minimizeWindow(myWindow);
         });
     });
 
     // translate image text
-    ipcMain.on('translate-image-text', (event, captureData) => {
+    ipcMain.on(IPC_CHANNELS.TRANSLATE_IMAGE_TEXT, (event, captureData) => {
         textDetectModule.translateImageText(captureData);
     });
 

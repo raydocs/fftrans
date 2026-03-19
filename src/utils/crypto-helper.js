@@ -139,10 +139,6 @@ function encryptApiKeys(config) {
     encrypted.api.speechify.bearerToken = encryptString(encrypted.api.speechify.bearerToken);
   }
 
-  if (encrypted.api.elevenlabs?.bearerToken) {
-    encrypted.api.elevenlabs.bearerToken = encryptString(encrypted.api.elevenlabs.bearerToken);
-  }
-
   if (encrypted.api.elevenlabs?.refreshToken) {
     encrypted.api.elevenlabs.refreshToken = encryptString(encrypted.api.elevenlabs.refreshToken);
   }

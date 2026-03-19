@@ -2,6 +2,7 @@
 
 // electron
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../constants');
 
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
@@ -14,17 +15,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 // set IPC
 function setIPC() {
   // change UI text
-  ipcRenderer.on('change-ui-text', async () => {
-    const config = await ipcRenderer.invoke('get-config');
+  ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 }
 
 // set view
 async function setView() {
-  const config = await ipcRenderer.invoke('get-config');
+  const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
   document.getElementById('select-type').value = config.captureWindow.type;
-  document.getElementById('select-from').innerHTML = await ipcRenderer.invoke('get-source-select');
+  document.getElementById('select-from').innerHTML = await ipcRenderer.invoke(IPC_CHANNELS.GET_SOURCE_SELECT);
   document.getElementById('select-from').value = config.translation.from;
   document.getElementById('checkbox-split').checked = config.captureWindow.split;
   document.getElementById('checkbox-edit').checked = config.captureWindow.edit;
@@ -32,14 +33,14 @@ async function setView() {
   setCanvasSize();
 
   // change UI text
-  ipcRenderer.send('change-ui-text');
+  ipcRenderer.send(IPC_CHANNELS.CHANGE_UI_TEXT);
 }
 
 // set event
 function setEvent() {
   // move window
   document.addEventListener('move-window', (e) => {
-    ipcRenderer.send('move-window', e.detail, false);
+    ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, e.detail, false);
   });
 
   // on resize
@@ -49,22 +50,22 @@ function setEvent() {
 
   // checkbox
   document.getElementById('checkbox-split').oninput = async () => {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.captureWindow.split = document.getElementById('checkbox-split').checked;
-    await ipcRenderer.invoke('set-config', config);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
   };
 
   document.getElementById('checkbox-edit').oninput = async () => {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.captureWindow.edit = document.getElementById('checkbox-edit').checked;
-    await ipcRenderer.invoke('set-config', config);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
   };
 
   // select
   document.getElementById('select-type').onchange = async () => {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.captureWindow.type = document.getElementById('select-type').value;
-    await ipcRenderer.invoke('set-config', config);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
     showScreenshotButton(config);
   };
 
@@ -77,18 +78,18 @@ function setButton() {
   // screenshot
   document.getElementById('button-screenshot').onclick = async () => {
     // minimize all windows
-    ipcRenderer.send('minimize-all-windows');
+    ipcRenderer.send(IPC_CHANNELS.MINIMIZE_ALL_WINDOWS);
 
     // set capture data
     const captureData = await createData();
 
     // start recognize
-    ipcRenderer.send('start-recognize', captureData);
+    ipcRenderer.send(IPC_CHANNELS.START_RECOGNIZE, captureData);
   };
 
   // close
   document.getElementById('img-button-close').onclick = () => {
-    ipcRenderer.send('close-window');
+    ipcRenderer.send(IPC_CHANNELS.CLOSE_WINDOW);
   };
 }
 
@@ -123,7 +124,7 @@ function setCanvasEvent() {
   // on mouse down
   canvas.onmousedown = async (event) => {
     // set mousedown screen position
-    const mousePosition = await ipcRenderer.invoke('get-mouse-position');
+    const mousePosition = await ipcRenderer.invoke(IPC_CHANNELS.GET_MOUSE_POSITION);
     screenMouseDown.x = mousePosition.x;
     screenMouseDown.y = mousePosition.y;
 
@@ -146,7 +147,7 @@ function setCanvasEvent() {
       clearRectangle();
 
       // set mouseup screen position
-      const mousePosition = await ipcRenderer.invoke('get-mouse-position');
+      const mousePosition = await ipcRenderer.invoke(IPC_CHANNELS.GET_MOUSE_POSITION);
       screenMouseUp.x = mousePosition.x;
       screenMouseUp.y = mousePosition.y;
 
@@ -167,7 +168,7 @@ function setCanvasEvent() {
 
       // start recognize
       if (captureData.rectangleSize.width > 0 && captureData.rectangleSize.height > 0) {
-        ipcRenderer.send('start-recognize', captureData);
+        ipcRenderer.send(IPC_CHANNELS.START_RECOGNIZE, captureData);
       }
     };
   };
@@ -222,7 +223,7 @@ async function createData() {
     from: document.getElementById('select-from').value,
     split: document.getElementById('checkbox-split').checked,
     edit: document.getElementById('checkbox-edit').checked,
-    screenSize: await ipcRenderer.invoke('get-screen-bounds'),
+    screenSize: await ipcRenderer.invoke(IPC_CHANNELS.GET_SCREEN_BOUNDS),
     rectangleSize: {
       x: 0,
       y: 0,

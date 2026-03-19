@@ -5,12 +5,14 @@ const fileModule = require('./file-module');
 const engineModule = require('./engine-module');
 const cryptoHelper = require('../../utils/crypto-helper');
 const configValidator = require('../../utils/config-validator');
+const { ELEVENLABS_AUTH_STATES, ELEVENLABS_AUTH_SOURCES } = require('../../constants');
 
 function getConfigLocation() {
   return fileModule.getUserDataPath('config', 'config.json');
 }
 
 let isConfigDirty = false;
+let legacyElevenLabsSession = null;
 
 const defaultConfig = {
   indexWindow: {
@@ -70,8 +72,8 @@ const defaultConfig = {
     fromPlayer: 'Auto',
     to: 'Simplified-Chinese',
     timeout: '10',
-  },
-  api: {
+    },
+    api: {
     googleVisionType: 'google-api-key',
     googleVisionApiKey: '',
     geminiApiKey: '',
@@ -94,8 +96,6 @@ const defaultConfig = {
       sentenceSplitting: false,
     },
     elevenlabs: {
-      bearerToken: '',
-      bearerTokenExpiresAt: '',
       refreshToken: '',
       appCheckToken: '',
       deviceId: '',
@@ -105,6 +105,15 @@ const defaultConfig = {
       similarityBoost: '0.75',
       style: '0',
       useSpeakerBoost: true,
+    },
+  },
+  auth: {
+    elevenlabs: {
+      state: ELEVENLABS_AUTH_STATES.UNCONFIGURED,
+      lastValidatedAt: '',
+      lastErrorCode: '',
+      lastErrorMessage: '',
+      lastAuthSource: ELEVENLABS_AUTH_SOURCES.NONE,
     },
   },
   ai: {
@@ -141,6 +150,10 @@ function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function areValuesEqual(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 function mergeWithDefaults(currentNode, defaultNode, path = []) {
   if (Array.isArray(defaultNode)) {
     return Array.isArray(currentNode) ? deepClone(currentNode) : deepClone(defaultNode);
@@ -169,10 +182,47 @@ function normalizeConfigShape(config) {
   return mergeWithDefaults(config, defaultConfig);
 }
 
+function captureLegacyElevenLabsSession(config) {
+  legacyElevenLabsSession = null;
+
+  const bearerToken = typeof config?.api?.elevenlabs?.bearerToken === 'string'
+    ? config.api.elevenlabs.bearerToken.trim()
+    : '';
+
+  if (!bearerToken) {
+    return;
+  }
+
+  legacyElevenLabsSession = {
+    bearerToken,
+    expiresAt: config?.api?.elevenlabs?.bearerTokenExpiresAt || '',
+    source: ELEVENLABS_AUTH_SOURCES.LEGACY_BEARER_MIGRATION,
+  };
+}
+
+function normalizePersistedElevenLabsAuthState(config) {
+  const savedRefreshToken = typeof config?.api?.elevenlabs?.refreshToken === 'string'
+    ? config.api.elevenlabs.refreshToken.trim()
+    : '';
+
+  if (savedRefreshToken || legacyElevenLabsSession) {
+    return;
+  }
+
+  const defaultAuthState = deepClone(defaultConfig.auth.elevenlabs);
+  const currentAuthState = config?.auth?.elevenlabs;
+
+  if (!areValuesEqual(currentAuthState || {}, defaultAuthState)) {
+    config.auth = isPlainObject(config.auth) ? config.auth : {};
+    config.auth.elevenlabs = defaultAuthState;
+  }
+}
+
 function loadConfig() {
   try {
     currentConfig = fileModule.read(getConfigLocation(), 'json');
     currentConfig = cryptoHelper.decryptApiKeys(currentConfig);
+    captureLegacyElevenLabsSession(currentConfig);
 
     if (
       typeof currentConfig !== 'object' ||
@@ -188,6 +238,7 @@ function loadConfig() {
     fixConfig1(currentConfig);
     fixConfig2(currentConfig);
     currentConfig = normalizeConfigShape(currentConfig);
+    normalizePersistedElevenLabsAuthState(currentConfig);
 
     const configAfterFix = JSON.stringify(currentConfig);
     if (configBeforeFix !== configAfterFix) {
@@ -200,6 +251,7 @@ function loadConfig() {
     }
   } catch (error) {
     console.log(error);
+    legacyElevenLabsSession = null;
     currentConfig = getDefaultConfig();
     isConfigDirty = true;
   }
@@ -248,9 +300,58 @@ function getDefaultConfig() {
 }
 
 function setDefaultConfig() {
+  legacyElevenLabsSession = null;
   currentConfig = getDefaultConfig();
   setSSLCertificate();
   setAppLanguage();
+}
+
+function mergeConfigPatch(pathSegments = [], patch = {}) {
+  if (!isPlainObject(patch)) {
+    return getConfig();
+  }
+
+  if (!Array.isArray(pathSegments) || pathSegments.length === 0) {
+    const previousValue = isPlainObject(currentConfig) ? currentConfig : {};
+    const nextValue = {
+      ...previousValue,
+      ...patch,
+    };
+
+    if (areValuesEqual(previousValue, nextValue)) {
+      return getConfig();
+    }
+
+    currentConfig = nextValue;
+    isConfigDirty = true;
+    saveConfig();
+    return getConfig();
+  }
+
+  let current = currentConfig;
+  for (let index = 0; index < pathSegments.length - 1; index++) {
+    const segment = pathSegments[index];
+    if (!isPlainObject(current[segment])) {
+      current[segment] = {};
+    }
+    current = current[segment];
+  }
+
+  const targetKey = pathSegments[pathSegments.length - 1];
+  const previousValue = isPlainObject(current[targetKey]) ? current[targetKey] : {};
+  const nextValue = {
+    ...previousValue,
+    ...patch,
+  };
+
+  if (areValuesEqual(previousValue, nextValue)) {
+    return getConfig();
+  }
+
+  current[targetKey] = nextValue;
+  isConfigDirty = true;
+  saveConfig();
+  return getConfig();
 }
 
 function setSSLCertificate() {
@@ -407,6 +508,20 @@ function setAppLanguage() {
   setConfig(config);
 }
 
+function updateElevenLabsConfig(patch = {}) {
+  return mergeConfigPatch(['api', 'elevenlabs'], patch);
+}
+
+function updateElevenLabsAuthState(patch = {}) {
+  return mergeConfigPatch(['auth', 'elevenlabs'], patch);
+}
+
+function consumeLegacyElevenLabsSession() {
+  const session = legacyElevenLabsSession ? deepClone(legacyElevenLabsSession) : null;
+  legacyElevenLabsSession = null;
+  return session;
+}
+
 module.exports = {
   loadConfig,
   saveConfig,
@@ -415,4 +530,7 @@ module.exports = {
   getDefaultConfig,
   setDefaultConfig,
   setAppLanguage,
+  updateElevenLabsConfig,
+  updateElevenLabsAuthState,
+  consumeLegacyElevenLabsSession,
 };

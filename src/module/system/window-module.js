@@ -14,6 +14,7 @@ const fileModule = require('./file-module');
 
 // utils
 const Logger = require('../../utils/logger');
+const { IPC_CHANNELS } = require('../../constants');
 
 // Allowed window names (whitelist for security - prevents path traversal attacks)
 const ALLOWED_WINDOWS = ['index', 'config', 'capture', 'capture-edit', 'dictionary', 'custom', 'edit', 'read-log'];
@@ -94,7 +95,7 @@ function createWindow(windowName, data = null) {
     appWindow.webContents.once('did-finish-load', () => {
       // send data
       if (data) {
-        appWindow.webContents.send('send-data', data);
+        appWindow.webContents.send(IPC_CHANNELS.SEND_DATA, data);
       }
     });
 
@@ -127,7 +128,7 @@ function createWindow(windowName, data = null) {
             // Only send IPC if state changed or first run
             if (isMouseOut !== lastMouseOutState) {
               lastMouseOutState = isMouseOut;
-              appWindow.webContents.send('hide-button', { isMouseOut, hideButton: config.indexWindow.hideButton });
+              appWindow.webContents.send(IPC_CHANNELS.HIDE_BUTTON, { isMouseOut, hideButton: config.indexWindow.hideButton });
             }
           } catch {
             // If window is destroyed or other error, stop polling
@@ -600,7 +601,7 @@ function fixTitleBar(appWindow) {
 
 // console log
 function consoleLog(text) {
-  sendIndex('console-log', text);
+  sendIndex(IPC_CHANNELS.CONSOLE_LOG, text);
 }
 
 // module exports

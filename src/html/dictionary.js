@@ -2,6 +2,7 @@
 
 // electron
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../constants');
 
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
@@ -14,13 +15,13 @@ window.addEventListener('DOMContentLoaded', async () => {
 // set IPC
 function setIPC() {
   // change UI text
-  ipcRenderer.on('change-ui-text', async () => {
-    const config = await ipcRenderer.invoke('get-config');
+  ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 
   // show translation
-  ipcRenderer.on('show-translation', async (event, translatedText, target) => {
+  ipcRenderer.on(IPC_CHANNELS.SHOW_TRANSLATION, async (event, translatedText, target) => {
     // show translated text
     if (translatedText !== '') {
       document.getElementById('span-translated-text').innerText = translatedText;
@@ -34,25 +35,25 @@ function setIPC() {
 
 // set view
 async function setView() {
-  const config = await ipcRenderer.invoke('get-config');
+  const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
 
-  document.getElementById('select-engine').innerHTML = await ipcRenderer.invoke('get-engine-select');
-  document.getElementById('select-from').innerHTML = await ipcRenderer.invoke('get-all-language-select');
-  document.getElementById('select-to').innerHTML = await ipcRenderer.invoke('get-all-language-select');
+  document.getElementById('select-engine').innerHTML = await ipcRenderer.invoke(IPC_CHANNELS.GET_ENGINE_SELECT);
+  document.getElementById('select-from').innerHTML = await ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_LANGUAGE_SELECT);
+  document.getElementById('select-to').innerHTML = await ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_LANGUAGE_SELECT);
 
   document.getElementById('select-engine').value = config.translation.engine;
   document.getElementById('select-from').value = config.translation.from;
   document.getElementById('select-to').value = config.translation.to;
 
   // change UI text
-  ipcRenderer.send('change-ui-text');
+  ipcRenderer.send(IPC_CHANNELS.CHANGE_UI_TEXT);
 }
 
 // set enevt
 function setEvent() {
   // move window
   document.addEventListener('move-window', (e) => {
-    ipcRenderer.send('move-window', e.detail, false);
+    ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, e.detail, false);
   });
 
   // Tataru
@@ -66,7 +67,7 @@ function setEvent() {
 function setButton() {
   // close
   document.getElementById('img-button-close').onclick = () => {
-    ipcRenderer.send('close-window');
+    ipcRenderer.send(IPC_CHANNELS.CLOSE_WINDOW);
   };
 
   // exchange
@@ -87,9 +88,9 @@ function setButton() {
 
     if (inputText !== '') {
       if (document.getElementById('checkbox-tataru').checked) {
-        ipcRenderer.send('add-task', dialogData);
+        ipcRenderer.send(IPC_CHANNELS.ADD_TASK, dialogData);
       } else {
-        ipcRenderer.send('translate-text', dialogData);
+        ipcRenderer.send(IPC_CHANNELS.TRANSLATE_TEXT, dialogData);
       }
     } else {
       document.getElementById('span-translated-text').innerText = '';
@@ -100,7 +101,7 @@ function setButton() {
 
 // create dialog data
 async function createDialogData(name = '', text = '') {
-  const config = await ipcRenderer.invoke('get-config');
+  const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
 
   let dialogData = {
     id: null,
@@ -125,7 +126,7 @@ async function createDialogData(name = '', text = '') {
 async function getAudioHtml(translatedText, languageTo) {
   if (translatedText !== '') {
     try {
-      const urlList = await ipcRenderer.invoke('google-tts', translatedText, languageTo);
+      const urlList = await ipcRenderer.invoke(IPC_CHANNELS.GOOGLE_TTS, translatedText, languageTo);
       console.log('TTS url:', urlList);
 
       let innerHTML = '';

@@ -170,9 +170,20 @@ function getElementTextList() {
         'button-view-log': ['檢視檔案', '检视档案', 'View Chat Logs'],
         'btn-test-speechify': ['測試', '测试', 'Test'],
         'btn-preview-voice': ['試聽', '试听', 'Preview'],
-        'btn-test-elevenlabs': ['測試', '测试', 'Test'],
+        'btn-test-elevenlabs': ['測試連線', '测试连接', 'Test Connection'],
         'btn-preview-elevenlabs-voice': ['試聽', '试听', 'Preview'],
         'btn-import-elevenlabs-app-check': ['提取', '提取', 'Import'],
+        'btn-open-elevenlabs-browser': ['連接瀏覽器', '连接浏览器', 'Connect Browser'],
+        'btn-toggle-elevenlabs-auto-detect': ['暫停自動檢測', '暂停自动检测', 'Pause Auto Detect'],
+        'btn-validate-elevenlabs-refresh-token': ['檢查登入', '检查登录', 'Check Login'],
+        'btn-save-elevenlabs-imported': ['保存導入內容', '保存导入内容', 'Save Imported'],
+        'btn-clear-elevenlabs-session': ['清除會話', '清除会话', 'Clear Session'],
+        'btn-copy-elevenlabs-refresh-source': ['R↗', 'R↗', 'R↗'],
+        'btn-copy-elevenlabs-refresh-token': ['R🔑', 'R🔑', 'R🔑'],
+        'btn-copy-elevenlabs-app-check-source': ['A↗', 'A↗', 'A↗'],
+        'btn-copy-elevenlabs-app-check-token': ['A🔐', 'A🔐', 'A🔐'],
+        'btn-copy-elevenlabs-device-source': ['D↗', 'D↗', 'D↗'],
+        'btn-copy-elevenlabs-device-id': ['D🆔', 'D🆔', 'D🆔'],
       },
       label: {
         // config
@@ -371,6 +382,31 @@ function getElementTextList() {
         'p-kimi': ['Kimi設定', 'Kimi设定', 'Kimi'],
         'p-openrouter': ['OpenRouter設定', 'OpenRouter设定', 'OpenRouter'],
         'p-llm-api': ['自訂OpenAI設定', '自订OpenAI设定', 'Custom OpenAI'],
+        'p-elevenlabs-step-browser-desc': [
+          '打開 ElevenLabs 瀏覽器輔助視窗，並在該視窗完成登入。',
+          '打开 ElevenLabs 浏览器辅助窗口，并在该窗口完成登录。',
+          'Open the ElevenLabs browser assist window and complete sign-in there.',
+        ],
+        'p-elevenlabs-step-login-desc': [
+          '優先檢查瀏覽器輔助視窗的登入狀態；若表單已有 Refresh Token，則直接驗證它。',
+          '优先检查浏览器辅助窗口的登录状态；若表单已有 Refresh Token，则直接验证它。',
+          'Check the browser assist window first; if the form already has a refresh token, validate it directly.',
+        ],
+        'p-elevenlabs-step-import-desc': [
+          '導入 Reader 的 App Check Token，作為正式請求的輔助憑證。',
+          '导入 Reader 的 App Check Token，作为正式请求的辅助凭证。',
+          'Import the Reader App Check token used as an auxiliary credential for requests.',
+        ],
+        'p-elevenlabs-step-test-desc': [
+          '確認目前表單值可正常請求 ElevenLabs，並驗證連線。',
+          '确认当前表单值可正常请求 ElevenLabs，并验证连接。',
+          'Confirm the current form values can reach ElevenLabs successfully.',
+        ],
+        'p-elevenlabs-advanced-desc': [
+          '僅在需要時臨時填入 Bearer Token；不會保存到設定檔。',
+          '仅在需要时临时填入 Bearer Token；不会保存到配置文件。',
+          'Paste a bearer token only for temporary debugging; it is never saved.',
+        ],
         'p-ssl-warning': [
           '若您的API不支援SSL驗證，請至【系統設定】關閉SSL驗證',
           '若您的API不支援SSL验证，请至【系统设定】关闭SSL验证',
@@ -416,6 +452,12 @@ function getElementTextList() {
         'label-tts-engine': ['語音引擎', '语音引擎', 'TTS Engine'],
         'p-speechify-tts': ['Speechify TTS', 'Speechify TTS', 'Speechify TTS'],
         'p-elevenlabs-tts': ['ElevenLabs Reader', 'ElevenLabs Reader', 'ElevenLabs Reader'],
+        'span-elevenlabs-auth-status-title': ['認證狀態', '认证状态', 'Auth Status'],
+        'span-elevenlabs-step-browser': ['連接瀏覽器', '连接浏览器', 'Connect Browser'],
+        'span-elevenlabs-step-login': ['檢查登入', '检查登录', 'Check Login'],
+        'span-elevenlabs-step-import': ['導入 Token', '导入 Token', 'Import Token'],
+        'span-elevenlabs-step-test': ['測試連線', '测试连接', 'Test Connection'],
+        'span-elevenlabs-advanced-title': ['高級除錯', '高级调试', 'Advanced / Debug'],
         
         // Window 页面设置描述
         'desc-checkbox-top': ['視窗始終顯示在最前面', '窗口始终显示在最前面', 'Window stays on top of other windows'],

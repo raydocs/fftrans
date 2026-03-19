@@ -7,6 +7,7 @@
  */
 
 const Logger = require('./logger');
+const { ELEVENLABS_AUTH_STATES, ELEVENLABS_AUTH_SOURCES } = require('../constants');
 
 function validate(config, defaultConfig) {
   const errors = [];
@@ -28,6 +29,10 @@ function validate(config, defaultConfig) {
 
   if (config.api) {
     validateAPI(config.api, errors);
+  }
+
+  if (config.auth) {
+    validateAuth(config.auth, errors);
   }
 
   if (config.dialog) {
@@ -156,8 +161,6 @@ function validateSpeechifyConfig(config, errors) {
 
 function validateElevenLabsConfig(config, errors) {
   [
-    'bearerToken',
-    'bearerTokenExpiresAt',
     'refreshToken',
     'appCheckToken',
     'deviceId',
@@ -170,6 +173,37 @@ function validateElevenLabsConfig(config, errors) {
   });
 
   validateBooleanField(config.useSpeakerBoost, 'api.elevenlabs.useSpeakerBoost', errors);
+}
+
+function validateAuth(auth, errors) {
+  if (!isPlainObject(auth)) {
+    errors.push('auth must be an object');
+    return;
+  }
+
+  if (auth.elevenlabs !== undefined) {
+    if (!isPlainObject(auth.elevenlabs)) {
+      errors.push('auth.elevenlabs must be an object');
+    } else {
+      validateElevenLabsAuthState(auth.elevenlabs, errors);
+    }
+  }
+}
+
+function validateElevenLabsAuthState(config, errors) {
+  validateStringField(config.state, 'auth.elevenlabs.state', errors);
+  validateStringField(config.lastValidatedAt, 'auth.elevenlabs.lastValidatedAt', errors);
+  validateStringField(config.lastErrorCode, 'auth.elevenlabs.lastErrorCode', errors);
+  validateStringField(config.lastErrorMessage, 'auth.elevenlabs.lastErrorMessage', errors);
+  validateStringField(config.lastAuthSource, 'auth.elevenlabs.lastAuthSource', errors);
+
+  if (config.state !== undefined && !Object.values(ELEVENLABS_AUTH_STATES).includes(config.state)) {
+    errors.push(`auth.elevenlabs.state must be one of: ${Object.values(ELEVENLABS_AUTH_STATES).join(', ')}`);
+  }
+
+  if (config.lastAuthSource !== undefined && !Object.values(ELEVENLABS_AUTH_SOURCES).includes(config.lastAuthSource)) {
+    errors.push(`auth.elevenlabs.lastAuthSource must be one of: ${Object.values(ELEVENLABS_AUTH_SOURCES).join(', ')}`);
+  }
 }
 
 function validateDialog(dialog, errors) {

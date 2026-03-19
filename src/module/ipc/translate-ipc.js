@@ -22,41 +22,41 @@ function withTimeout(promise, ms, label) {
 
 function setTranslateChannel() {
     // get engine select
-    ipcMain.handle('get-engine-select', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_ENGINE_SELECT, () => {
         return engineModule.getEngineSelect();
     });
 
     // get all language select
-    ipcMain.handle('get-all-language-select', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_ALL_LANGUAGE_SELECT, () => {
         return engineModule.getAllLanguageSelect();
     });
 
     // get source select
-    ipcMain.handle('get-source-select', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_SOURCE_SELECT, () => {
         return engineModule.getSourceSelect();
     });
 
     // get source select
-    ipcMain.handle('get-player-source-select', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_PLAYER_SOURCE_SELECT, () => {
         return engineModule.getPlayerSourceSelect();
     });
 
     // get target select
-    ipcMain.handle('get-target-select', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_TARGET_SELECT, () => {
         return engineModule.getTargetSelect();
     });
 
     // get UI select
-    ipcMain.handle('get-ui-select', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_UI_SELECT, () => {
         return engineModule.getUISelect();
     });
 
     // get AI list
-    ipcMain.handle('get-ai-list', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_AI_LIST, () => {
         return engineModule.aiList;
     });
 
-    ipcMain.handle('test-ai-translation', async (event, engine) => {
+    ipcMain.handle(IPC_CHANNELS.TEST_AI_TRANSLATION, async (event, engine) => {
         const engineName = typeof engine === 'string' ? engine.trim() : '';
         if (!engineName || !engineModule.aiList.includes(engineName)) {
             return { success: false, message: 'Invalid AI engine' };
@@ -138,17 +138,17 @@ function setTranslateChannel() {
     });
 
     // add task
-    ipcMain.on('add-task', (event, dialogData) => {
+    ipcMain.on(IPC_CHANNELS.ADD_TASK, (event, dialogData) => {
         addTask(dialogData);
     });
 
     // get translation
-    ipcMain.on('translate-text', async (event, dialogData) => {
-        event.sender.send('show-translation', await translateModule.translate(dialogData.text, dialogData.translation), dialogData.translation.to);
+    ipcMain.on(IPC_CHANNELS.TRANSLATE_TEXT, async (event, dialogData) => {
+        event.sender.send(IPC_CHANNELS.SHOW_TRANSLATION, await translateModule.translate(dialogData.text, dialogData.translation), dialogData.translation.to);
     });
 
     // get translation with streaming (for OpenRouter, GPT, Gemini)
-    ipcMain.on('translate-text-stream', async (event, dialogData) => {
+    ipcMain.on(IPC_CHANNELS.TRANSLATE_TEXT_STREAM, async (event, dialogData) => {
         try {
             const config = configModule.getConfig();
 
@@ -175,24 +175,24 @@ function setTranslateChannel() {
                         // Only send update if throttle period has passed
                         if (now - lastUpdate > THROTTLE_MS) {
                             lastUpdate = now;
-                            event.sender.send('translation-chunk', chunk, dialogData.translation.to);
+                            event.sender.send(IPC_CHANNELS.TRANSLATION_CHUNK, chunk, dialogData.translation.to);
                         }
                     }
                 );
 
                 // Send final result (ensure last chunk is sent)
                 if (lastChunk && Date.now() - lastUpdate <= THROTTLE_MS) {
-                    event.sender.send('translation-chunk', lastChunk, dialogData.translation.to);
+                    event.sender.send(IPC_CHANNELS.TRANSLATION_CHUNK, lastChunk, dialogData.translation.to);
                 }
-                event.sender.send('show-translation', result, dialogData.translation.to);
+                event.sender.send(IPC_CHANNELS.SHOW_TRANSLATION, result, dialogData.translation.to);
             } else {
                 // Fall back to regular translation
                 const result = await translateModule.translate(dialogData.text, dialogData.translation);
-                event.sender.send('show-translation', result, dialogData.translation.to);
+                event.sender.send(IPC_CHANNELS.SHOW_TRANSLATION, result, dialogData.translation.to);
             }
         } catch (error) {
             console.error('Streaming translation error:', error);
-            event.sender.send('show-translation', String(error), dialogData.translation.to);
+            event.sender.send(IPC_CHANNELS.SHOW_TRANSLATION, String(error), dialogData.translation.to);
         }
     });
 
@@ -223,18 +223,18 @@ function setTranslateChannel() {
     });
 
     // translation cache statistics
-    ipcMain.handle('cache-get-stats', () => {
+    ipcMain.handle(IPC_CHANNELS.CACHE_GET_STATS, () => {
         return translateModule.translationCache.getStats();
     });
 
     // clear translation cache
-    ipcMain.handle('cache-clear', () => {
+    ipcMain.handle(IPC_CHANNELS.CACHE_CLEAR, () => {
         translateModule.translationCache.clear();
         return { success: true };
     });
 
     // reset cache statistics
-    ipcMain.handle('cache-reset-stats', () => {
+    ipcMain.handle(IPC_CHANNELS.CACHE_RESET_STATS, () => {
         translateModule.translationCache.resetStats();
         return { success: true };
     });

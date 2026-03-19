@@ -6,7 +6,7 @@ const jsonFunction = require('../fix/json-function');
 const dialogModule = require('../system/dialog-module');
 const Logger = require('../../utils/logger');
 const Validator = require('../../utils/validator');
-const { CUSTOM_TYPES, FILE_NAMES, REGEX_PATTERNS, NOTIFICATIONS } = require('../../constants');
+const { IPC_CHANNELS, CUSTOM_TYPES, FILE_NAMES, NOTIFICATIONS, shouldAppendShortTextMarker } = require('../../constants');
 
 /**
  * Get filename for custom type
@@ -30,32 +30,29 @@ function getFileNameForType(type) {
  * @returns {string} Processed text
  */
 function prepareTextBefore(textBefore, type) {
-    if (type !== CUSTOM_TYPES.CUSTOM_OVERWRITE &&
-        textBefore.length < 3 &&
-        REGEX_PATTERNS.NO_KANJI.test(textBefore)) {
-        return textBefore + '#';
-    }
-    return textBefore;
+    return shouldAppendShortTextMarker(textBefore, type)
+        ? textBefore + '#'
+        : textBefore;
 }
 
 function setJsonChannel() {
     // initialize json
-    ipcMain.on('initialize-json', () => {
+      ipcMain.on(IPC_CHANNELS.INITIALIZE_JSON, () => {
         jsonEntry.initializeJSON();
     });
 
     // download json
-    ipcMain.on('download-json', () => {
+      ipcMain.on(IPC_CHANNELS.DOWNLOAD_JSON, () => {
         jsonEntry.downloadJSON();
     });
 
     // load json
-    ipcMain.on('load-json', () => {
+      ipcMain.on(IPC_CHANNELS.LOAD_JSON, () => {
         jsonEntry.loadJSON();
     });
 
     // delete temp
-    ipcMain.on('delete-temp', () => {
+      ipcMain.on(IPC_CHANNELS.DELETE_TEMP, () => {
         jsonFunction.deleteTemp();
         jsonEntry.loadJSON();
         dialogModule.addNotification(NOTIFICATIONS.TEMP_DELETED);
@@ -63,13 +60,13 @@ function setJsonChannel() {
     });
 
     // get array
-    ipcMain.handle('get-user-array', (event, name = '') => {
+      ipcMain.handle(IPC_CHANNELS.GET_USER_ARRAY, (event, name = '') => {
         let array = jsonEntry.getUserArray(name);
         return array;
     });
 
     // save user custom
-    ipcMain.on('save-user-custom', (event, textBefore = '', textAfter = '', type = '') => {
+      ipcMain.on(IPC_CHANNELS.SAVE_USER_CUSTOM, (event, textBefore = '', textAfter = '', type = '') => {
         // Validate inputs
         if (!Validator.isValidString(textBefore) || !Validator.isValidString(textAfter)) {
             Logger.warn('json-ipc', 'Invalid input for save-user-custom');
@@ -100,7 +97,7 @@ function setJsonChannel() {
     });
 
     // delete user custom
-    ipcMain.on('delete-user-custom', (event, textBefore = '', type = '') => {
+      ipcMain.on(IPC_CHANNELS.DELETE_USER_CUSTOM, (event, textBefore = '', type = '') => {
         // Validate inputs
         if (!Validator.isValidString(textBefore)) {
             Logger.warn('json-ipc', 'Invalid input for delete-user-custom');

@@ -6,6 +6,7 @@
  */
 
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../../constants');
 
 /**
  * Apply theme to document
@@ -43,7 +44,7 @@ function getTheme() {
 (async function applyInitialTheme() {
   try {
     // Get theme from config
-    const theme = await ipcRenderer.invoke('get-theme');
+    const theme = await ipcRenderer.invoke(IPC_CHANNELS.GET_THEME);
     setTheme(theme);
   } catch (error) {
     console.error('[theme.js] Failed to load theme:', error);
@@ -60,16 +61,16 @@ function getTheme() {
  * Listen for theme changes from other windows
  * When user changes theme in settings, all windows update
  */
-ipcRenderer.on('set-theme', (event, theme) => {
+ipcRenderer.on(IPC_CHANNELS.SET_THEME, (event, theme) => {
   setTheme(theme);
 });
 
 /**
  * Listen for config changes that might include theme
  */
-ipcRenderer.on('change-ui-text', async () => {
+ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
   try {
-    const theme = await ipcRenderer.invoke('get-theme');
+    const theme = await ipcRenderer.invoke(IPC_CHANNELS.GET_THEME);
     setTheme(theme);
   } catch (error) {
     console.error('[theme.js] Failed to apply theme on config change:', error);

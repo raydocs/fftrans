@@ -845,48 +845,112 @@
               <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
             <span id="p-elevenlabs-tts">ElevenLabs Reader</span>
-            <button type="button" class="btn btn-primary btn-sm header-btn" id="btn-test-elevenlabs">测试</button>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Bearer Token</div>
-              <div class="setting-description">ElevenLabs Reader 认证令牌</div>
+
+          <div class="elevenlabs-auth-panel">
+            <div class="elevenlabs-auth-panel-header">
+              <span id="span-elevenlabs-auth-status-title">认证状态</span>
+              <span id="span-elevenlabs-auth-badge" class="elevenlabs-auth-badge elevenlabs-auth-badge-unconfigured">未配置</span>
             </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-bearer-token" />
-              <input type="password" class="form-control token-input" id="input-elevenlabs-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
+            <p id="p-elevenlabs-auth-status-summary" class="elevenlabs-auth-status-line">尚未检查登录状态。</p>
+            <p id="p-elevenlabs-auth-status-session" class="elevenlabs-auth-status-line subtle"></p>
+            <p id="p-elevenlabs-auth-status-browser" class="elevenlabs-auth-status-line subtle"></p>
+            <p id="p-elevenlabs-auth-status-browser-detail" class="elevenlabs-auth-status-line subtle"></p>
+            <div id="div-elevenlabs-auth-status-browser-actions" class="elevenlabs-auth-status-actions" hidden>
+              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-refresh-source" title="复制 Refresh 来源">R↗</button>
+              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-refresh-token" title="复制 Refresh Token">R🔑</button>
+              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-app-check-source" title="复制 App Check 来源">A↗</button>
+              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-app-check-token" title="复制 App Check Token">A🔐</button>
+              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-device-source" title="复制 Device 来源">D↗</button>
+              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-device-id" title="复制 Device ID">D🆔</button>
             </div>
+            <p id="p-elevenlabs-auth-status-credentials" class="elevenlabs-auth-status-line subtle"></p>
+            <p id="p-elevenlabs-auth-status-next-step" class="elevenlabs-auth-status-line hint"></p>
+            <p id="p-elevenlabs-auth-status-details" class="elevenlabs-auth-status-line error" hidden></p>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Refresh Token</div>
-              <div class="setting-description">Firebase Refresh Token (自动刷新)</div>
+
+          <div class="elevenlabs-auth-step">
+            <div class="elevenlabs-auth-step-header">
+              <span class="elevenlabs-auth-step-index">1</span>
+              <div>
+                <span id="span-elevenlabs-step-browser" class="elevenlabs-auth-step-title">连接浏览器</span>
+                <p id="p-elevenlabs-step-browser-desc" class="elevenlabs-auth-step-description">打开 ElevenLabs 浏览器辅助窗口，在该窗口里完成登录。</p>
+              </div>
             </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
-              <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="长效 Refresh Token" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">App Check Token</div>
-              <div class="setting-description">xi-app-check-token (用于 Reader WS)</div>
-            </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-app-check-token" />
-              <input type="password" class="form-control token-input" id="input-elevenlabs-app-check-token" placeholder="xi-app-check-token JWT" />
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">提取</button>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Device ID</div>
-              <div class="setting-description">可选，未填写将自动生成</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-elevenlabs-device-id" style="width: 180px" placeholder="UUID" />
+            <div class="elevenlabs-auth-step-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-elevenlabs-browser">连接浏览器</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-elevenlabs-auto-detect">暂停自动检测</button>
             </div>
           </div>
+
+          <div class="elevenlabs-auth-step">
+            <div class="elevenlabs-auth-step-header">
+              <span class="elevenlabs-auth-step-index">2</span>
+              <div>
+                <span id="span-elevenlabs-step-login" class="elevenlabs-auth-step-title">检查登录</span>
+                <p id="p-elevenlabs-step-login-desc" class="elevenlabs-auth-step-description">优先检查浏览器辅助窗口的登录状态；若表单已有 Refresh Token，则直接验证是否还能换取短期 Bearer。</p>
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label">Refresh Token</div>
+                <div class="setting-description">主认证凭证；保存后运行时会自动换取短期 Bearer</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
+                <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="长效 Refresh Token" />
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label">Device ID</div>
+                <div class="setting-description">可选，未填写将自动生成</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" id="input-elevenlabs-device-id" style="width: 180px" placeholder="UUID" />
+              </div>
+            </div>
+            <div class="elevenlabs-auth-step-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-validate-elevenlabs-refresh-token">检查登录</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-save-elevenlabs-imported">保存导入内容</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-elevenlabs-session">清除会话</button>
+            </div>
+          </div>
+
+          <div class="elevenlabs-auth-step">
+            <div class="elevenlabs-auth-step-header">
+              <span class="elevenlabs-auth-step-index">3</span>
+              <div>
+                <span id="span-elevenlabs-step-import" class="elevenlabs-auth-step-title">导入 Token</span>
+                <p id="p-elevenlabs-step-import-desc" class="elevenlabs-auth-step-description">导入 Reader 的 App Check Token，作为正式请求辅助凭证。</p>
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label">App Check Token</div>
+                <div class="setting-description">保存的 Reader App Check 凭证，可用“提取”辅助导入</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-app-check-token" />
+                <input type="password" class="form-control token-input" id="input-elevenlabs-app-check-token" placeholder="xi-app-check-token JWT" />
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">提取</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="elevenlabs-auth-step">
+            <div class="elevenlabs-auth-step-header">
+              <span class="elevenlabs-auth-step-index">4</span>
+              <div>
+                <span id="span-elevenlabs-step-test" class="elevenlabs-auth-step-title">测试连接</span>
+                <p id="p-elevenlabs-step-test-desc" class="elevenlabs-auth-step-description">确认当前表单值可正常请求 ElevenLabs，并预览语音参数。</p>
+              </div>
+            </div>
+            <div class="elevenlabs-auth-step-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-test-elevenlabs">测试连接</button>
+            </div>
+          </div>
+
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-label">语音</div>
@@ -974,6 +1038,26 @@
             <div class="setting-control">
               <div class="form-check form-switch">
                 <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-speaker-boost" />
+              </div>
+            </div>
+          </div>
+
+          <div class="elevenlabs-advanced-block">
+            <div class="elevenlabs-auth-step-header">
+              <span class="elevenlabs-auth-step-index elevenlabs-auth-step-index-advanced">⚙</span>
+              <div>
+                <span id="span-elevenlabs-advanced-title" class="elevenlabs-auth-step-title">高级调试</span>
+                <p id="p-elevenlabs-advanced-desc" class="elevenlabs-auth-step-description">仅在需要时临时填入 Bearer Token；不会保存到配置文件。</p>
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label">Bearer Token</div>
+                <div class="setting-description">临时 Bearer，仅用于测试/高级调试，不会保存到配置文件</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-bearer-token" />
+                <input type="password" class="form-control token-input" id="input-elevenlabs-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
               </div>
             </div>
           </div>

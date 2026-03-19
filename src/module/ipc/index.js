@@ -10,8 +10,16 @@ const { setTranslateChannel } = require('./translate-ipc');
 const { setTTSChannel } = require('./tts-ipc');
 const { setFileChannel } = require('./file-ipc');
 
-// set ipc
+let ipcRegistered = false;
+
+// Active runtime IPC entrypoint.
+// This function is intentionally idempotent so accidental re-entry does not
+// register duplicate handlers/listeners.
 function setIPC() {
+    if (ipcRegistered) {
+        return;
+    }
+
     setSystemChannel();
     setWindowChannel();
     setDialogChannel();
@@ -21,6 +29,8 @@ function setIPC() {
     setTranslateChannel();
     setTTSChannel();
     setFileChannel();
+
+    ipcRegistered = true;
 }
 
 module.exports = {

@@ -2,6 +2,7 @@
 
 // electron
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../constants');
 
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
@@ -14,8 +15,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 // set IPC
 function setIPC() {
   // change UI text
-  ipcRenderer.on('change-ui-text', async () => {
-    const config = await ipcRenderer.invoke('get-config');
+  ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 }
@@ -25,14 +26,14 @@ async function setView() {
   await readLogList();
 
   // change UI text
-  ipcRenderer.send('change-ui-text');
+  ipcRenderer.send(IPC_CHANNELS.CHANGE_UI_TEXT);
 }
 
 // set enevt
 function setEvent() {
   // move window
   document.addEventListener('move-window', (e) => {
-    ipcRenderer.send('move-window', e.detail, false);
+    ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, e.detail, false);
   });
 }
 
@@ -46,20 +47,20 @@ function setButton() {
 
   // view
   document.getElementById('button-view-log').onclick = async () => {
-    const logPath = await ipcRenderer.invoke('get-user-data-path', 'log');
-    ipcRenderer.send('execute-command', `start "" "${logPath}"`);
+    const logPath = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'log');
+    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `start "" "${logPath}"`);
   };
 
   // close
   document.getElementById('img-button-close').onclick = () => {
-    ipcRenderer.send('close-window');
+    ipcRenderer.send(IPC_CHANNELS.CLOSE_WINDOW);
   };
 }
 
 async function readLogList() {
   try {
-    const logPath = await ipcRenderer.invoke('get-user-data-path', 'log');
-    const logs = await ipcRenderer.invoke('read-directory', logPath);
+    const logPath = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'log');
+    const logs = await ipcRenderer.invoke(IPC_CHANNELS.READ_DIRECTORY, logPath);
 
     if (logs.length > 0) {
       const select = document.getElementById('select-log');
@@ -80,18 +81,18 @@ async function readLogList() {
 
 async function readLog(fileName) {
   if (fileName === 'none') {
-    ipcRenderer.send('add-notification', 'FILE_NOT_FOUND');
+    ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'FILE_NOT_FOUND');
     return;
   }
 
   try {
-    const logPath = await ipcRenderer.invoke('get-user-data-path', 'log');
-    const fileLocation = await ipcRenderer.invoke('get-path', logPath, fileName);
-    const log = await ipcRenderer.invoke('read-json', fileLocation, false);
+    const logPath = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'log');
+    const fileLocation = await ipcRenderer.invoke(IPC_CHANNELS.GET_PATH, logPath, fileName);
+    const log = await ipcRenderer.invoke(IPC_CHANNELS.READ_JSON, fileLocation, false);
     const logNames = Object.keys(log);
 
     if (logNames.length > 0) {
-      ipcRenderer.send('send-index', 'clear-dialog');
+      ipcRenderer.send(IPC_CHANNELS.SEND_INDEX, IPC_CHANNELS.CLEAR_DIALOG);
 
       for (let index = 0; index < logNames.length; index++) {
         const logItem = log[logNames[index]];
@@ -107,12 +108,12 @@ async function readLog(fileName) {
 
           const scroll = index === logNames.length - 1;
 
-          ipcRenderer.send('add-log', dialogData, scroll);
+          ipcRenderer.send(IPC_CHANNELS.ADD_LOG, dialogData, scroll);
         }
       }
     }
   } catch (error) {
     console.log(error);
-    ipcRenderer.send('add-notification', 'UNABLE_TO_READ_THE_FILE');
+    ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'UNABLE_TO_READ_THE_FILE');
   }
 }

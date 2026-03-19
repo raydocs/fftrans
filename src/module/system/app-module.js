@@ -20,13 +20,14 @@ const windowModule = require('./window-module');
 
 // ipc module
 const ipcModule = require('../ipc/index');
+const elevenLabsAuth = require('../translator/elevenlabs-auth');
 
 // translation cache
 const { globalCache } = require('./translation-cache');
 
 // utils
 const Logger = require('../../utils/logger');
-const { FILE_NAMES } = require('../../constants');
+const { FILE_NAMES, IPC_CHANNELS } = require('../../constants');
 
 // start app
 function startApp() {
@@ -39,6 +40,10 @@ function startApp() {
 
   // load config
   configModule.loadConfig();
+  const legacyElevenLabsSession = configModule.consumeLegacyElevenLabsSession();
+  if (legacyElevenLabsSession) {
+    elevenLabsAuth.hydrateSession(legacyElevenLabsSession);
+  }
 
   // load chat code
   chatCodeModule.loadChatCode();
@@ -63,7 +68,7 @@ function startApp() {
   setGlobalShortcut();
 
   // set shortcut IPC
-  ipcMain.on('set-global-shortcut', () => {
+  ipcMain.on(IPC_CHANNELS.SET_GLOBAL_SHORTCUT, () => {
     setGlobalShortcut();
   });
 }

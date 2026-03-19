@@ -7,55 +7,61 @@ const sharlayanModule = require('../system/sharlayan-module');
 const chatCodeModule = require('../system/chat-code-module');
 const windowModule = require('../system/window-module');
 const dialogModule = require('../system/dialog-module');
+const elevenLabsAuth = require('../translator/elevenlabs-auth');
 const { execFile } = require('child_process');
 const Logger = require('../../utils/logger');
 const appCheckHelper = require('../system/app-check-helper');
+const { IPC_CHANNELS } = require('../../constants');
 
 const appVersion = app.getVersion();
 
 function setSystemChannel() {
   // get app version
-  ipcMain.handle('get-version', () => {
+  ipcMain.handle(IPC_CHANNELS.GET_VERSION, () => {
     return appVersion;
   });
 
   // close app
-  ipcMain.on('close-app', () => {
+  ipcMain.on(IPC_CHANNELS.CLOSE_APP, () => {
     sharlayanModule.stop(false);
     app.quit();
   });
 
   // get config
-  ipcMain.handle('get-config', () => {
+  ipcMain.handle(IPC_CHANNELS.GET_CONFIG, () => {
     return configModule.getConfig();
   });
 
   // set config
-  ipcMain.handle('set-config', (event, newConfig) => {
+  ipcMain.handle(IPC_CHANNELS.SET_CONFIG, (event, newConfig) => {
+    const previousConfig = configModule.getConfig();
     configModule.setConfig(newConfig);
-    return configModule.getConfig();
+    const nextConfig = configModule.getConfig();
+    elevenLabsAuth.handlePersistedConfigChange(previousConfig, nextConfig);
+    return nextConfig;
   });
 
   // get theme
-  ipcMain.handle('get-theme', () => {
+  ipcMain.handle(IPC_CHANNELS.GET_THEME, () => {
     const config = configModule.getConfig();
     return config.system.theme || 'dark';
   });
 
   // apply theme to all windows
-  ipcMain.on('apply-theme-to-all-windows', (event, theme) => {
+  ipcMain.on(IPC_CHANNELS.APPLY_THEME_TO_ALL_WINDOWS, (event, theme) => {
     const { BrowserWindow } = require('electron');
     const allWindows = BrowserWindow.getAllWindows();
     allWindows.forEach((win) => {
       if (!win.isDestroyed()) {
-        win.webContents.send('set-theme', theme);
+        win.webContents.send(IPC_CHANNELS.SET_THEME, theme);
       }
     });
   });
 
   // set default config
-  ipcMain.handle('set-default-config', () => {
+  ipcMain.handle(IPC_CHANNELS.SET_DEFAULT_CONFIG, () => {
     configModule.setDefaultConfig();
+    elevenLabsAuth.clearSession();
     const defaultConfig = configModule.getConfig();
 
     try {
@@ -74,18 +80,16 @@ function setSystemChannel() {
   });
 
   // get chat code
-  ipcMain.handle('get-chat-code', () => {
+  ipcMain.handle(IPC_CHANNELS.GET_CHAT_CODE, () => {
     return chatCodeModule.getChatCode();
   });
 
   // extract ElevenLabs App Check token from a flows file
-  ipcMain.handle('pick-app-check-token', async () => {
+  ipcMain.handle(IPC_CHANNELS.PICK_APP_CHECK_TOKEN, async () => {
     try {
       const autoExtracted = appCheckHelper.extractFromKnownLocations();
       if (autoExtracted?.token) {
-        const config = configModule.getConfig();
-        config.api.elevenlabs.appCheckToken = autoExtracted.token;
-        configModule.setConfig(config);
+        configModule.updateElevenLabsConfig({ appCheckToken: autoExtracted.token });
 
         return {
           success: true,
@@ -111,9 +115,7 @@ function setSystemChannel() {
         return { success: false, message: '未在文件中找到 xi-app-check-token' };
       }
 
-      const config = configModule.getConfig();
-      config.api.elevenlabs.appCheckToken = tokenInfo.token;
-      configModule.setConfig(config);
+      configModule.updateElevenLabsConfig({ appCheckToken: tokenInfo.token });
 
       return {
         success: true,
@@ -129,24 +131,24 @@ function setSystemChannel() {
   });
 
   // set chat code
-  ipcMain.handle('set-chat-code', (event, newChatCode) => {
+  ipcMain.handle(IPC_CHANNELS.SET_CHAT_CODE, (event, newChatCode) => {
     chatCodeModule.setChatCode(newChatCode);
     return chatCodeModule.getChatCode();
   });
 
   // set default chat code
-  ipcMain.handle('set-default-chat-code', () => {
+  ipcMain.handle(IPC_CHANNELS.SET_DEFAULT_CHAT_CODE, () => {
     chatCodeModule.setDefaultChatCode();
     return chatCodeModule.getChatCode();
   });
 
   // restart sharlayan reader
-  ipcMain.on('restart-sharlayan-reader', () => {
+  ipcMain.on(IPC_CHANNELS.RESTART_SHARLAYAN_READER, () => {
     sharlayanModule.stop(true);
   });
 
   // fix reader
-  ipcMain.on('fix-reader', (event) => {
+  ipcMain.on(IPC_CHANNELS.FIX_READER, (event) => {
     // Use execFile instead of exec to prevent command injection
     const command = 'secedit';
     const args = [
@@ -177,7 +179,7 @@ function setSystemChannel() {
   });
 
   // console log
-  ipcMain.on('console-log', (event, ...args) => {
+  ipcMain.on(IPC_CHANNELS.CONSOLE_LOG, (event, ...args) => {
     console.log(...args);
   });
 }

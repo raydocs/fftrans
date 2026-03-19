@@ -2,6 +2,7 @@
 
 // electron
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../constants');
 
 // all language list
 const allLanguageList = ['Japanese', 'English', 'Traditional-Chinese', 'Simplified-Chinese', 'Korean', 'Russian', 'Italian'];
@@ -23,24 +24,24 @@ window.addEventListener('DOMContentLoaded', async () => {
 // set IPC
 function setIPC() {
   // change UI text
-  ipcRenderer.on('change-ui-text', async () => {
-    const config = await ipcRenderer.invoke('get-config');
+  ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 
   // send data
-  ipcRenderer.on('send-data', async (event, id) => {
+  ipcRenderer.on(IPC_CHANNELS.SEND_DATA, async (event, id) => {
     await readLog(id);
   });
 }
 
 // set view
 async function setView() {
-  const config = await ipcRenderer.invoke('get-config');
+  const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
 
-  document.getElementById('select-engine').innerHTML = await ipcRenderer.invoke('get-engine-select');
-  document.getElementById('select-from').innerHTML = await ipcRenderer.invoke('get-source-select');
-  document.getElementById('select-to').innerHTML = await ipcRenderer.invoke('get-target-select');
+  document.getElementById('select-engine').innerHTML = await ipcRenderer.invoke(IPC_CHANNELS.GET_ENGINE_SELECT);
+  document.getElementById('select-from').innerHTML = await ipcRenderer.invoke(IPC_CHANNELS.GET_SOURCE_SELECT);
+  document.getElementById('select-to').innerHTML = await ipcRenderer.invoke(IPC_CHANNELS.GET_TARGET_SELECT);
 
   document.getElementById('select-engine').value = config.translation.engine;
   document.getElementById('select-from').value = config.translation.from;
@@ -53,20 +54,20 @@ async function setView() {
   document.getElementById('select-tts-engine').value = ttsEngine;
 
   // change UI text
-  ipcRenderer.send('change-ui-text');
+  ipcRenderer.send(IPC_CHANNELS.CHANGE_UI_TEXT);
 }
 
 // set event
 function setEvent() {
   // move window
   document.addEventListener('move-window', (e) => {
-    ipcRenderer.send('move-window', e.detail, false);
+    ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, e.detail, false);
   });
 
   document.getElementById('checkbox-replace').oninput = async () => {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.translation.replace = document.getElementById('checkbox-replace').checked;
-    await ipcRenderer.invoke('set-config', config);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
   };
 }
 
@@ -85,12 +86,12 @@ function setButton() {
   // TTS engine change
   document.getElementById('select-tts-engine').onchange = async () => {
     const engine = document.getElementById('select-tts-engine').value;
-    await ipcRenderer.invoke('set-tts-engine', engine);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_TTS_ENGINE, engine);
   };
 
   // restart
   document.getElementById('button-restart-translate').onclick = async () => {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
 
     const dialogData = {
       id: targetLog.id,
@@ -112,24 +113,24 @@ function setButton() {
     dialogData.translation.fromPlayer = document.getElementById('select-from').value;
     dialogData.translation.to = document.getElementById('select-to').value;
 
-    ipcRenderer.send('add-task', dialogData);
+    ipcRenderer.send(IPC_CHANNELS.ADD_TASK, dialogData);
   };
 
   // remove dialog
   document.getElementById('button-remove-dialog').onclick = () => {
     if (targetLog) {
-      ipcRenderer.send('remove-dialog', targetLog.id);
+      ipcRenderer.send(IPC_CHANNELS.REMOVE_DIALOG, targetLog.id);
     }
   };
 
   // load json
   document.getElementById('button-load-json').onclick = () => {
-    ipcRenderer.send('load-json');
+    ipcRenderer.send(IPC_CHANNELS.LOAD_JSON);
   };
 
   // report translation
   document.getElementById('button-report-translation').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://forms.gle/1iX2Gq4G1itCy3UH9"');
+    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, 'explorer "https://forms.gle/1iX2Gq4G1itCy3UH9"');
   };
 
   // save custom
@@ -139,10 +140,10 @@ function setButton() {
     const type = document.getElementById('select-type').value;
 
     if (textBefore.length > 1) {
-      ipcRenderer.send('save-user-custom', textBefore, textAfter, type);
-      ipcRenderer.send('add-notification', 'WORD_SAVED');
+      ipcRenderer.send(IPC_CHANNELS.SAVE_USER_CUSTOM, textBefore, textAfter, type);
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'WORD_SAVED');
     } else {
-      ipcRenderer.send('add-notification', 'LENGTH_TOO_SHORT');
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'LENGTH_TOO_SHORT');
     }
   };
 
@@ -152,33 +153,33 @@ function setButton() {
     const type = document.getElementById('select-type').value;
 
     if (textBefore.length > 1) {
-      ipcRenderer.send('delete-user-custom', textBefore, type);
-      ipcRenderer.send('add-notification', 'WORD_DELETED');
+      ipcRenderer.send(IPC_CHANNELS.DELETE_USER_CUSTOM, textBefore, type);
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'WORD_DELETED');
     } else {
-      ipcRenderer.send('add-notification', 'LENGTH_TOO_SHORT');
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'LENGTH_TOO_SHORT');
     }
   };
 
   // edit custom
   document.getElementById('button-edit-custom').onclick = () => {
-    ipcRenderer.send('create-window', 'custom');
+    ipcRenderer.send(IPC_CHANNELS.CREATE_WINDOW, 'custom');
   };
 
   // close
   document.getElementById('img-button-close').onclick = () => {
-    ipcRenderer.send('close-window');
+    ipcRenderer.send(IPC_CHANNELS.CLOSE_WINDOW);
   };
 }
 
 // read log
 async function readLog(id = '') {
-  const logPath = await ipcRenderer.invoke('get-user-data-path', 'log');
+  const logPath = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'log');
 
   try {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     const milliseconds = parseInt(id.slice(2));
-    const filePath = await ipcRenderer.invoke('get-path', logPath, await createLogName(milliseconds));
-    const log = await ipcRenderer.invoke('read-json', filePath, false);
+    const filePath = await ipcRenderer.invoke(IPC_CHANNELS.GET_PATH, logPath, await createLogName(milliseconds));
+    const log = await ipcRenderer.invoke(IPC_CHANNELS.READ_JSON, filePath, false);
 
     targetLog = log[id];
 
@@ -235,16 +236,16 @@ async function playAudio() {
     // Call different TTS engines based on selection
     switch (ttsEngine) {
       case 'google':
-        urlList = await ipcRenderer.invoke('google-tts', text, fromLang);
+        urlList = await ipcRenderer.invoke(IPC_CHANNELS.GOOGLE_TTS, text, fromLang);
         break;
       case 'elevenlabs':
-        urlList = await ipcRenderer.invoke('elevenlabs-tts', text, fromLang);
+        urlList = await ipcRenderer.invoke(IPC_CHANNELS.ELEVENLABS_TTS, text, fromLang);
         break;
       case 'speechify':
-        urlList = await ipcRenderer.invoke('speechify-tts', text, fromLang);
+        urlList = await ipcRenderer.invoke(IPC_CHANNELS.SPEECHIFY_TTS, text, fromLang);
         break;
       default:
-        urlList = await ipcRenderer.invoke('google-tts', text, fromLang);
+        urlList = await ipcRenderer.invoke(IPC_CHANNELS.GOOGLE_TTS, text, fromLang);
     }
 
     console.log(`[${ttsEngine}] TTS urls:`, urlList);
@@ -317,7 +318,7 @@ async function downloadAudio() {
       }
     }
 
-    ipcRenderer.send('add-notification', `已下载 ${currentAudioUrls.length} 个音频文件`);
+    ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, `已下载 ${currentAudioUrls.length} 个音频文件`);
   } catch (error) {
     console.error('Download error:', error);
     alert(`下载失败: ${error.message}`);
@@ -365,11 +366,11 @@ function reportTranslation() {
       `&${entry3}=${text1}` +
       `&${entry4}=${text2}`;
 
-    ipcRenderer.send('post-form', encodeURI(path));
-    ipcRenderer.send('show-info', '回報完成');
+    ipcRenderer.send(IPC_CHANNELS.POST_FORM, encodeURI(path));
+    ipcRenderer.send(IPC_CHANNELS.SHOW_INFO, '回報完成');
   } catch (error) {
     console.log(error);
-    ipcRenderer.send('show-info', '' + error);
+    ipcRenderer.send(IPC_CHANNELS.SHOW_INFO, '' + error);
   }
 }
 */
@@ -382,5 +383,5 @@ function fixLogValue(value = '', valueArray = [], defaultValue = '') {
 
 // create log name
 async function createLogName(milliseconds = null) {
-  return await ipcRenderer.invoke('create-log-name', milliseconds);
+  return await ipcRenderer.invoke(IPC_CHANNELS.CREATE_LOG_NAME, milliseconds);
 }

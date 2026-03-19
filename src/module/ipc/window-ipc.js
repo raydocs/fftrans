@@ -5,25 +5,26 @@ const windowModule = require('../system/window-module');
 const configModule = require('../system/config-module');
 const dialogModule = require('../system/dialog-module');
 const childProcess = require('child_process');
+const { IPC_CHANNELS } = require('../../constants');
 
 function setWindowChannel() {
     // create window
-    ipcMain.on('create-window', (event, windowName, data = null) => {
+    ipcMain.on(IPC_CHANNELS.CREATE_WINDOW, (event, windowName, data = null) => {
         windowModule.closeWindow(windowName);
         windowModule.createWindow(windowName, data);
     });
 
     // restart window
-    ipcMain.on('restart-window', (event, windowName, data = null) => {
+    ipcMain.on(IPC_CHANNELS.RESTART_WINDOW, (event, windowName, data = null) => {
         windowModule.restartWindow(windowName, data);
     });
 
-    ipcMain.on('move-window', (event, detail) => {
+    ipcMain.on(IPC_CHANNELS.MOVE_WINDOW, (event, detail) => {
         BrowserWindow.fromWebContents(event.sender).setContentBounds(detail);
     });
 
     // minimize window
-    ipcMain.on('minimize-window', (event) => {
+    ipcMain.on(IPC_CHANNELS.MINIMIZE_WINDOW, (event) => {
         try {
             const targetWindow = BrowserWindow.fromWebContents(event.sender);
 
@@ -36,7 +37,7 @@ function setWindowChannel() {
     });
 
     // restore window
-    ipcMain.on('restore-window', (event) => {
+    ipcMain.on(IPC_CHANNELS.RESTORE_WINDOW, (event) => {
         try {
             BrowserWindow.fromWebContents(event.sender).restore();
         } catch (error) {
@@ -45,7 +46,7 @@ function setWindowChannel() {
     });
 
     // close window
-    ipcMain.on('close-window', (event) => {
+    ipcMain.on(IPC_CHANNELS.CLOSE_WINDOW, (event) => {
         try {
             BrowserWindow.fromWebContents(event.sender).close();
         } catch (error) {
@@ -54,7 +55,7 @@ function setWindowChannel() {
     });
 
     // always on top
-    ipcMain.on('set-always-on-top', (event, isAlwaysOnTop) => {
+    ipcMain.on(IPC_CHANNELS.SET_ALWAYS_ON_TOP, (event, isAlwaysOnTop) => {
         try {
             BrowserWindow.fromWebContents(event.sender).setAlwaysOnTop(isAlwaysOnTop, 'screen-saver');
         } catch (error) {
@@ -63,12 +64,12 @@ function setWindowChannel() {
     });
 
     // focusable
-    ipcMain.on('set-focusable', (event, value = true) => {
+    ipcMain.on(IPC_CHANNELS.SET_FOCUSABLE, (event, value = true) => {
         windowModule.setFocusable(value);
     });
 
     // set min size
-    ipcMain.on('set-min-size', (event, minSize) => {
+    ipcMain.on(IPC_CHANNELS.SET_MIN_SIZE, (event, minSize) => {
         if (minSize) {
             BrowserWindow.fromWebContents(event.sender).setMinimumSize(300, 300);
         } else {
@@ -77,7 +78,7 @@ function setWindowChannel() {
     });
 
     // set click through
-    ipcMain.on('set-click-through', (event, ignore) => {
+    ipcMain.on(IPC_CHANNELS.SET_CLICK_THROUGH, (event, ignore) => {
         try {
             const indexWindow = BrowserWindow.fromWebContents(event.sender);
             indexWindow.setIgnoreMouseEvents(ignore, { forward: true });
@@ -88,42 +89,42 @@ function setWindowChannel() {
     });
 
     // get click through config
-    ipcMain.handle('get-click-through-config', () => {
+    ipcMain.handle(IPC_CHANNELS.GET_CLICK_THROUGH_CONFIG, () => {
         return configModule.getConfig().indexWindow.clickThrough;
     });
 
     // set click through config
-    ipcMain.on('set-click-through-config', (event, value) => {
+    ipcMain.on(IPC_CHANNELS.SET_CLICK_THROUGH_CONFIG, (event, value) => {
         let config = configModule.getConfig();
         config.indexWindow.clickThrough = value;
         configModule.setConfig(config);
     });
 
     // mute window
-    ipcMain.on('mute-window', (event, autoPlay) => {
+    ipcMain.on(IPC_CHANNELS.MUTE_WINDOW, (event, autoPlay) => {
         event.sender.setAudioMuted(!autoPlay);
     });
 
     // send index
-    ipcMain.on('send-index', (event, channel, ...args) => {
+    ipcMain.on(IPC_CHANNELS.SEND_INDEX, (event, channel, ...args) => {
         windowModule.sendIndex(channel, ...args);
     });
 
     // change UI text
-    ipcMain.on('change-ui-text', () => {
+    ipcMain.on(IPC_CHANNELS.CHANGE_UI_TEXT, () => {
         windowModule.forEachWindow((appWindow) => {
-            appWindow.webContents.send('change-ui-text');
+            appWindow.webContents.send(IPC_CHANNELS.CHANGE_UI_TEXT);
         });
     });
 
     // execute command
-    ipcMain.on('execute-command', (event, command) => {
+    ipcMain.on(IPC_CHANNELS.EXECUTE_COMMAND, (event, command) => {
         childProcess.exec(command, () => {
             //console.log(error.message);
         });
     });
 
-    ipcMain.on('show-info', (event, message = '') => {
+    ipcMain.on(IPC_CHANNELS.SHOW_INFO, (event, message = '') => {
         dialogModule.showInfo(event.sender, message);
     });
 }

@@ -36,9 +36,6 @@ const { globalTTSAudioCache } = require('./module/system/tts-audio-cache');
 // text detect module
 const textDetectModule = require('./module/system/text-detect-module');
 
-// ipc module
-const ipcModule = require('./module/system/ipc-module');
-
 // on ready
 app.on('ready', () => {
   appModule.startApp();

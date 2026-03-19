@@ -26,6 +26,7 @@ const elevenLabsTTS = require('../translator/elevenlabs-tts');
 
 // window module
 const windowModule = require('./window-module');
+const { IPC_CHANNELS } = require('../../constants');
 
 // npc channel
 const npcChannel = ['003D', '0044', '2AB9'];
@@ -44,7 +45,7 @@ const UPDATE_BATCH_DELAY = 16; // ms (roughly 60 FPS)
 
 // add dialog
 function addDialog(dialogData = {}) {
-  windowModule.sendIndex('add-dialog', dialogData);
+  windowModule.sendIndex(IPC_CHANNELS.ADD_DIALOG, dialogData);
 }
 
 // update dialog (OPTIMIZED: batched updates to reduce IPC frequency)
@@ -79,7 +80,7 @@ function updateDialog(dialogData = {}, scroll = true, save = true) {
     const { dialogData: data, scroll: shouldScroll, save: shouldSave } = pending;
 
     // send
-    windowModule.sendIndex('update-dialog', data, getStyle(data.code), shouldScroll);
+    windowModule.sendIndex(IPC_CHANNELS.UPDATE_DIALOG, data, getStyle(data.code), shouldScroll);
 
     // show dialog
     showDialog();
@@ -106,7 +107,7 @@ function addNotification(text = '') {
   if (text === 'NO_MESSAGE') return;
 
   // add
-  windowModule.sendIndex('add-notification', id, code, text, getStyle('FFFF'));
+  windowModule.sendIndex(IPC_CHANNELS.ADD_NOTIFICATION, id, code, text, getStyle('FFFF'));
 
   // set timeout
   setTimeout(() => {
@@ -116,7 +117,7 @@ function addNotification(text = '') {
 
 // remove dialog
 function removeDialog(id) {
-  windowModule.sendIndex('remove-dialog', id);
+  windowModule.sendIndex(IPC_CHANNELS.REMOVE_DIALOG, id);
 }
 
 // show info
@@ -140,11 +141,11 @@ function showDialog() {
   hideDialogTimeout = null;
 
   const config = configModule.getConfig();
-  windowModule.sendIndex('hide-dialog', false);
+  windowModule.sendIndex(IPC_CHANNELS.HIDE_DIALOG, false);
 
   if (config.indexWindow.hideDialog) {
     hideDialogTimeout = setTimeout(() => {
-      windowModule.sendIndex('hide-dialog', true);
+      windowModule.sendIndex(IPC_CHANNELS.HIDE_DIALOG, true);
     }, parseInt(config.indexWindow.timeout) * 1000);
   }
 }
@@ -211,33 +212,33 @@ function saveDialog(dialogData) {
         speechifyTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
           .then(urlList => {
             if (urlList && urlList.length > 0) {
-              windowModule.sendIndex('add-to-playlist', urlList);
+              windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
             }
           })
           .catch(error => {
             console.error('[Dialog Module] Speechify TTS error:', error);
             // Fallback to Google TTS
             const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-            windowModule.sendIndex('add-to-playlist', urlList);
+            windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
           });
       } else if (ttsEngine === 'elevenlabs') {
         // Use ElevenLabs TTS
         elevenLabsTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
           .then(urlList => {
             if (urlList && urlList.length > 0) {
-              windowModule.sendIndex('add-to-playlist', urlList);
+              windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
             }
           })
           .catch(error => {
             console.error('[Dialog Module] ElevenLabs TTS error:', error);
             // Fallback to Google TTS
             const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-            windowModule.sendIndex('add-to-playlist', urlList);
+            windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
           });
       } else {
         // Use Google TTS (default)
         const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-        windowModule.sendIndex('add-to-playlist', urlList);
+        windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
       }
     }
 

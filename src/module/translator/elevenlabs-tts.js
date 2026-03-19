@@ -74,6 +74,7 @@ function buildElevenLabsError(error, overrides = {}) {
 
   const normalizedError = new Error(message);
   normalizedError.provider = 'ElevenLabs';
+  normalizedError.authCode = overrides.authCode || error?.authCode || '';
   normalizedError.statusCode = statusCode;
   normalizedError.status = statusCode;
   normalizedError.retryable = retryable;
@@ -118,7 +119,7 @@ function decodeErrorBody(error) {
 }
 
 async function synthesizeSpeech(text, language, config = {}, options = {}) {
-  const { persistTokens = false, skipAuthResolve = false } = options;
+  const { authOptions = {}, skipAuthResolve = false } = options;
 
   if (!text || text.trim() === '') {
     throw buildElevenLabsError(new Error('Text is required'), {
@@ -130,7 +131,7 @@ async function synthesizeSpeech(text, language, config = {}, options = {}) {
 
   const authConfig = skipAuthResolve
     ? (config || {})
-    : await elevenLabsAuth.resolveAuthConfig(config, { persistTokens });
+    : await elevenLabsAuth.resolveAuthConfig(config, authOptions);
 
   const {
     bearerToken,
@@ -209,7 +210,12 @@ async function getAudioUrl(text = '', from = 'English', configOverride = null) {
 
   try {
     const baseConfig = configOverride || configModule.getConfig().api.elevenlabs || {};
-    authConfig = await elevenLabsAuth.resolveAuthConfig(baseConfig, { persistTokens: true });
+    authConfig = await elevenLabsAuth.resolveAuthConfig(baseConfig, {
+      allowRefresh: true,
+      cacheResolvedSession: true,
+      persistAuthState: true,
+      persistGeneratedDeviceId: true,
+    });
   } catch (error) {
     Logger.warn('elevenlabs-tts', 'ElevenLabs TTS auth resolution failed', error.message);
     throw buildElevenLabsError(error);
@@ -257,7 +263,12 @@ async function getAudioUrl(text = '', from = 'English', configOverride = null) {
 
 async function testConfiguration(configOverride = null) {
   const baseConfig = configOverride || configModule.getConfig().api.elevenlabs || {};
-  const authConfig = await elevenLabsAuth.resolveAuthConfig(baseConfig, { persistTokens: false });
+  const authConfig = await elevenLabsAuth.resolveAuthConfig(baseConfig, {
+    allowRefresh: true,
+    cacheResolvedSession: false,
+    persistAuthState: false,
+    persistGeneratedDeviceId: false,
+  });
   const audioUrl = await synthesizeSpeechWithRetry(
     'Hello from ElevenLabs TTS!',
     'English',
@@ -274,6 +285,7 @@ async function testConfiguration(configOverride = null) {
       modelId: authConfig.modelId,
       didRefreshBearer: Boolean(authConfig.didRefreshBearer),
       usedAppCheck: Boolean(authConfig.appCheckToken),
+      authSource: authConfig.authSource || '',
     },
   };
 }

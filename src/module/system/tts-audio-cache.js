@@ -1,5 +1,6 @@
 'use strict';
 
+const { app } = require('electron');
 const crypto = require('crypto');
 const fs = require('fs');
 const fsp = fs.promises;
@@ -8,16 +9,20 @@ const fileModule = require('./file-module');
 const Logger = require('../../utils/logger');
 
 class TTSAudioCache {
-  constructor(maxSize = 200) {
+  constructor(maxSize = 200, options = {}) {
     this.maxSize = maxSize;
+    this.failureCacheTtlMs = Number.isFinite(options.failureCacheTtlMs) ? Math.max(0, options.failureCacheTtlMs) : 5000;
     this.entries = new Map();
     this.memoryCache = new Map();
     this.pending = new Map();
+    this.recentFailures = new Map();
     this.isDirty = false;
     this.initialized = false;
-    this.initializePromise = this.load();
+    this.initializePromise = null;
     this.autoSaveInterval = setInterval(() => {
-      this.save();
+      this.save().catch((error) => {
+        Logger.warn('tts-audio-cache', 'Auto-save failed', error.message);
+      });
     }, 5 * 60 * 1000);
   }
 
@@ -33,9 +38,32 @@ class TTSAudioCache {
     return `${crypto.createHash('sha1').update(key).digest('hex')}.txt`;
   }
 
+  async waitForElectronReady() {
+    if (!app || typeof app.whenReady !== 'function') {
+      return;
+    }
+
+    if (typeof app.isReady === 'function' && app.isReady()) {
+      return;
+    }
+
+    await app.whenReady();
+  }
+
+  async initialize() {
+    if (!this.initializePromise) {
+      this.initializePromise = (async () => {
+        await this.waitForElectronReady();
+        await this.load();
+      })();
+    }
+
+    await this.initializePromise;
+  }
+
   async ensureReady() {
     if (!this.initialized) {
-      await this.initializePromise;
+      await this.initialize();
     }
   }
 
@@ -169,12 +197,60 @@ class TTSAudioCache {
     }
   }
 
+  getRecentFailure(key = '') {
+    if (!key || this.failureCacheTtlMs <= 0) {
+      return null;
+    }
+
+    const failure = this.recentFailures.get(key);
+    if (!failure) {
+      return null;
+    }
+
+    if (failure.expiresAt <= Date.now()) {
+      this.recentFailures.delete(key);
+      return null;
+    }
+
+    return failure.error;
+  }
+
+  shouldRememberFailure(error) {
+    if (!error || this.failureCacheTtlMs <= 0) {
+      return false;
+    }
+
+    if (error.authCode || error.statusCode === 401 || error.statusCode === 403) {
+      return false;
+    }
+
+    return Boolean(error.retryable) || ['ECONNABORTED', 'ENOTFOUND', 'ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN'].includes(error.code);
+  }
+
+  rememberFailure(key = '', error) {
+    if (!key || !this.shouldRememberFailure(error)) {
+      return;
+    }
+
+    this.recentFailures.set(key, {
+      error,
+      expiresAt: Date.now() + this.failureCacheTtlMs,
+    });
+  }
+
+  clearRecentFailure(key = '') {
+    if (key) {
+      this.recentFailures.delete(key);
+    }
+  }
+
   async set(key = '', dataUrl = '') {
     await this.ensureReady();
     if (!key || !dataUrl) {
       return dataUrl;
     }
 
+    this.clearRecentFailure(key);
     await this.ensureCacheDir();
 
     const fileName = this.getFileName(key);
@@ -204,17 +280,31 @@ class TTSAudioCache {
         return cached;
       }
 
+      const recentFailure = this.getRecentFailure(key);
+      if (recentFailure) {
+        throw recentFailure;
+      }
+
       if (this.pending.has(key)) {
         return this.pending.get(key);
       }
     }
 
     const promise = (async () => {
-      const value = await factory();
-      if (useCache) {
-        await this.set(key, value);
+      try {
+        const value = await factory();
+        if (useCache) {
+          await this.set(key, value);
+        } else if (key) {
+          this.clearRecentFailure(key);
+        }
+        return value;
+      } catch (error) {
+        if (useCache) {
+          this.rememberFailure(key, error);
+        }
+        throw error;
       }
-      return value;
     })();
 
     if (useCache) {

@@ -5,17 +5,18 @@ const requestModule = require('../system/request-module');
 const versionModule = require('../system/version-module');
 const windowModule = require('../system/window-module');
 const dialogModule = require('../system/dialog-module');
+const { IPC_CHANNELS } = require('../../constants');
 
 const appVersion = app.getVersion();
 
 function setRequestChannel() {
     // set UA
-    ipcMain.on('set-ua', (event, scuValue, uaValue) => {
+    ipcMain.on(IPC_CHANNELS.SET_UA, (event, scuValue, uaValue) => {
         requestModule.setUA(scuValue, uaValue);
     });
 
     // version check
-    ipcMain.on('version-check', (event) => {
+    ipcMain.on(IPC_CHANNELS.VERSION_CHECK, (event) => {
         // get lastest version
         requestModule
             .get('https://api.github.com/repos/raydocs/fftrans/releases/latest')
@@ -25,10 +26,10 @@ function setRequestChannel() {
 
                 if (latestVersion) {
                     if (versionModule.isLatest(appVersion, latestVersion)) {
-                        windowModule.sendIndex('hide-update-button', true);
+                        windowModule.sendIndex(IPC_CHANNELS.HIDE_UPDATE_BUTTON, true);
                         console.log('latest version');
                     } else {
-                        windowModule.sendIndex('hide-update-button', false);
+                        windowModule.sendIndex(IPC_CHANNELS.HIDE_UPDATE_BUTTON, false);
                         dialogModule.addNotification('UPDATE_AVAILABLE');
                     }
                 } else {
@@ -37,7 +38,7 @@ function setRequestChannel() {
             })
             .catch((error) => {
                 console.log(error);
-                windowModule.sendIndex('hide-update-button', false);
+                windowModule.sendIndex(IPC_CHANNELS.HIDE_UPDATE_BUTTON, false);
                 dialogModule.addNotification(error);
             });
 
@@ -57,7 +58,7 @@ function setRequestChannel() {
     });
 
     // post form
-    ipcMain.on('post-form', (event, path) => {
+    ipcMain.on(IPC_CHANNELS.POST_FORM, (event, path) => {
         requestModule.post('https://docs.google.com' + path).catch(console.log);
     });
 }

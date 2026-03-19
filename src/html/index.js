@@ -2,6 +2,7 @@
 
 // electron
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../constants');
 
 // click through
 let clickThrough = false;
@@ -25,42 +26,40 @@ window.addEventListener('DOMContentLoaded', async () => {
 // set IPC
 function setIPC() {
   // change UI text
-  ipcRenderer.on('change-ui-text', async () => {
-    const config = await ipcRenderer.invoke('get-config');
+  ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 
   // reset view
-  ipcRenderer.on('reset-view', (event, config) => {
+  ipcRenderer.on(IPC_CHANNELS.RESET_VIEW, (event, config) => {
     resetView(config);
   });
 
   // hide button
-  ipcRenderer.on('hide-button', (event, value) => {
+  ipcRenderer.on(IPC_CHANNELS.HIDE_BUTTON, (event, value) => {
     hideButton(value.isMouseOut, value.hideButton);
   });
 
   // hide update button
-  ipcRenderer.on('hide-update-button', (event, isHidden) => {
+  ipcRenderer.on(IPC_CHANNELS.HIDE_UPDATE_BUTTON, (event, isHidden) => {
     hideUpdateButton = isHidden;
   });
 
   // add audio
-  ipcRenderer.on('add-to-playlist', (event, urlList) => {
+  ipcRenderer.on(IPC_CHANNELS.ADD_TO_PLAYLIST, (event, urlList) => {
     document.dispatchEvent(new CustomEvent('add-to-playlist', { detail: urlList }));
   });
 
   // console log
-  ipcRenderer.on('console-log', (event, text) => {
+  ipcRenderer.on(IPC_CHANNELS.CONSOLE_LOG, (event, text) => {
     console.log(text);
   });
 
   // add dialog
-  ipcRenderer.on('add-dialog', (event, dialogData = {}) => {
-    // get dialog
+  ipcRenderer.on(IPC_CHANNELS.ADD_DIALOG, (event, dialogData = {}) => {
     let dialog = document.getElementById(dialogData.id);
 
-    // check dialog
     if (!dialog) {
       dialog = addDialog(dialogData.id, dialogData.code);
       dialog.style.display = 'none';
@@ -68,59 +67,44 @@ function setIPC() {
   });
 
   // update dialog
-  ipcRenderer.on('update-dialog', (event, dialogData = {}, style = {}, scroll = true) => {
-    // get dialog
+  ipcRenderer.on(IPC_CHANNELS.UPDATE_DIALOG, (event, dialogData = {}, style = {}, scroll = true) => {
     let dialog = document.getElementById(dialogData.id);
 
-    // check dialog
     if (!dialog) {
       dialog = addDialog(dialogData.id, dialogData.code);
     }
 
-    // display dialog
     dialog.style.display = 'block';
 
-    // set dialog content
     if (dialogData.translatedName !== '') {
       dialogData.translatedName += '：</br>';
     }
 
     setDialogContent(dialog, dialogData.translatedName + dialogData.translatedText);
-
-    // set dialog style
     setDialogStyle(dialog, style);
 
-    // add click event
     if (dialog.className !== 'FFFF') {
       dialog.style.cursor = 'pointer';
       dialog.onclick = () => {
-        ipcRenderer.send('restart-window', 'edit', dialogData.id);
+        ipcRenderer.send(IPC_CHANNELS.RESTART_WINDOW, 'edit', dialogData.id);
       };
     }
 
-    // navigate dialog
     if (scroll) {
       scrollIntoView(dialogData.id);
     }
   });
 
   // add notification
-  ipcRenderer.on('add-notification', (event, id, code, text = '', style = {}) => {
-    // create notification
+  ipcRenderer.on(IPC_CHANNELS.ADD_NOTIFICATION, (event, id, code, text = '', style = {}) => {
     const dialog = addDialog(id, code);
-
-    // set notification style
     setDialogStyle(dialog, style);
-
-    // set notification content
     setDialogContent(dialog, text);
-
-    // navigate notification
     scrollIntoView(id);
   });
 
   // remove dialog
-  ipcRenderer.on('remove-dialog', (event, id) => {
+  ipcRenderer.on(IPC_CHANNELS.REMOVE_DIALOG, (event, id) => {
     try {
       document.getElementById(id).remove();
     } catch (error) {
@@ -129,7 +113,7 @@ function setIPC() {
   });
 
   // reset dialog style
-  ipcRenderer.on('reset-dialog-style', (event, resetList = []) => {
+  ipcRenderer.on(IPC_CHANNELS.RESET_DIALOG_STYLE, (event, resetList = []) => {
     for (let index = 0; index < resetList.length; index++) {
       const element = resetList[index];
       setDialogStyle(document.getElementById(element.id), element.style);
@@ -137,88 +121,76 @@ function setIPC() {
   });
 
   // hide dialog
-  ipcRenderer.on('hide-dialog', (event, isHidden) => {
+  ipcRenderer.on(IPC_CHANNELS.HIDE_DIALOG, (event, isHidden) => {
     document.getElementById('div-dialog').hidden = isHidden;
   });
 
   // clear dialog
-  ipcRenderer.on('clear-dialog', () => {
+  ipcRenderer.on(IPC_CHANNELS.CLEAR_DIALOG, () => {
     document.getElementById('div-dialog').innerHTML = '';
   });
 
   // move to bottom
-  ipcRenderer.on('move-to-bottom', () => {
+  ipcRenderer.on(IPC_CHANNELS.MOVE_TO_BOTTOM, () => {
     moveToBottom();
   });
 }
 
 // set view
 async function setView() {
-  const config = await ipcRenderer.invoke('get-config');
+  const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
 
-  // reset view
   resetView(config);
-
-  // set click through
   setClickThrough(config.indexWindow.clickThrough);
-
-  // set speech
   setSpeech(config.indexWindow.speech);
-
-  // set compact mode button
   updateCompactButton(config.indexWindow.compactMode);
 
-  // first time check
   if (config.system.firstTime) {
-    ipcRenderer.send('create-window', 'config', 'div-translation');
+    ipcRenderer.send(IPC_CHANNELS.CREATE_WINDOW, 'config', 'div-translation');
   }
 
-  // change UI text
-  ipcRenderer.send('change-ui-text');
+  ipcRenderer.send(IPC_CHANNELS.CHANGE_UI_TEXT);
 }
 
 // set event
 function setEvent() {
-  // move window
   document.addEventListener('move-window', (e) => {
-    ipcRenderer.send('move-window', e.detail, false);
+    ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, e.detail, false);
   });
 
-  // drag click through
   document.getElementById('img-button-drag').addEventListener('mousedown', () => {
     clickThrough = false;
   });
+
   document.getElementById('img-button-drag').addEventListener('mouseup', async () => {
-    clickThrough = await ipcRenderer.invoke('get-click-through-config');
+    clickThrough = await ipcRenderer.invoke(IPC_CHANNELS.GET_CLICK_THROUGH_CONFIG);
   });
 
-  // document click through
   document.addEventListener('mouseenter', () => {
     if (clickThrough) {
-      ipcRenderer.send('set-click-through', true);
+      ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH, true);
     } else {
-      ipcRenderer.send('set-click-through', false);
+      ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH, false);
     }
   });
 
   document.addEventListener('mouseleave', () => {
-    ipcRenderer.send('set-click-through', false);
+    ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH, false);
   });
 
-  // button click through
   const buttonArray = document.getElementsByClassName('btn-icon');
   for (let index = 0; index < buttonArray.length; index++) {
     const element = buttonArray[index];
 
     element.addEventListener('mouseenter', () => {
-      ipcRenderer.send('set-click-through', false);
+      ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH, false);
     });
 
     element.addEventListener('mouseleave', () => {
       if (clickThrough) {
-        ipcRenderer.send('set-click-through', true);
+        ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH, true);
       } else {
-        ipcRenderer.send('set-click-through', false);
+        ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH, false);
       }
     });
   }
@@ -226,79 +198,66 @@ function setEvent() {
 
 // set button
 function setButton() {
-  // config
   document.getElementById('img-button-config').onclick = () => {
-    ipcRenderer.send('create-window', 'config');
+    ipcRenderer.send(IPC_CHANNELS.CREATE_WINDOW, 'config');
   };
 
-  // capture
   document.getElementById('img-button-capture').onclick = () => {
-    ipcRenderer.send('create-window', 'capture');
+    ipcRenderer.send(IPC_CHANNELS.CREATE_WINDOW, 'capture');
   };
 
-  // through
   document.getElementById('img-button-through').onclick = () => {
     setClickThrough(!clickThrough);
-    ipcRenderer.send('set-click-through-config', clickThrough);
+    ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH_CONFIG, clickThrough);
   };
 
-  // update
   document.getElementById('img-button-update').onclick = () => {
-    ipcRenderer.send('execute-command', 'explorer "https://github.com/raydocs/fftrans/releases/latest/"');
+    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, 'explorer "https://github.com/raydocs/fftrans/releases/latest/"');
   };
 
-  // compact mode toggle
   document.getElementById('img-button-compact').onclick = async () => {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.indexWindow.compactMode = !config.indexWindow.compactMode;
-    // Reset window position to apply compact size
     config.indexWindow.x = -1;
     config.indexWindow.y = -1;
     config.indexWindow.width = -1;
     config.indexWindow.height = -1;
-    await ipcRenderer.invoke('set-config', config);
-    ipcRenderer.send('send-index', 'reset-view', config);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
+    ipcRenderer.send(IPC_CHANNELS.SEND_INDEX, IPC_CHANNELS.RESET_VIEW, config);
     updateCompactButton(config.indexWindow.compactMode);
-    ipcRenderer.send('add-notification', config.indexWindow.compactMode ? 'COMPACT_MODE_ON' : 'COMPACT_MODE_OFF');
+    ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, config.indexWindow.compactMode ? 'COMPACT_MODE_ON' : 'COMPACT_MODE_OFF');
   };
 
-  // minimize
   document.getElementById('img-button-minimize').onclick = () => {
-    ipcRenderer.send('minimize-window');
+    ipcRenderer.send(IPC_CHANNELS.MINIMIZE_WINDOW);
   };
 
-  // close
   document.getElementById('img-button-close').onclick = () => {
-    ipcRenderer.send('close-app');
+    ipcRenderer.send(IPC_CHANNELS.CLOSE_APP);
   };
 
-  // auto play (TTS toggle)
   document.getElementById('img-button-speech').onclick = async () => {
     console.log('[TTS] Button clicked');
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.indexWindow.speech = !config.indexWindow.speech;
     console.log('[TTS] Speech enabled:', config.indexWindow.speech);
-    await ipcRenderer.invoke('set-config', config);
-    ipcRenderer.send('mute-window', config.indexWindow.speech);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
+    ipcRenderer.send(IPC_CHANNELS.MUTE_WINDOW, config.indexWindow.speech);
     setSpeech(config.indexWindow.speech);
   };
 
-  // custom
   document.getElementById('img-button-custom').onclick = () => {
-    ipcRenderer.send('create-window', 'custom');
+    ipcRenderer.send(IPC_CHANNELS.CREATE_WINDOW, 'custom');
   };
 
-  // read log
   document.getElementById('img-button-read-log').onclick = () => {
-    ipcRenderer.send('create-window', 'read-log');
+    ipcRenderer.send(IPC_CHANNELS.CREATE_WINDOW, 'read-log');
   };
 
-  // dictionary
   document.getElementById('img-button-dictionary').onclick = () => {
-    ipcRenderer.send('create-window', 'dictionary');
+    ipcRenderer.send(IPC_CHANNELS.CREATE_WINDOW, 'dictionary');
   };
 
-  // backspace
   document.getElementById('img-button-backspace').onclick = () => {
     try {
       document.getElementById('div-dialog').lastElementChild.remove();
@@ -307,7 +266,6 @@ function setButton() {
     }
   };
 
-  // clear
   document.getElementById('img-button-clear').onclick = () => {
     document.getElementById('div-dialog').innerHTML = '';
   };
@@ -315,42 +273,28 @@ function setButton() {
 
 // start app
 function startApp() {
-  ipcRenderer.send('set-ua', navigator?.userAgentData?.brands, navigator?.userAgent);
-  ipcRenderer.send('add-notification', 'VIEW_README');
-  ipcRenderer.send('version-check');
-  ipcRenderer.send('initialize-json');
+  ipcRenderer.send(IPC_CHANNELS.SET_UA, navigator?.userAgentData?.brands, navigator?.userAgent);
+  ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'VIEW_README');
+  ipcRenderer.send(IPC_CHANNELS.VERSION_CHECK);
+  ipcRenderer.send(IPC_CHANNELS.INITIALIZE_JSON);
 }
 
 // reset view
 function resetView(config) {
-  // restore window
-  ipcRenderer.send('restore-window');
+  ipcRenderer.send(IPC_CHANNELS.RESTORE_WINDOW);
+  ipcRenderer.send(IPC_CHANNELS.SET_ALWAYS_ON_TOP, config.indexWindow.alwaysOnTop);
+  ipcRenderer.send(IPC_CHANNELS.SET_FOCUSABLE, config.indexWindow.focusable);
 
-  // set always on top
-  ipcRenderer.send('set-always-on-top', config.indexWindow.alwaysOnTop);
-
-  // set focusable
-  ipcRenderer.send('set-focusable', config.indexWindow.focusable);
-
-  // set speech speed
   document.dispatchEvent(new CustomEvent('set-speech-speed', { detail: config.indexWindow.speechSpeed }));
 
-  // set button
   document.querySelectorAll('.img-hidden').forEach((value) => {
     document.getElementById(value.id).hidden = config.indexWindow.hideButton;
   });
 
-  // reset dialog style
   resetDialogStyle();
-
-  // show dialog
-  ipcRenderer.send('show-dialog');
-
-  // set background color
+  ipcRenderer.send(IPC_CHANNELS.SHOW_DIALOG);
   document.getElementById('div-dialog').style.backgroundColor = config.indexWindow.backgroundColor;
-
-  // set min size
-  ipcRenderer.send('set-min-size', config.indexWindow.minSize);
+  ipcRenderer.send(IPC_CHANNELS.SET_MIN_SIZE, config.indexWindow.minSize);
 }
 
 // add dialog
@@ -365,16 +309,13 @@ function addDialog(id = '', code = '') {
 // set dialog content (OPTIMIZED: reuse span to avoid DOM reconstruction)
 function setDialogContent(dialog, text = '') {
   if (dialog) {
-    // Try to reuse existing span element
     let content = dialog.querySelector('span');
 
     if (!content) {
-      // Create new span only if it doesn't exist
       content = document.createElement('span');
       dialog.appendChild(content);
     }
 
-    // Update innerHTML without rebuilding DOM
     content.innerHTML = text;
   }
 }
@@ -405,7 +346,7 @@ function resetDialogStyle() {
     });
   }
 
-  ipcRenderer.send('reset-dialog-style', resetList);
+  ipcRenderer.send(IPC_CHANNELS.RESET_DIALOG_STYLE, resetList);
 }
 
 // scroll into view - optimized for streaming translation
@@ -414,14 +355,12 @@ let scrollPending = false;
 
 function scrollIntoView(id = '') {
   lastScrollId = id;
-  
-  // Use requestAnimationFrame to batch scroll updates
+
   if (!scrollPending) {
     scrollPending = true;
     requestAnimationFrame(() => {
       scrollPending = false;
-      
-      // Always scroll the dialog container to bottom for smooth streaming
+
       const container = document.getElementById('div-dialog');
       if (container) {
         container.scrollTop = container.scrollHeight;
@@ -456,21 +395,16 @@ function clearSelection() {
 // hide button
 function hideButton(isMouseOut, hideButton) {
   if (isMouseOut) {
-    // hide
     document.querySelectorAll('.img-hidden').forEach((value) => {
       document.getElementById(value.id).hidden = hideButton;
     });
   } else {
-    // show
     document.querySelectorAll('.img-hidden').forEach((value) => {
       document.getElementById(value.id).hidden = false;
     });
 
-    // update button
     document.getElementById('img-button-update').hidden = hideUpdateButton;
-
-    // show dialog
-    ipcRenderer.send('show-dialog');
+    ipcRenderer.send(IPC_CHANNELS.SHOW_DIALOG);
   }
 }
 
@@ -480,15 +414,13 @@ function setClickThrough(value) {
   clickThrough = value;
   const hint = document.getElementById('div-click-through-hint');
   const button = document.getElementById('img-button-through');
-  
-  // Clear any existing timeout
+
   if (clickThroughHintTimeout) {
     clearTimeout(clickThroughHintTimeout);
     clickThroughHintTimeout = null;
   }
-  
+
   if (clickThrough) {
-    // Show hint briefly (2 seconds) then hide
     if (hint) {
       hint.hidden = false;
       clickThroughHintTimeout = setTimeout(() => {

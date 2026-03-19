@@ -2,6 +2,7 @@
 
 // electron
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../constants');
 
 const arrayParameters = {
   'player-name-table': { type: 'user', name: 'playerName' },
@@ -23,13 +24,13 @@ window.addEventListener('DOMContentLoaded', async () => {
 // set IPC
 function setIPC() {
   // change UI text
-  ipcRenderer.on('change-ui-text', async () => {
-    const config = await ipcRenderer.invoke('get-config');
+  ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 
   // create table
-  ipcRenderer.on('create-table', async () => {
+  ipcRenderer.on(IPC_CHANNELS.CREATE_TABLE, async () => {
     await createTable();
   });
 }
@@ -39,14 +40,14 @@ async function setView() {
   await createTable();
 
   // change UI text
-  ipcRenderer.send('change-ui-text');
+  ipcRenderer.send(IPC_CHANNELS.CHANGE_UI_TEXT);
 }
 
 // set enevt
 function setEvent() {
   // move window
   document.addEventListener('move-window', (e) => {
-    ipcRenderer.send('move-window', e.detail, false);
+    ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, e.detail, false);
   });
 
   document.getElementById('select-table-type').onchange = async () => {
@@ -58,7 +59,7 @@ function setEvent() {
 function setButton() {
   // close
   document.getElementById('img-button-close').onclick = () => {
-    ipcRenderer.send('close-window');
+    ipcRenderer.send(IPC_CHANNELS.CLOSE_WINDOW);
   };
 
   // save custom
@@ -68,10 +69,10 @@ function setButton() {
     const type = document.getElementById('select-type').value;
 
     if (textBefore.length > 1) {
-      ipcRenderer.send('save-user-custom', textBefore, textAfter, type);
-      ipcRenderer.send('add-notification', 'WORD_SAVED');
+      ipcRenderer.send(IPC_CHANNELS.SAVE_USER_CUSTOM, textBefore, textAfter, type);
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'WORD_SAVED');
     } else {
-      ipcRenderer.send('add-notification', 'LENGTH_TOO_SHORT');
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'LENGTH_TOO_SHORT');
     }
   };
 
@@ -81,10 +82,10 @@ function setButton() {
     const type = document.getElementById('select-type').value;
 
     if (textBefore.length > 1) {
-      ipcRenderer.send('delete-user-custom', textBefore, type);
-      ipcRenderer.send('add-notification', 'WORD_DELETED');
+      ipcRenderer.send(IPC_CHANNELS.DELETE_USER_CUSTOM, textBefore, type);
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'WORD_DELETED');
     } else {
-      ipcRenderer.send('add-notification', 'LENGTH_TOO_SHORT');
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'LENGTH_TOO_SHORT');
     }
   };
 
@@ -101,12 +102,12 @@ function setButton() {
 
   // view files
   document.getElementById('button-view-files').onclick = async () => {
-    ipcRenderer.send('execute-command', `start "" "${await ipcRenderer.invoke('get-user-data-path', 'text')}"`);
+    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `start "" "${await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'text')}"`);
   };
 
   // clear cache
   document.getElementById('button-clear-cache').onclick = () => {
-    ipcRenderer.send('clear-cache');
+    ipcRenderer.send(IPC_CHANNELS.CLEAR_CACHE);
   };
 }
 
@@ -114,7 +115,7 @@ function setButton() {
 async function createTable(keyword = '') {
   const tableType = document.getElementById('select-table-type').value;
   const arrayParameter = arrayParameters[tableType];
-  const array = await ipcRenderer.invoke('get-user-array', arrayParameter.name);
+  const array = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_ARRAY, arrayParameter.name);
   const tbody = document.getElementById('tbody-custom-table');
   let innerHTML = '';
 

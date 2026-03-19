@@ -2,6 +2,7 @@
 
 // electron
 const { ipcRenderer } = require('electron');
+const { IPC_CHANNELS } = require('../constants');
 
 // capture data
 let captureData = {};
@@ -17,13 +18,13 @@ window.addEventListener('DOMContentLoaded', async () => {
 // set IPC
 function setIPC() {
   // change UI text
-  ipcRenderer.on('change-ui-text', async () => {
-    const config = await ipcRenderer.invoke('get-config');
+  ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   });
 
   // send data
-  ipcRenderer.on('send-data', (event, data) => {
+  ipcRenderer.on(IPC_CHANNELS.SEND_DATA, (event, data) => {
     captureData = data;
     document.getElementById('textarea-screen-text').value = captureData.text;
   });
@@ -31,26 +32,26 @@ function setIPC() {
 
 // set view
 async function setView() {
-  const config = await ipcRenderer.invoke('get-config');
+  const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
   document.getElementById('checkbox-split').checked = config.captureWindow.split;
-  document.getElementById('img-captured').setAttribute('src', await ipcRenderer.invoke('get-root-path', 'src', 'data', 'img', 'cropped.png'));
+  document.getElementById('img-captured').setAttribute('src', await ipcRenderer.invoke(IPC_CHANNELS.GET_ROOT_PATH, 'src', 'data', 'img', 'cropped.png'));
 
   // change UI text
-  ipcRenderer.send('change-ui-text');
+  ipcRenderer.send(IPC_CHANNELS.CHANGE_UI_TEXT);
 }
 
 // set event
 function setEvent() {
   // move window
   document.addEventListener('move-window', (e) => {
-    ipcRenderer.send('move-window', e.detail, false);
+    ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, e.detail, false);
   });
 
   // checkbox
   document.getElementById('checkbox-split').oninput = async () => {
-    const config = await ipcRenderer.invoke('get-config');
+    const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.captureWindow.split = document.getElementById('checkbox-split').checked;
-    await ipcRenderer.invoke('set-config', config);
+    await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
   };
 }
 
@@ -58,7 +59,7 @@ function setEvent() {
 function setButton() {
   // close
   document.getElementById('img-button-close').onclick = () => {
-    ipcRenderer.send('close-window');
+    ipcRenderer.send(IPC_CHANNELS.CLOSE_WINDOW);
   };
 
   // page
@@ -75,6 +76,6 @@ function setButton() {
   document.getElementById('button-translate').onclick = () => {
     captureData.text = document.getElementById('textarea-screen-text').value;
     captureData.split = document.getElementById('checkbox-split').checked;
-    ipcRenderer.send('translate-image-text', captureData);
+    ipcRenderer.send(IPC_CHANNELS.TRANSLATE_IMAGE_TEXT, captureData);
   };
 }
