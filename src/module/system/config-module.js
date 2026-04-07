@@ -91,7 +91,7 @@ const defaultConfig = {
     openRouterApiKey: '',
     openRouterModel: 'inception/mercury-2',
     nvidiaApiKey: '',
-    nvidiaModel: 'nvidia/nemotron-3-super-120b-a12b',
+    nvidiaModel: 'meta/llama-4-maverick-17b-128e-instruct',
     speechify: {
       bearerToken: '',
       voiceId: 'gwyneth',
