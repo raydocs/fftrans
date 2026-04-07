@@ -100,7 +100,7 @@ NVIDIA 提供的免费 AI 推理服务，无需付费即可使用顶级开源模
 
 #### OpenRouter
 
-统一接入 100+ AI 模型的代理平台，一个 API Key 即可切换 Claude、GPT、Gemini、DeepSeek 等所有主流模型。有免费额度，付费按量计费，适合需要精细控制模型的用户。
+统一接入 100+ AI 模型的代理平台，一个 API Key 即可切换 Claude、GPT、Gemini、DeepSeek 等所有主流模型。默认使用 `inception/mercury-2`，付费按量计费，适合需要精细控制模型的用户。
 
 [获取 API Key →](https://openrouter.ai/)
 
@@ -108,10 +108,10 @@ NVIDIA 提供的免费 AI 推理服务，无需付费即可使用顶级开源模
 
 | 引擎 | 提供方 | 说明 |
 |------|--------|------|
-| GPT | OpenAI | 官方 API，支持 GPT-4o / o 系列 |
+| GPT | OpenAI | 官方 API，默认 `gpt-5.4-nano`，可手动填写其他模型 |
 | Claude | Anthropic | 高质量翻译，长文本表现出色 |
-| Gemini | Google | 支持 Gemini 2.0 Flash 等最新模型 |
-| Kimi | 月之暗面 | 中文场景优化，适合中日翻译 |
+| Gemini | Google | 默认 `gemini-3.1-flash-lite-preview`，可手动填写其他模型 |
+| Kimi | 月之暗面 | 默认 `kimi-k2.5`，中文场景优化 |
 
 <details>
 <summary>在线翻译（免费备用）</summary>
