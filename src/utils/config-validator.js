@@ -112,15 +112,15 @@ function validateAPI(api, errors) {
     'googleVisionApiKey',
     'geminiApiKey',
     'gptApiKey',
-    'cohereToken',
     'kimiToken',
     'llmApiKey',
-    'openRouterApiKey'
+    'openRouterApiKey',
+    'nvidiaApiKey'
   ];
 
   apiKeyFields.forEach((field) => validateStringField(api[field], `api.${field}`, errors));
 
-  const modelFields = ['geminiModel', 'gptModel', 'cohereModel', 'kimiModel', 'llmApiModel', 'openRouterModel'];
+  const modelFields = ['geminiModel', 'gptModel', 'kimiModel', 'llmApiModel', 'openRouterModel', 'nvidiaModel'];
   modelFields.forEach((field) => validateStringField(api[field], `api.${field}`, errors));
 
   if (api.llmApiUrl !== undefined) {

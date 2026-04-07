@@ -100,9 +100,9 @@ function getElementTextList() {
         // config
         'a-set-google-vision': ['說明', '说明', 'Guide'],
         'a-test-gemini-api': ['測試連結', '测试链接', 'Test Connection'],
-        'a-test-cohere-api': ['測試連結', '测试链接', 'Test Connection'],
         'a-test-kimi-api': ['測試連結', '测试链接', 'Test Connection'],
         'a-test-openrouter-api': ['測試連結', '测试链接', 'Test Connection'],
+        'a-test-nvidia-api': ['測試連結', '测试链接', 'Test Connection'],
         'a-test-gpt-api': ['測試連結', '测试链接', 'Test Connection'],
         'a-test-llm-api': ['測試連結', '测试链接', 'Test Connection'],
 
@@ -218,14 +218,14 @@ function getElementTextList() {
         'input-gemini-api-key': ['API Key', 'API金钥', 'API Key'],
         'input-gemini-model': ['模型', '模型', 'Model'],
 
-        'input-cohere-token': ['API Key', 'API金钥', 'API Key'],
-        'input-cohere-model': ['模型', '模型', 'Model'],
-
         'input-kimi-token': ['API Key', 'API金钥', 'API Key'],
         'input-kimi-model': ['模型', '模型', 'Model'],
 
         'input-openrouter-api-key': ['API Key', 'API金钥', 'API Key'],
         'input-openrouter-model': ['模型', '模型', 'Model'],
+
+        'input-nvidia-api-key': ['API Key', 'API金钥', 'API Key'],
+        'input-nvidia-model': ['模型', '模型', 'Model'],
 
         'input-gpt-api-key': ['API Key', 'API金钥', 'API Key'],
         'input-gpt-model': ['模型', '模型', 'Model'],
@@ -311,10 +311,10 @@ function getElementTextList() {
         DeepL: ['DeepL', 'DeepL', 'DeepL'],
         '#AI-Translator': ['#AI翻譯', '#AI翻译', '#AI'],
         GPT: ['ChatGPT', 'ChatGPT', 'ChatGPT'],
-        Cohere: ['Cohere', 'Cohere', 'Cohere'],
         Gemini: ['Gemini', 'Gemini', 'Gemini'],
         Kimi: ['Kimi', 'Kimi', 'Kimi'],
         OpenRouter: ['OpenRouter', 'OpenRouter', 'OpenRouter'],
+        NVIDIA: ['NVIDIA', 'NVIDIA', 'NVIDIA'],
         'LLM-API': ['自訂OpenAI', '自订OpenAI', 'Custom OpenAI'],
 
         Auto: ['自動偵測', '自动侦测', 'Auto'],
@@ -375,10 +375,10 @@ function getElementTextList() {
         ],
         'p-google-vision': ['Google Vision設定', 'Google Vision设定', 'Google Vision'],
         'p-gemini': ['Gemini設定', 'Gemini设定', 'Gemini'],
-        'p-cohere': ['Cohere設定', 'Cohere设定', 'Cohere'],
         'p-chat-gpt': ['ChatGPT設定', 'ChatGPT设定', 'ChatGPT'],
         'p-kimi': ['Kimi設定', 'Kimi设定', 'Kimi'],
         'p-openrouter': ['OpenRouter設定', 'OpenRouter设定', 'OpenRouter'],
+        'p-nvidia': ['NVIDIA設定', 'NVIDIA设定', 'NVIDIA'],
         'p-llm-api': ['自訂OpenAI設定', '自订OpenAI设定', 'Custom OpenAI'],
         'p-ssl-warning': [
           '若您的API不支援SSL驗證，請至【系統設定】關閉SSL驗證',
@@ -490,9 +490,6 @@ function getElementTextList() {
         'input-gemini-api-key': ['API Key', 'API金钥', 'API Key'],
         'input-gemini-model': ['Model', 'Model', 'Model'],
 
-        'input-cohere-token': ['API Key', 'API金钥', 'API Key'],
-        'input-cohere-model': ['Model', 'Model', 'Model'],
-
         'input-gpt-api-key': ['API Key', 'API金钥', 'API Key'],
         'input-gpt-model': ['Model', 'Model', 'Model'],
 
@@ -502,6 +499,9 @@ function getElementTextList() {
         'input-llm-api-key': ['API Key', 'API金钥', 'API Key'],
         'input-llm-model': ['Model', 'Model', 'Model'],
         'input-llm-api-url': ['API URL', 'API URL', 'API URL'],
+
+        'input-nvidia-api-key': ['API Key', 'API金钥', 'API Key'],
+        'input-nvidia-model': ['Model', 'Model', 'Model'],
 
         // custom
         'input-Keyword': ['關鍵字', '关键字', 'Keyword'],

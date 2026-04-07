@@ -33,10 +33,10 @@ const papago = require('../translator/papago');
 const deepl = require('../translator/deepl');
 const gpt = require('../translator/gpt');
 const openai = require('../translator/openai');
-const cohere = require('../translator/cohere');
 const gemini = require('../translator/gemini');
 const kimi = require('../translator/kimi');
 const openRouter = require('../translator/openrouter');
+const nvidia = require('../translator/nvidia');
 
 function stableStringify(value) {
   if (value === null || typeof value !== 'object') {
@@ -373,10 +373,6 @@ async function getTranslation(engine = '', option = {}, type = 'sentence') {
         text = await openai.exec(option, type);
         break;
 
-      case 'Cohere':
-        text = await cohere.exec(option, type);
-        break;
-
       case 'Gemini':
         text = await gemini.exec(option, type);
         break;
@@ -386,6 +382,10 @@ async function getTranslation(engine = '', option = {}, type = 'sentence') {
 
       case 'OpenRouter':
         text = await openRouter.exec(option, type);
+        break;
+
+      case 'NVIDIA':
+        text = await nvidia.exec(option, type);
         break;
 
       default:

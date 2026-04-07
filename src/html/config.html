@@ -978,38 +978,6 @@
             </div>
           </div>
 
-          <!-- Cohere -->
-          <div class="settings-section nested">
-            <div class="settings-section-header">
-              <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5"></path>
-                <path d="M2 12l10 5 10-5"></path>
-              </svg>
-              <span id="p-cohere">Cohere</span>
-              <a href="#" id="a-test-cohere-api" class="header-link">测试链接</a>
-            </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label" id="label-cohere-token">API Token</div>
-                <div class="setting-description" id="desc-cohere-token">Cohere Dashboard Token</div>
-            </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-cohere-token" />
-              <input type="password" class="form-control" id="input-cohere-token" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-cohere-model">模型</div>
-              <div class="setting-description" id="desc-cohere-model">如 command-r-plus</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-cohere-model" style="width: 200px" />
-            </div>
-          </div>
-        </div>
-
           <!-- Kimi -->
           <div class="settings-section nested">
             <div class="settings-section-header">
@@ -1085,6 +1053,38 @@
               </div>
               <div class="setting-control">
                 <input type="text" class="form-control" id="input-llm-model" style="width: 200px" />
+              </div>
+            </div>
+          </div>
+
+          <!-- NVIDIA -->
+          <div class="settings-section nested">
+            <div class="settings-section-header">
+              <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span id="p-nvidia">NVIDIA</span>
+              <a href="#" id="a-test-nvidia-api" class="header-link">测试链接</a>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-nvidia-api-key">API Key</div>
+                <div class="setting-description" id="desc-nvidia-api-key">NVIDIA API Key</div>
+              </div>
+              <div class="setting-control api-key-control">
+                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-nvidia-api-key" />
+                <input type="password" class="form-control" id="input-nvidia-api-key" />
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-nvidia-model">模型</div>
+                <div class="setting-description" id="desc-nvidia-model">如 nvidia/nemotron-3-super-120b-a12b</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" id="input-nvidia-model" style="width: 280px" />
               </div>
             </div>
           </div>

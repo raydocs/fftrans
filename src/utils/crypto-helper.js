@@ -140,8 +140,8 @@ function encryptApiKeys(config) {
     'googleVisionApiKey',
     'geminiApiKey',
     'gptApiKey',
-    'cohereToken',
     'kimiToken',
+    'nvidiaApiKey',
     'llmApiKey',
     'openRouterApiKey'
   ];
@@ -195,8 +195,8 @@ function decryptApiKeys(config) {
     'googleVisionApiKey',
     'geminiApiKey',
     'gptApiKey',
-    'cohereToken',
     'kimiToken',
+    'nvidiaApiKey',
     'llmApiKey',
     'openRouterApiKey'
   ];

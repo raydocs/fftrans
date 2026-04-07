@@ -197,7 +197,7 @@ async function readLog(id = '') {
       if (targetLog?.translation?.engine) {
         document.getElementById('select-engine').value = fixLogValue(
           targetLog.translation.engine,
-          ['Youdao', 'Baidu', 'Caiyun', 'Papago', 'DeepL', 'GPT', 'Cohere', 'Gemini', 'Kimi', 'LLM-API'],
+          ['Youdao', 'Baidu', 'Caiyun', 'Papago', 'DeepL', 'GPT', 'Gemini', 'Kimi', 'OpenRouter', 'NVIDIA', 'LLM-API'],
           config.translation.engine
         );
       }

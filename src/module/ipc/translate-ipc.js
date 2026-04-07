@@ -77,8 +77,8 @@ function setTranslateChannel() {
             case 'Gemini':
                 if (!apiConfig.geminiApiKey) missingMessage = 'Gemini API Key 未设置';
                 break;
-            case 'Cohere':
-                if (!apiConfig.cohereToken) missingMessage = 'Cohere API Token 未设置';
+            case 'NVIDIA':
+                if (!apiConfig.nvidiaApiKey) missingMessage = 'NVIDIA API Key 未设置';
                 break;
             case 'Kimi':
                 if (!apiConfig.kimiToken) missingMessage = 'Kimi API Token 未设置';

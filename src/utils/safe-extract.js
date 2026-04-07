@@ -31,21 +31,7 @@ function extractGeminiContent(response, label = 'Gemini') {
   return text;
 }
 
-// Cohere: message.content[0].text
-function extractCohereContent(response, label = 'Cohere') {
-  const content = response?.data?.message?.content;
-  if (!Array.isArray(content) || content.length === 0) {
-    throw new Error(`[${label}] Empty or missing message.content in response`);
-  }
-  const text = content[0]?.text;
-  if (text == null) {
-    throw new Error(`[${label}] Missing text in message.content`);
-  }
-  return text;
-}
-
 module.exports = {
   extractChoicesContent,
   extractGeminiContent,
-  extractCohereContent,
 };

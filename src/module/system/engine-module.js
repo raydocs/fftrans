@@ -32,9 +32,9 @@ const engineList = [
   '#AI-Translator',
   'Gemini',
   'GPT',
-  'Cohere',
   'Kimi',
   'OpenRouter',
+  'NVIDIA',
   'LLM-API',
 ];
 
@@ -42,7 +42,7 @@ const engineList = [
 const changeList = ['Youdao', 'Baidu', 'Caiyun', 'Papago', 'DeepL'];
 
 // AI list
-const aiList = ['Gemini', 'GPT', 'Cohere', 'Kimi', 'OpenRouter', 'LLM-API'];
+const aiList = ['Gemini', 'GPT', 'Kimi', 'OpenRouter', 'NVIDIA', 'LLM-API'];
 
 // vision list
 const visionList = ['tesseract-ocr', 'google-vision', 'gpt-vision'];
@@ -150,9 +150,9 @@ const engineTable = {
   },
   GPT: llmTable,
   Gemini: llmTable,
-  Cohere: llmTable,
   Kimi: llmTable,
   OpenRouter: llmTable,
+  NVIDIA: llmTable,
   'LLM-API': llmTable,
 };
 

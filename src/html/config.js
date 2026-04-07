@@ -292,8 +292,8 @@ function setButton() {
     { id: 'a-test-gemini-api', engine: 'Gemini' },
     { id: 'a-test-openrouter-api', engine: 'OpenRouter' },
     { id: 'a-test-gpt-api', engine: 'GPT' },
-    { id: 'a-test-cohere-api', engine: 'Cohere' },
     { id: 'a-test-kimi-api', engine: 'Kimi' },
+    { id: 'a-test-nvidia-api', engine: 'NVIDIA' },
     { id: 'a-test-llm-api', engine: 'LLM-API' },
   ];
 
@@ -1521,15 +1521,6 @@ function getOptionList() {
     ],
 
     [
-      ['input-cohere-token', 'value'],
-      ['api', 'cohereToken'],
-    ],
-    [
-      ['input-cohere-model', 'value'],
-      ['api', 'cohereModel'],
-    ],
-
-    [
       ['input-kimi-token', 'value'],
       ['api', 'kimiToken'],
     ],
@@ -1545,6 +1536,15 @@ function getOptionList() {
     [
       ['input-openrouter-model', 'value'],
       ['api', 'openRouterModel'],
+    ],
+
+    [
+      ['input-nvidia-api-key', 'value'],
+      ['api', 'nvidiaApiKey'],
+    ],
+    [
+      ['input-nvidia-model', 'value'],
+      ['api', 'nvidiaModel'],
     ],
 
     [
