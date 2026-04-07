@@ -84,7 +84,7 @@ const defaultConfig = {
     gptApiKey: '',
     gptModel: 'gpt-5.4-nano',
     kimiToken: '',
-    kimiModel: 'moonshot-v1-8k',
+    kimiModel: 'kimi-k2.5',
     llmApiUrl: '',
     llmApiKey: '',
     llmApiModel: '',
