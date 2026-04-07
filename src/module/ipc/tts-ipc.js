@@ -206,10 +206,209 @@ function setTTSChannel() {
     return { success: true };
   });
 
-  // --- Browser Assist & Extension Bridge: DISABLED (simplified to Refresh Token only) ---
-  // GET_AUTH_STATUS, BEGIN_BROWSER_ASSIST, BEGIN_EXTENSION_BRIDGE_PAIRING,
-  // CHECK_EXTENSION_BRIDGE_IMPORT, CHECK_BROWSER_ASSIST_LOGIN
-  // are all commented out for now. Re-enable when browser assist is fixed.
+  ipcMain.handle(IPC_CHANNELS.GET_AUTH_STATUS, (event, configOverride = {}) => {
+    try {
+      return IPCResponse.success({
+        ...elevenLabsAuth.getAuthStatus(configOverride),
+        browserAssist: elevenLabsBrowserAssist.getBrowserAssistStatus(),
+        extensionBridge: elevenLabsExtensionBridge.getStatus(),
+      });
+    } catch (error) {
+      Logger.error('tts-ipc', 'Failed to get ElevenLabs auth status', error);
+      return IPCResponse.error(error, error.message, buildErrorDetails(error, 'ElevenLabs'));
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.BEGIN_BROWSER_ASSIST, () => {
+    try {
+      return IPCResponse.success(elevenLabsBrowserAssist.focusBrowserAssistWindow(), '已打开 ElevenReader 浏览器辅助窗口');
+    } catch (error) {
+      Logger.error('tts-ipc', 'Failed to open ElevenLabs browser assist', error);
+      return IPCResponse.error(error, error.message, buildErrorDetails(error, 'ElevenLabs'));
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.BEGIN_EXTENSION_BRIDGE_PAIRING, async () => {
+    try {
+      const status = await elevenLabsExtensionBridge.beginPairingSession();
+      return IPCResponse.success(status, 'Chrome 扩展配对已开始');
+    } catch (error) {
+      Logger.error('tts-ipc', 'Failed to begin ElevenLabs extension bridge pairing', error);
+      return IPCResponse.error(error, error.message, buildErrorDetails(error, 'ElevenLabs'));
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CHECK_EXTENSION_BRIDGE_IMPORT, async (event, configOverride = {}) => {
+    try {
+      const bridgeStatus = elevenLabsExtensionBridge.getStatus();
+      const candidate = elevenLabsExtensionBridge.getCandidate();
+      const warning = buildExtensionBridgeWarning(bridgeStatus, candidate);
+      const candidateValues = candidate?.values || {};
+      const hasBearerToken = Boolean(candidateValues.bearerToken);
+
+      if (!hasBearerToken) {
+        return IPCResponse.success({
+          imported: {
+            bearerToken: false,
+            refreshToken: false,
+            appCheckToken: false,
+            deviceId: false,
+          },
+          validationMode: 'none',
+          validation: null,
+          warning,
+          pending: Boolean(bridgeStatus?.pairing?.active),
+          status: {
+            ...elevenLabsAuth.getAuthStatus(configOverride),
+            browserAssist: elevenLabsBrowserAssist.getBrowserAssistStatus(),
+            extensionBridge: bridgeStatus,
+          },
+        }, '已刷新 Chrome 扩展桥接状态');
+      }
+
+      const mergedConfig = {
+        bearerToken: candidateValues.bearerToken,
+        appCheckToken: (configOverride?.appCheckToken || '').trim() || candidateValues.appCheckToken || '',
+        deviceId: (configOverride?.deviceId || '').trim() || candidateValues.deviceId || '',
+      };
+
+      const validation = await ttsRequestQueue.enqueue(() => elevenLabsTTS.validateConfiguration(mergedConfig));
+      const nextBridgeStatus = elevenLabsExtensionBridge.markCandidateValidated('扩展导入的 Bearer Token 已通过 Reader API 验证。');
+
+      return IPCResponse.success({
+        bearerToken: candidateValues.bearerToken,
+        refreshToken: '',
+        appCheckToken: mergedConfig.appCheckToken,
+        deviceId: mergedConfig.deviceId,
+        authSource: ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE,
+        imported: {
+          bearerToken: true,
+          refreshToken: false,
+          appCheckToken: Boolean(candidateValues.appCheckToken),
+          deviceId: Boolean(candidateValues.deviceId),
+        },
+        validationMode: 'bearer',
+        validation,
+        warning: null,
+        pending: false,
+        status: {
+          ...(validation?.status || elevenLabsAuth.getAuthStatus(mergedConfig)),
+          browserAssist: elevenLabsBrowserAssist.getBrowserAssistStatus(),
+          extensionBridge: nextBridgeStatus,
+        },
+      }, '已从 Chrome 扩展导入并验证 Bearer Token');
+    } catch (error) {
+      elevenLabsExtensionBridge.markCandidateRejected(
+        error?.authCode || '',
+        error?.message || '扩展导入的 Bearer Token 验证失败。'
+      );
+      Logger.error('tts-ipc', 'Failed to validate ElevenLabs extension bridge import', error);
+      return IPCResponse.error(error, error.message, buildErrorDetails(error, 'ElevenLabs'));
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CHECK_BROWSER_ASSIST_LOGIN, async (event, configOverride = {}, options = {}) => {
+    const { background = false } = options;
+
+    try {
+      const browserData = await ttsRequestQueue.enqueue(() => elevenLabsBrowserAssist.inspectBrowserAssistLogin());
+      const mergedAuthInput = {
+        refreshToken: (configOverride?.refreshToken || '').trim() || browserData.refreshToken,
+        appCheckToken: (configOverride?.appCheckToken || '').trim() || browserData.appCheckToken,
+        deviceId: (configOverride?.deviceId || '').trim() || browserData.deviceId,
+      };
+      const imported = {
+        bearerToken: false,
+        refreshToken: false,
+        appCheckToken: Boolean(browserData.appCheckToken),
+        deviceId: Boolean(browserData.deviceId),
+      };
+
+      let validatedBearerToken = '';
+      let validation = null;
+      let validationMode = 'none';
+      let validationError = null;
+
+      if (browserData?.bearerToken && browserData?.bearer?.status === ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.TRUSTED) {
+        try {
+          validation = await ttsRequestQueue.enqueue(() => elevenLabsTTS.validateConfiguration({
+            bearerToken: browserData.bearerToken,
+            appCheckToken: mergedAuthInput.appCheckToken,
+            deviceId: mergedAuthInput.deviceId,
+          }));
+          validatedBearerToken = browserData.bearerToken;
+          validationMode = 'bearer';
+          imported.bearerToken = true;
+          elevenLabsBrowserAssist.updateBearerValidationResult(browserData.bearerToken, {
+            validationStatus: ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.VALIDATED,
+            validationMessage: 'Bearer Token 已通过 Reader API 验证。',
+          });
+        } catch (error) {
+          validationError = buildValidationError(error, 'ElevenLabs');
+          elevenLabsBrowserAssist.updateBearerValidationResult(browserData.bearerToken, {
+            validationStatus: ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.REJECTED,
+            validationCode: validationError.authCode || '',
+            validationMessage: validationError.message,
+          });
+        }
+      }
+
+      if (!validatedBearerToken && mergedAuthInput.refreshToken) {
+        try {
+          validation = await ttsRequestQueue.enqueue(() => elevenLabsAuth.validateRefreshToken(mergedAuthInput));
+          validationMode = 'refresh';
+          imported.refreshToken = Boolean(browserData.refreshToken);
+        } catch (error) {
+          validationError = validationError || buildValidationError(error, 'ElevenLabs');
+        }
+      }
+
+      const warning = buildBrowserAssistWarning(elevenLabsBrowserAssist.getBrowserAssistStatus().lastInspection || browserData);
+      const statusInput = {
+        bearerToken: validatedBearerToken,
+        refreshToken: validationMode === 'refresh' ? mergedAuthInput.refreshToken : '',
+        appCheckToken: mergedAuthInput.appCheckToken,
+        deviceId: mergedAuthInput.deviceId,
+      };
+      const pending = !validation && !imported.bearerToken && !imported.refreshToken;
+
+      return IPCResponse.success({
+        ...browserData,
+        bearerToken: validatedBearerToken,
+        refreshToken: imported.refreshToken ? mergedAuthInput.refreshToken : '',
+        appCheckToken: mergedAuthInput.appCheckToken,
+        deviceId: mergedAuthInput.deviceId,
+        imported,
+        validationMode,
+        validation,
+        validationError,
+        warning,
+        pending,
+        status: {
+          ...(validation?.status || elevenLabsAuth.getAuthStatus(statusInput)),
+          browserAssist: elevenLabsBrowserAssist.getBrowserAssistStatus(),
+          extensionBridge: elevenLabsExtensionBridge.getStatus(),
+        },
+      }, validationMode === 'bearer'
+        ? '已从浏览器辅助窗口导入并验证 Bearer Token'
+        : validationMode === 'refresh'
+          ? '已从浏览器辅助窗口读取并验证辅助凭证'
+          : '已更新浏览器辅助窗口状态');
+    } catch (error) {
+      if (background && /^browser_assist_/.test(error?.authCode || '')) {
+        return IPCResponse.success({
+          pending: true,
+          status: {
+            ...elevenLabsAuth.getAuthStatus(configOverride),
+            browserAssist: elevenLabsBrowserAssist.getBrowserAssistStatus(),
+          },
+        }, '等待浏览器辅助窗口中的登录状态更新');
+      }
+
+      Logger.error('tts-ipc', 'Failed to inspect ElevenLabs browser assist login', error);
+      return IPCResponse.error(error, error.message, buildErrorDetails(error, 'ElevenLabs'));
+    }
+  });
 
   ipcMain.handle(IPC_CHANNELS.VALIDATE_ELEVENLABS_CONFIG, async (event, configOverride = {}) => {
     try {

@@ -1160,13 +1160,15 @@ function setButton() {
     }
   };
 
-  // ElevenLabs: Test configuration (simplified - Refresh Token only)
+  // ElevenLabs: Test configuration
   document.getElementById('btn-test-elevenlabs').onclick = async () => {
-    const button = document.getElementById('btn-test-elevenlabs');
-    const originalText = button.innerText;
-
-    button.disabled = true;
-    button.innerText = '测试中...';
+    const actionToken = beginElevenLabsAction(
+      'btn-test-elevenlabs',
+      getUiText(['測試中...', '测试中...', 'Testing...'])
+    );
+    if (!actionToken) {
+      return;
+    }
 
     try {
       const elevenLabsConfig = collectElevenLabsFormConfig();
@@ -1177,19 +1179,24 @@ function setButton() {
       }
 
       const result = await ipcRenderer.invoke(IPC_CHANNELS.TEST_ELEVENLABS_CONFIG, elevenLabsConfig);
+      if (!isCurrentElevenLabsAction(actionToken)) {
+        return;
+      }
+
       if (result.success && result.data) {
         const meta = result.data.meta || {};
-        alert(`✅ ElevenLabs 测试成功！\n\n语音: ${meta.voiceId || '默认'}\n模型: ${meta.modelId || '默认'}\nToken 刷新: ${meta.didRefreshBearer ? '是' : '否'}`);
-        // Reload voices after successful test
-        loadElevenLabsVoices().catch(() => {});
+        alert(`✅ 测试成功！\n\n语音: ${meta.voiceId || '默认'}\n模型: ${meta.modelId || '默认'}\n认证方式: ${formatElevenLabsAuthSourceLabel(meta.authSource)}\nToken 刷新: ${meta.didRefreshBearer ? '是' : '否'}\n\n本次测试使用当前表单值。保存设置或使用“保存导入内容”后，Bearer / Refresh / App Check / Device ID 都会持久化。`);
       } else {
         alert(formatTtsErrorAlert(result, '❌ 测试失败'));
       }
     } catch (error) {
+      if (!isCurrentElevenLabsAction(actionToken)) {
+        return;
+      }
+
       alert(`❌ 测试出错\n\n${error.message}`);
     } finally {
-      button.disabled = false;
-      button.innerText = originalText;
+      await completeElevenLabsAction(actionToken);
     }
   };
 
@@ -1382,8 +1389,8 @@ function validateZeroToOne(value = '', label = '数值') {
 }
 
 function validateElevenLabsFormConfig(config = {}) {
-  if (!config.refreshToken && !config.bearerToken) {
-    return '请先填写 ElevenLabs Refresh Token';
+  if (!config.bearerToken && !config.refreshToken) {
+    return '请先填写 ElevenLabs Bearer Token 或 Refresh Token';
   }
 
   return [
