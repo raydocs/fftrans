@@ -893,7 +893,36 @@ function setButton() {
     }
   };
 
-  // ElevenLabs: Validate refresh token / inspect browser assist login
+  // ElevenLabs: Direct Refresh Token validation (simple, no browser assist)
+  document.getElementById('btn-validate-refresh-token-direct').onclick = async () => {
+    const button = document.getElementById('btn-validate-refresh-token-direct');
+    const originalText = button.innerText;
+    const refreshToken = document.getElementById('input-elevenlabs-refresh-token').value.trim();
+
+    if (!refreshToken) {
+      alert('请先填写 Refresh Token');
+      return;
+    }
+
+    button.disabled = true;
+    button.innerText = '验证中...';
+
+    try {
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_REFRESH_TOKEN, { refreshToken });
+      if (result.success) {
+        alert(`✅ Refresh Token 验证成功！\n\nBearer Token 已自动获取。\n过期时间: ${result.data?.bearerTokenExpiresAt || '未知'}\n\n请点击"保存设置"以持久化。`);
+      } else {
+        alert(formatTtsErrorAlert(result, '❌ Refresh Token 验证失败'));
+      }
+    } catch (error) {
+      alert(`❌ 验证出错\n\n${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.innerText = originalText;
+    }
+  };
+
+  // ElevenLabs: Validate refresh token / inspect browser assist login (legacy complex flow)
   document.getElementById('btn-validate-elevenlabs-refresh-token').onclick = async () => {
     const actionToken = beginElevenLabsAction(
       'btn-validate-elevenlabs-refresh-token',
@@ -936,19 +965,19 @@ function setButton() {
       }
 
       let result = null;
-      const extensionBridge = lastElevenLabsAuthStatus?.extensionBridge || {};
-      const hasExtensionCandidate = Boolean(extensionBridge?.candidate?.hasBearerToken || extensionBridge?.candidate?.state === 'pending');
-      if (formAuth.refreshToken) {
-        result = await ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_REFRESH_TOKEN, formAuth);
-      } else if (hasExtensionCandidate) {
-        result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_EXTENSION_BRIDGE_IMPORT, formAuth);
-      } else if (lastElevenLabsAuthStatus?.browserAssist?.isOpen) {
-        result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_BROWSER_ASSIST_LOGIN, formAuth);
+      // Always read refresh token directly from DOM to avoid stale formAuth
+      const refreshTokenValue = formAuth.refreshToken || document.getElementById('input-elevenlabs-refresh-token').value.trim();
+
+      if (refreshTokenValue) {
+        // Refresh Token path — always takes priority
+        result = await ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_REFRESH_TOKEN, { ...formAuth, refreshToken: refreshTokenValue });
       } else {
-        // Fallback: re-read refresh token directly in case formAuth missed it
-        const directRefreshToken = document.getElementById('input-elevenlabs-refresh-token').value.trim();
-        if (directRefreshToken) {
-          result = await ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_REFRESH_TOKEN, { ...formAuth, refreshToken: directRefreshToken });
+        const extensionBridge = lastElevenLabsAuthStatus?.extensionBridge || {};
+        const hasExtensionCandidate = Boolean(extensionBridge?.candidate?.hasBearerToken || extensionBridge?.candidate?.state === 'pending');
+        if (hasExtensionCandidate) {
+          result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_EXTENSION_BRIDGE_IMPORT, formAuth);
+        } else if (lastElevenLabsAuthStatus?.browserAssist?.isOpen) {
+          result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_BROWSER_ASSIST_LOGIN, formAuth);
         } else {
           alert(`ℹ️ ${getUiText([
             '請先填寫 Refresh Token，或直接貼上 Bearer Token。',
