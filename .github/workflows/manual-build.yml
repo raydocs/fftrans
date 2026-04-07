@@ -1,4 +1,4 @@
-name: Manual Windows Release Build
+name: Manual Release Build (Windows + macOS)
 on:
   workflow_dispatch:
     inputs:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -67,3 +67,50 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ inputs.release_tag }}" "${{ steps.resolve_outputs.outputs.exe_path }}" --clobber
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build macOS dmg (arm64 + x64)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist -- --mac --arm64 --x64
+
+      - name: Resolve build outputs
+        id: resolve_outputs
+        run: |
+          DMG=$(find build -name '*.dmg' | sort -t_ -k1 | head -1)
+          if [ -z "$DMG" ]; then
+            echo "No .dmg found in build output."
+            exit 1
+          fi
+          echo "dmg_path=$DMG" >> "$GITHUB_OUTPUT"
+          echo "dmg_name=$(basename "$DMG")" >> "$GITHUB_OUTPUT"
+          echo "Resolved dmg: $DMG"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg-${{ inputs.release_tag }}
+          path: ${{ steps.resolve_outputs.outputs.dmg_path }}
+          if-no-files-found: error
+
+      - name: Upload dmg to existing GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ inputs.release_tag }}" "${{ steps.resolve_outputs.outputs.dmg_path }}" --clobber

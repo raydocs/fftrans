@@ -19,6 +19,7 @@
     <img src="https://img.shields.io/github/downloads/raydocs/tataru/total?style=flat-square&color=green" alt="Downloads">
   </a>
   <img src="https://img.shields.io/badge/platform-Windows-lightgrey?style=flat-square" alt="Platform">
+  <img src="https://img.shields.io/badge/version-0.1.1-orange?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/electron-37.2.6-blue?style=flat-square" alt="Electron">
 </p>
 
@@ -42,7 +43,7 @@
 |------|------|
 | 🎮 **实时翻译** | 自动捕获并翻译游戏对话和过场字幕 |
 | 📸 **OCR 截图翻译** | 屏幕区域截取，识别并翻译任意文字 |
-| 🔊 **TTS 语音朗读** | 支持 Google TTS、Speechify、ElevenLabs |
+| 🔊 **TTS 语音朗读** | 支持 Google TTS、Speechify、ElevenLabs、MiMo TTS |
 | 📝 **智能修正** | 3.8MB 游戏术语词库，精准翻译角色名/地名/技能名 |
 | 🎨 **自定义翻译** | 支持用户自定义翻译规则 |
 | 🌐 **多引擎支持** | 15+ 翻译引擎，含 AI 大模型 |
@@ -82,7 +83,38 @@
 
 ## 🌐 翻译引擎
 
-### 在线翻译（免费）
+### AI 翻译（推荐）
+
+#### NVIDIA NIM ⭐ 默认推荐
+
+NVIDIA 提供的免费 AI 推理服务，无需付费即可使用顶级开源模型。内置 4 款优选模型：
+
+| 模型 | 速度 | 特点 |
+|------|------|------|
+| **Llama 4 Maverick** | ~500ms | 速度最快，翻译精准（默认） |
+| **Qwen 3 Next 80B** | ~590ms | 中文最自然，游戏术语准确 |
+| **Mistral Small 4** | ~650ms | 稳定可靠，多语言均衡 |
+| **Mistral Nemotron** | ~1200ms | 翻译简洁，表达地道 |
+
+[获取免费 API Key →](https://build.nvidia.com/)
+
+#### OpenRouter
+
+统一接入 100+ AI 模型的代理平台，一个 API Key 即可切换 Claude、GPT、Gemini、DeepSeek 等所有主流模型。有免费额度，付费按量计费，适合需要精细控制模型的用户。
+
+[获取 API Key →](https://openrouter.ai/)
+
+#### 其他 AI 引擎
+
+| 引擎 | 提供方 | 说明 |
+|------|--------|------|
+| GPT | OpenAI | 官方 API，支持 GPT-4o / o 系列 |
+| Claude | Anthropic | 高质量翻译，长文本表现出色 |
+| Gemini | Google | 支持 Gemini 2.0 Flash 等最新模型 |
+| Kimi | 月之暗面 | 中文场景优化，适合中日翻译 |
+
+<details>
+<summary>在线翻译（免费备用）</summary>
 
 | 引擎 | 语言支持 | 说明 |
 |------|---------|------|
@@ -92,20 +124,26 @@
 | Papago | 中/英/日/韩 | 免费，无需配置 |
 | DeepL | 多语言 | 免费额度 |
 
-### AI 翻译（推荐）
+</details>
 
-| 引擎 | 特点 | 配置方式 |
+### 🔊 TTS 语音朗读
+
+#### ElevenLabs Reader
+
+通过 ElevenLabs Reader App 的账号登录（Refresh Token）即可使用，无需单独购买 API 套餐。支持 4 款模型：
+
+| 模型 | 延迟 | 语言支持 |
 |------|------|---------|
-| **OpenRouter** ⭐ | 100+ 模型，统一接口 | [获取 API Key](https://openrouter.ai/) |
-| GPT-4 | OpenAI 官方 | 需 API Key |
-| Claude | Anthropic | 需 API Key |
-| Gemini | Google | 需 API Key |
-| Cohere | 免费额度 | 需 API Key |
-| Kimi | 月之暗面 | 需 API Key |
+| **Eleven v3**（推荐） | 中等 | 32 种语言 |
+| **Flash v2.5** | 极低 | 32 种语言 |
+| **Turbo v2.5** | 低 | 32 种语言 |
+| **Multilingual v2** | 中等 | 29 种语言 |
 
-> 📖 **推荐使用 OpenRouter**：一个 API Key 即可访问 Claude、GPT、Gemini 等 100+ 模型
-> 
-> 查看 [OpenRouter 模型列表](OPENROUTER_MODELS.md)
+**支持的语言包（v3 / Flash v2.5 / Turbo v2.5）：**
+
+英语、中文（普通话）、西班牙语、印地语、葡萄牙语、法语、德语、日语、阿拉伯语、韩语、印尼语、意大利语、荷兰语、土耳其语、波兰语、瑞典语、菲律宾语、马来语、罗马尼亚语、乌克兰语、希腊语、捷克语、丹麦语、芬兰语、保加利亚语、克罗地亚语、斯洛伐克语、泰米尔语，以及更多
+
+内置 59 款语音，涵盖男性、女性及多种口音风格，支持音调/风格/相似度等细节调节。
 
 ## 🛠️ 开发指南
 
@@ -185,9 +223,9 @@ npm run dist
 <details>
 <summary><b>Q: 如何使用 AI 翻译？</b></summary>
 
-1. 前往「设置」→「翻译设置」
-2. 选择 AI 引擎（推荐 OpenRouter）
-3. 在「API 设置」中填入对应的 API Key
+1. 前往「设置」→「AI 翻译」Tab
+2. 选择 AI 引擎（推荐 NVIDIA，有免费额度）
+3. 在对应设置中填入 API Key
 4. 保存并测试
 </details>
 

@@ -5,7 +5,22 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  version-check:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.auto-check.outputs.status }}
+      release_tag: ${{ steps.auto-check.outputs.release_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Execute version check script
+        id: auto-check
+        run: bash .github/workflows/autocheck.sh
+
+  build-windows:
+    needs: version-check
+    if: needs.version-check.outputs.status == 'ready'
     runs-on: windows-latest
     permissions:
       contents: write
@@ -15,27 +30,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Execute version check script
-        id: auto-check
-        run: bash .github/workflows/autocheck.sh
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Build and package
-        if: steps.auto-check.outputs.status == 'ready'
-        run: |
-          Write-Host "=== Installing dependencies ==="
-          npm install
+      - name: Install dependencies
+        run: npm ci
 
-          Write-Host "=== Building application ==="
-          npm run dist
-
-          Write-Host "=== Packaging for Windows x64 ==="
-          npx electron-builder --win --x64
-
-          Write-Host "Build completed successfully"
-        shell: powershell
+      - name: Build Windows x64 installer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist -- --win --x64
 
       - name: List build artifacts
-        if: steps.auto-check.outputs.status == 'ready'
         run: |
           Write-Host "=== Build Artifacts ==="
           if (Test-Path "build") {
@@ -48,24 +57,65 @@ jobs:
 
       - name: Create release
         id: create_release
-        if: steps.auto-check.outputs.status == 'ready'
         uses: comnoco/create-release-action@v2
         env:
-          RELEASE_VERSION: ${{ steps.auto-check.outputs.release_tag }}
+          RELEASE_VERSION: ${{ needs.version-check.outputs.release_tag }}
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           release_name: Release v${{ env.RELEASE_VERSION }}
 
-      - name: Upload artifact
-        if: steps.auto-check.outputs.status == 'ready'
+      - name: Upload Windows installer
         uses: actions/upload-release-asset@v1
         env:
-          RELEASE_VERSION: ${{ steps.auto-check.outputs.release_tag }}
+          RELEASE_VERSION: ${{ needs.version-check.outputs.release_tag }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/Tataru Assistant Setup ${{ steps.auto-check.outputs.release_tag }}.exe
+          asset_path: build/Tataru Assistant Setup ${{ needs.version-check.outputs.release_tag }}.exe
           asset_name: Tataru_Assistant_Setup.exe
           asset_content_type: application/octet-stream
+
+  build-macos:
+    needs: [version-check, build-windows]
+    if: needs.version-check.outputs.status == 'ready'
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build macOS dmg (arm64 + x64)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist -- --mac --arm64 --x64
+
+      - name: Resolve dmg path
+        id: resolve_dmg
+        run: |
+          DMG=$(find build -name '*.dmg' | head -1)
+          if [ -z "$DMG" ]; then
+            echo "No .dmg found in build output."
+            exit 1
+          fi
+          echo "dmg_path=$DMG" >> "$GITHUB_OUTPUT"
+          echo "Resolved dmg: $DMG"
+
+      - name: Upload macOS dmg to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "v${{ needs.version-check.outputs.release_tag }}" "${{ steps.resolve_dmg.outputs.dmg_path }}" --clobber
 
   del_runs:
     runs-on: ubuntu-latest
