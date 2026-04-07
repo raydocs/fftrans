@@ -18,6 +18,7 @@ const { retryWithBackoff, isTransientError } = require('../../utils/retry');
 const PromiseQueue = require('../../utils/promise-queue');
 
 const API_BASE_URL = 'https://api.elevenlabs.io/v1';
+const VOICES_ENDPOINT = `${API_BASE_URL}/reader/voices`;
 const TTS_ENDPOINT = `${API_BASE_URL}/text-to-speech`;
 const USER_AGENT = 'readerapp/405 CFNetwork/3860.100.1 Darwin/25.0.0';
 const SYNTHESIS_CONCURRENCY = 1;
@@ -149,6 +150,8 @@ async function synthesizeSpeech(text, language, config = {}, options = {}) {
     });
   }
 
+  const authorizationHeader = elevenLabsAuth.normalizeBearerToken(bearerToken);
+
   try {
     const response = await axios.post(
       `${TTS_ENDPOINT}/${voiceId}`,
@@ -159,7 +162,7 @@ async function synthesizeSpeech(text, language, config = {}, options = {}) {
       },
       requestModule.buildAxiosConfig({
         headers: {
-          Authorization: `Bearer ${bearerToken}`,
+          Authorization: authorizationHeader,
           'Content-Type': 'application/json',
           Accept: 'audio/mpeg',
           'User-Agent': USER_AGENT,
@@ -261,6 +264,68 @@ async function getAudioUrl(text = '', from = 'English', configOverride = null) {
   return urls;
 }
 
+async function fetchVoicesRaw(authConfig) {
+  return axios.get(
+    VOICES_ENDPOINT,
+    requestModule.buildAxiosConfig({
+      headers: {
+        Authorization: elevenLabsAuth.normalizeBearerToken(authConfig.bearerToken),
+        Accept: '*/*',
+        'User-Agent': USER_AGENT,
+        ...(authConfig.deviceId ? { 'Device-ID': authConfig.deviceId } : {}),
+        ...(authConfig.appCheckToken ? { 'xi-app-check-token': authConfig.appCheckToken } : {}),
+      },
+      timeoutMs: 10000,
+    })
+  );
+}
+
+async function validateConfiguration(configOverride = null) {
+  const baseConfig = configOverride || configModule.getConfig().api.elevenlabs || {};
+  const authConfig = await elevenLabsAuth.resolveAuthConfig(baseConfig, {
+    allowRefresh: true,
+    cacheResolvedSession: false,
+    persistAuthState: false,
+    persistGeneratedDeviceId: false,
+  });
+
+  const response = await fetchVoicesRaw(authConfig);
+
+  return {
+    provider: 'ElevenLabs',
+    meta: {
+      voiceCount: Array.isArray(response.data?.voices) ? response.data.voices.length : 0,
+      didRefreshBearer: Boolean(authConfig.didRefreshBearer),
+      usedAppCheck: Boolean(authConfig.appCheckToken),
+      authSource: authConfig.authSource || '',
+    },
+  };
+}
+
+async function getVoices(configOverride = null) {
+  const baseConfig = configOverride || configModule.getConfig().api.elevenlabs || {};
+  const authConfig = await elevenLabsAuth.resolveAuthConfig(baseConfig, {
+    allowRefresh: true,
+    cacheResolvedSession: false,
+    persistAuthState: false,
+    persistGeneratedDeviceId: false,
+  });
+
+  const response = await fetchVoicesRaw(authConfig);
+  const rawVoices = Array.isArray(response.data?.voices) ? response.data.voices : [];
+
+  const voices = rawVoices
+    .map((v) => {
+      const value = v.voice_id || v.voiceId || v.id || '';
+      const label = v.name || v.display_name || value;
+      const group = v.category || v.labels?.accent || '';
+      return value ? { value, label, group } : null;
+    })
+    .filter(Boolean);
+
+  return { voices };
+}
+
 async function testConfiguration(configOverride = null) {
   const baseConfig = configOverride || configModule.getConfig().api.elevenlabs || {};
   const authConfig = await elevenLabsAuth.resolveAuthConfig(baseConfig, {
@@ -293,5 +358,7 @@ async function testConfiguration(configOverride = null) {
 module.exports = {
   synthesizeSpeech,
   getAudioUrl,
-  testConfiguration
+  validateConfiguration,
+  testConfiguration,
+  getVoices,
 };

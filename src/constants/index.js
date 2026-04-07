@@ -45,7 +45,8 @@ const IPC_CHANNELS = {
     MUTE_WINDOW: 'mute-window',
     SEND_INDEX: 'send-index',
     CHANGE_UI_TEXT: 'change-ui-text',
-    EXECUTE_COMMAND: 'execute-command',
+    OPEN_EXTERNAL_URL: 'open-external-url',
+    OPEN_PATH: 'open-path',
     SHOW_INFO: 'show-info',
     MINIMIZE_ALL_WINDOWS: 'minimize-all-windows',
     HIDE_BUTTON: 'hide-button',
@@ -123,11 +124,21 @@ const IPC_CHANNELS = {
     GET_AUTH_STATUS: 'get-auth-status',
     BEGIN_BROWSER_ASSIST: 'begin-browser-assist',
     CHECK_BROWSER_ASSIST_LOGIN: 'check-browser-assist-login',
+    BEGIN_EXTENSION_BRIDGE_PAIRING: 'begin-extension-bridge-pairing',
+    CHECK_EXTENSION_BRIDGE_IMPORT: 'check-extension-bridge-import',
+    VALIDATE_ELEVENLABS_CONFIG: 'validate-elevenlabs-config',
     VALIDATE_REFRESH_TOKEN: 'validate-refresh-token',
     CLEAR_AUTH_SESSION: 'clear-auth-session',
+    TEST_CURRENT_TTS_ENGINE: 'test-current-tts-engine',
+    GET_TTS_VOICES: 'get-tts-voices',
+    TEST_MIMO_CONFIG: 'test-mimo-config',
+    GET_MIMO_CONFIG: 'get-mimo-config',
+    SET_MIMO_CONFIG: 'set-mimo-config',
+    PREVIEW_MIMO_VOICE: 'preview-mimo-voice',
     GOOGLE_TTS: 'google-tts',
     SPEECHIFY_TTS: 'speechify-tts',
     ELEVENLABS_TTS: 'elevenlabs-tts',
+    MIMO_TTS: 'mimo-tts',
 
     // Global Shortcut
     SET_GLOBAL_SHORTCUT: 'set-global-shortcut',
@@ -199,6 +210,19 @@ const ELEVENLABS_AUTH_SOURCES = {
     SESSION_CACHE: 'session-cache',
     MANUAL_BEARER: 'manual-bearer',
     LEGACY_BEARER_MIGRATION: 'legacy-bearer-migration',
+    EXTENSION_BRIDGE: 'extension-bridge',
+};
+
+const ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS = {
+    UNAVAILABLE: 'unavailable',
+    TRUSTED: 'trusted',
+    UNTRUSTED: 'untrusted',
+};
+
+const ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION = {
+    UNTESTED: 'untested',
+    VALIDATED: 'validated',
+    REJECTED: 'rejected',
 };
 
 module.exports = {
@@ -211,4 +235,6 @@ module.exports = {
     ERROR_MESSAGES,
     ELEVENLABS_AUTH_STATES,
     ELEVENLABS_AUTH_SOURCES,
+    ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS,
+    ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION,
 };

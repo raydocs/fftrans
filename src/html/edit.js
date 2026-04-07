@@ -129,8 +129,11 @@ function setButton() {
   };
 
   // report translation
-  document.getElementById('button-report-translation').onclick = () => {
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, 'explorer "https://forms.gle/1iX2Gq4G1itCy3UH9"');
+  document.getElementById('button-report-translation').onclick = async () => {
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.OPEN_EXTERNAL_URL, 'https://forms.gle/1iX2Gq4G1itCy3UH9');
+    if (!result?.success) {
+      alert(`打开链接失败\n${result?.message || '未知错误'}`);
+    }
   };
 
   // save custom
@@ -243,6 +246,9 @@ async function playAudio() {
         break;
       case 'speechify':
         urlList = await ipcRenderer.invoke(IPC_CHANNELS.SPEECHIFY_TTS, text, fromLang);
+        break;
+      case 'mimo':
+        urlList = await ipcRenderer.invoke(IPC_CHANNELS.MIMO_TTS, text, fromLang);
         break;
       default:
         urlList = await ipcRenderer.invoke(IPC_CHANNELS.GOOGLE_TTS, text, fromLang);

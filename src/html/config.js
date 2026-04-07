@@ -2,19 +2,29 @@
 
 // electron
 const { ipcRenderer, clipboard } = require('electron');
-const { IPC_CHANNELS } = require('../constants');
+const {
+  IPC_CHANNELS,
+  ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS,
+  ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION,
+} = require('../constants');
 
 let lastElevenLabsAuthStatus = null;
+let lastValidatedImportedElevenLabsBearerToken = '';
 let elevenLabsStatusRequestId = 0;
 let elevenLabsBrowserAssistAutoDetectTimer = null;
 let elevenLabsBrowserAssistAutoDetectKey = '';
+let elevenLabsExtensionBridgeAutoDetectTimer = null;
+let elevenLabsExtensionBridgeAutoDetectKey = '';
 let lastElevenLabsAutoDetectNotificationKey = '';
 let pendingElevenLabsBrowserAssistAutoDetect = false;
+let pendingElevenLabsExtensionBridgeAutoDetect = false;
 let elevenLabsBrowserAssistAutoDetectInFlight = false;
+let elevenLabsExtensionBridgeAutoDetectInFlight = false;
 let isElevenLabsBrowserAssistAutoDetectPaused = false;
 let isConfigWindowClosing = false;
 let activeElevenLabsAction = null;
 const ELEVENLABS_ACTION_BUTTON_IDS = [
+  'btn-start-elevenlabs-extension-pairing',
   'btn-validate-elevenlabs-refresh-token',
   'btn-save-elevenlabs-imported',
   'btn-clear-elevenlabs-session',
@@ -22,6 +32,20 @@ const ELEVENLABS_ACTION_BUTTON_IDS = [
   'btn-test-elevenlabs',
 ];
 const ELEVENLABS_COPY_BUTTON_SPECS = [
+  {
+    id: 'btn-copy-elevenlabs-bearer-source',
+    shortLabel: 'B↗',
+    getValue: () => lastElevenLabsAuthStatus?.browserAssist?.lastInspection?.sources?.bearerToken || lastElevenLabsAuthStatus?.extensionBridge?.candidate?.sources?.bearerToken || '',
+    copiedText: ['已複製 Bearer 來源', '已复制 Bearer 来源', 'Copied Bearer source'],
+    titleText: ['複製 Bearer 來源', '复制 Bearer 来源', 'Copy Bearer Source'],
+  },
+  {
+    id: 'btn-copy-elevenlabs-bearer-token',
+    shortLabel: 'B🔑',
+    getValue: () => lastElevenLabsAuthStatus?.browserAssist?.lastInspection?.bearerToken || '',
+    copiedText: ['已複製 Bearer Token', '已复制 Bearer Token', 'Copied Bearer token'],
+    titleText: ['複製 Bearer Token', '复制 Bearer Token', 'Copy Bearer Token'],
+  },
   {
     id: 'btn-copy-elevenlabs-refresh-source',
     shortLabel: 'R↗',
@@ -39,7 +63,7 @@ const ELEVENLABS_COPY_BUTTON_SPECS = [
   {
     id: 'btn-copy-elevenlabs-app-check-source',
     shortLabel: 'A↗',
-    getValue: () => lastElevenLabsAuthStatus?.browserAssist?.lastInspection?.sources?.appCheckToken || '',
+    getValue: () => lastElevenLabsAuthStatus?.browserAssist?.lastInspection?.sources?.appCheckToken || lastElevenLabsAuthStatus?.extensionBridge?.candidate?.sources?.appCheckToken || '',
     copiedText: ['已複製 App Check 來源', '已复制 App Check 来源', 'Copied App Check source'],
     titleText: ['複製 App Check 來源', '复制 App Check 来源', 'Copy App Check Source'],
   },
@@ -53,7 +77,7 @@ const ELEVENLABS_COPY_BUTTON_SPECS = [
   {
     id: 'btn-copy-elevenlabs-device-source',
     shortLabel: 'D↗',
-    getValue: () => lastElevenLabsAuthStatus?.browserAssist?.lastInspection?.sources?.deviceId || '',
+    getValue: () => lastElevenLabsAuthStatus?.browserAssist?.lastInspection?.sources?.deviceId || lastElevenLabsAuthStatus?.extensionBridge?.candidate?.sources?.deviceId || '',
     copiedText: ['已複製 Device 來源', '已复制 Device 来源', 'Copied Device source'],
     titleText: ['複製 Device 來源', '复制 Device 来源', 'Copy Device Source'],
   },
@@ -88,7 +112,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('beforeunload', () => {
   isConfigWindowClosing = true;
   stopElevenLabsBrowserAssistAutoDetect();
+  stopElevenLabsExtensionBridgeAutoDetect();
   elevenLabsBrowserAssistAutoDetectInFlight = false;
+  elevenLabsExtensionBridgeAutoDetectInFlight = false;
 });
 
 // set IPC
@@ -350,7 +376,7 @@ function setButton() {
   // get set google vision
   document.getElementById('a-set-google-vision').onclick = async () => {
     const path = await ipcRenderer.invoke(IPC_CHANNELS.GET_ROOT_PATH, 'src', 'data', 'text', 'readme', 'sub-google-vision-api.html');
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `explorer "${path}"`);
+    await openPath(path);
   };
 
   const aiTestLinks = [
@@ -371,6 +397,22 @@ function setButton() {
         setTimeout(() => reject(new Error(`请求超时 (${timeoutMs}ms)`)), timeoutMs);
       }),
     ]);
+  }
+
+  async function openExternalUrl(url) {
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.OPEN_EXTERNAL_URL, url);
+    if (!result?.success) {
+      throw new Error(result?.message || '打开链接失败');
+    }
+
+    return true;
+  }
+
+  async function openPath(path) {
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.OPEN_PATH, path);
+    if (!result?.success) {
+      alert(`打开路径失败\n${result?.message || '未知错误'}`);
+    }
   }
 
   async function runAiTest(engine, link) {
@@ -418,7 +460,7 @@ function setButton() {
   // view google credential
   document.getElementById('button-google-credential-view').onclick = async () => {
     const path = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'config');
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `explorer "${path}"`);
+    await openPath(path);
   };
 
   // set token visibility
@@ -443,29 +485,179 @@ function setButton() {
   // readme
   document.getElementById('a-readme').onclick = async () => {
     const path = await ipcRenderer.invoke(IPC_CHANNELS.GET_ROOT_PATH, 'src', 'data', 'text', 'readme', 'index.html');
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `explorer "${path}"`);
+    await openPath(path);
   };
 
   // github
-  document.getElementById('a-github').onclick = () => {
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, 'explorer "https://github.com/raydocs/fftrans"');
+  document.getElementById('a-github').onclick = async () => {
+    try {
+      await openExternalUrl('https://github.com/raydocs/fftrans');
+    } catch (error) {
+      alert(`打开链接失败\n${error.message}`);
+    }
   };
 
 
   // default
-  document.getElementById('button-save-default-config').onclick = async () => {
-    await saveDefaultConfig();
-  };
+  const buttonSaveDefaultConfig = document.getElementById('button-save-default-config');
+  if (buttonSaveDefaultConfig) {
+    buttonSaveDefaultConfig.onclick = async () => {
+      await saveDefaultConfig();
+    };
+  }
 
   // save
   document.getElementById('button-save-config').onclick = async () => {
     await saveConfig();
   };
 
+  // Unified: Test current TTS engine
+  document.getElementById('btn-test-current-tts-engine').onclick = async () => {
+    const button = document.getElementById('btn-test-current-tts-engine');
+    const originalText = button.innerText;
+    const engine = document.getElementById('select-tts-engine').value;
+
+    button.disabled = true;
+    button.innerText = '测试中...';
+
+    try {
+      const configForEngine = collectConfigForEngine(engine);
+      const validationMessage = validateConfigForEngine(engine, configForEngine);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
+        return;
+      }
+
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.TEST_CURRENT_TTS_ENGINE, { engine, config: configForEngine });
+      if (result.success && result.data) {
+        if (result.data.supported === false) {
+          alert(`ℹ️ ${result.data.message || 'Google TTS 无需配置测试'}`);
+        } else {
+          alert(`✅ ${result.data.provider || engine} 测试成功！`);
+        }
+      } else {
+        alert(formatTtsErrorAlert(result, '❌ 测试失败'));
+      }
+    } catch (error) {
+      alert(`❌ 测试出错\n\n${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.innerText = originalText;
+    }
+  };
+
+  // MiMo: Test configuration
+  document.getElementById('btn-test-mimo').onclick = async () => {
+    const button = document.getElementById('btn-test-mimo');
+    const originalText = button.innerText;
+
+    button.disabled = true;
+    button.innerText = '测试中...';
+
+    try {
+      const mimoConfig = collectMiMoFormConfig();
+      const validationMessage = validateMiMoFormConfig(mimoConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
+        return;
+      }
+
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.TEST_MIMO_CONFIG, mimoConfig);
+      if (result.success && result.data) {
+        const meta = result.data.meta || {};
+        alert(`✅ 测试成功！\n\n模型: ${meta.model || 'MiMo-V2-TTS'}\n语音: ${meta.voice || '默认'}\n格式: ${meta.responseFormat || 'mp3'}\n\n本次测试使用当前表单值，若需正式保存请点击"保存设置"。`);
+      } else {
+        alert(formatTtsErrorAlert(result, '❌ 测试失败'));
+      }
+    } catch (error) {
+      alert(`❌ 测试出错\n\n${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.innerText = originalText;
+    };
+  };
+
+  // MiMo: Preview voice
+  document.getElementById('btn-preview-mimo-voice').onclick = async () => {
+    const button = document.getElementById('btn-preview-mimo-voice');
+    const originalText = button.innerText;
+    let playbackStarted = false;
+
+    try {
+      const previewConfig = collectMiMoFormConfig();
+      const validationMessage = validateMiMoFormConfig(previewConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
+        return;
+      }
+
+      button.disabled = true;
+      button.innerText = '🎧 生成中...';
+
+      const previewText = 'Welcome to Final Fantasy XIV! This is a MiMo TTS preview. I hope you enjoy this voice!';
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.PREVIEW_MIMO_VOICE, {
+        text: previewText,
+        config: previewConfig
+      });
+
+      if (result.success && result.data?.audioUrl) {
+        const audio = new Audio(result.data.audioUrl);
+        playbackStarted = true;
+        button.innerText = '🎧 播放中...';
+        audio.play();
+
+        audio.onended = () => {
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+
+        audio.onerror = () => {
+          alert('❌ 音频播放失败');
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+      } else {
+        alert(formatTtsErrorAlert(result, '❌ 语音生成失败'));
+      }
+    } catch (error) {
+      alert(`❌ 试听出错\n\n${error.message}`);
+    } finally {
+      if (!playbackStarted) {
+        button.disabled = false;
+        button.innerText = originalText;
+      }
+    }
+  };
+
+  // MiMo: Voice select change handler
+  document.getElementById('select-mimo-voice-option').onchange = () => {
+    syncMiMoVoiceFromSelect();
+  };
+
+  document.getElementById('input-mimo-voice-custom').oninput = () => {
+    document.getElementById('input-mimo-voice').value = document.getElementById('input-mimo-voice-custom').value.trim();
+  };
+
+  // MiMo: Refresh voices
+  document.getElementById('btn-refresh-mimo-voices').onclick = async () => {
+    await loadMiMoVoices();
+  };
+
+  // ElevenLabs: Refresh voices
+  document.getElementById('btn-refresh-elevenlabs-voices').onclick = async () => {
+    await loadElevenLabsVoices();
+  };
+
+  // ElevenLabs: Open Token Helper
+  document.getElementById('a-open-elevenlabs-token-helper').onclick = async () => {
+    const path = await ipcRenderer.invoke(IPC_CHANNELS.GET_ROOT_PATH, 'src', 'data', 'text', 'readme', 'elevenlabs-token-helper.html');
+    await openPath(path);
+  };
+
   // Speechify: Open configuration guide
   document.getElementById('a-open-speechify-guide').onclick = async () => {
     const path = await ipcRenderer.invoke(IPC_CHANNELS.GET_ROOT_PATH, 'src', 'data', 'text', 'readme', 'index.html');
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `explorer "${path}"`);
+    await openPath(path);
   };
 
   // Speechify: Test configuration
@@ -617,22 +809,87 @@ function setButton() {
     await refreshElevenLabsAuthStatus();
   };
 
-  // ElevenLabs: Open browser assist
+  // ElevenLabs: Open ElevenReader in the default browser
   document.getElementById('btn-open-elevenlabs-browser').onclick = async () => {
     try {
-      const result = await ipcRenderer.invoke(IPC_CHANNELS.BEGIN_BROWSER_ASSIST);
-      if (result?.success) {
-        await refreshElevenLabsAuthStatus();
-        alert(`✅ ${getUiText([
-          '已打開 ElevenLabs 瀏覽器輔助視窗。請在該視窗完成登入；登入完成後應會自動檢測並回填憑證。',
-          '已打开 ElevenLabs 浏览器辅助窗口。请在该窗口完成登录；登录完成后应会自动检测并回填凭证。',
-          'The ElevenLabs browser assist window is open. Sign in there; credentials should be detected and filled automatically after login.',
-        ])}`);
+      await openExternalUrl('https://elevenreader.io/reader/sign-in');
+      alert(`✅ ${getUiText([
+        '已用預設瀏覽器打開 ElevenReader 登入頁。若要自動導入 Bearer，請先在本頁點「配置擴展橋接」，並把橋接 Token 存到 Chrome 擴展一次即可。',
+        '已用默认浏览器打开 ElevenReader 登录页。若要自动导入 Bearer，请先在本页点“配置扩展桥接”，并把桥接 Token 存到 Chrome 扩展一次即可。',
+        'ElevenReader was opened in your default browser. To auto-import the bearer token, configure the extension bridge here first and save the bridge token in the Chrome extension once.',
+      ])}`);
+    } catch (error) {
+      alert(`❌ ${getUiText([
+        '無法打開預設瀏覽器',
+        '无法打开默认浏览器',
+        'Failed to open the default browser',
+      ])}\n\n${error.message}`);
+    }
+  };
+
+  document.getElementById('btn-open-elevenlabs-extension-settings').onclick = async () => {
+    try {
+      await openExternalUrl(getElevenLabsExtensionSettingsUrl());
+    } catch (error) {
+      alert(`❌ ${getUiText([
+        '無法打開擴展設定',
+        '无法打开扩展设置',
+        'Failed to open extension settings',
+      ])}\n\n${error.message}`);
+    }
+  };
+
+  document.getElementById('btn-start-elevenlabs-extension-pairing').onclick = async () => {
+    const actionToken = beginElevenLabsAction(
+      'btn-start-elevenlabs-extension-pairing',
+      getUiText(['啟動中...', '启动中...', 'Starting...'])
+    );
+    if (!actionToken) {
+      return;
+    }
+
+    try {
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.BEGIN_EXTENSION_BRIDGE_PAIRING);
+      if (!isCurrentElevenLabsAction(actionToken)) {
+        return;
+      }
+
+      if (result?.success && result.data) {
+        renderElevenLabsAuthStatus({
+          ...(lastElevenLabsAuthStatus || buildFallbackElevenLabsStatus()),
+          extensionBridge: result.data,
+        });
+        const server = result.data.server || {};
+        const ext = result.data.extension || {};
+        const connected = ext.connected || result.data.pairing?.active;
+        if (connected) {
+          alert(`✅ ${getUiText([
+            'Chrome 擴展已通過 WebSocket 連接，Bearer 會自動抓取。',
+            'Chrome 扩展已通过 WebSocket 连接，Bearer 会自动抓取。',
+            'Chrome extension connected via WebSocket. Bearer tokens will be captured automatically.',
+          ])}\n\n${getUiText(['擴展版本', '扩展版本', 'Extension'])}: ${ext.extensionVersion || '?'}\n${getUiText(['端口', '端口', 'Port'])}: ${server.port || 39393}`);
+        } else {
+          alert(`⚠️ ${getUiText([
+            'WebSocket 橋接已就緒，但 Chrome 擴展尚未連接。\n\n請確認已在 Chrome 中安裝並啟用 FFTrans Bearer Bridge 擴展。\n擴展安裝後會自動連接，無需手動配置。',
+            'WebSocket 桥接已就绪，但 Chrome 扩展尚未连接。\n\n请确认已在 Chrome 中安装并启用 FFTrans Bearer Bridge 扩展。\n扩展安装后会自动连接，无需手动配置。',
+            'WebSocket bridge is ready but the Chrome extension is not connected.\n\nPlease install and enable the FFTrans Bearer Bridge extension in Chrome.\nIt will connect automatically — no manual configuration needed.',
+          ])}\n\n${getUiText(['端口', '端口', 'Port'])}: ${server.port || 39393}`);
+        }
       } else {
-        alert(formatTtsErrorAlert(result, '❌ 无法打开浏览器辅助窗口'));
+        alert(formatTtsErrorAlert(result, '❌ 启动扩展配对失败'));
       }
     } catch (error) {
-      alert(`❌ 无法打开浏览器辅助窗口\n\n${error.message}`);
+      if (!isCurrentElevenLabsAction(actionToken)) {
+        return;
+      }
+
+      alert(`❌ ${getUiText([
+        '配置擴展橋接失敗',
+        '配置扩展桥接失败',
+        'Failed to configure the extension bridge',
+      ])}\n\n${error.message}`);
+    } finally {
+      await completeElevenLabsAction(actionToken);
     }
   };
 
@@ -648,82 +905,137 @@ function setButton() {
 
     try {
       const formAuth = collectElevenLabsAuthOverride();
-      let usedBrowserAssist = false;
-      let result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_BROWSER_ASSIST_LOGIN, formAuth);
 
-      if (!result?.success && formAuth.refreshToken && isBrowserAssistFallbackError(result)) {
+      if (formAuth.bearerToken) {
+        const testConfig = {
+          ...collectElevenLabsFormConfig(),
+          bearerToken: formAuth.bearerToken,
+        };
+        const validationMessage = validateElevenLabsFormConfig(testConfig);
+        if (validationMessage) {
+          alert(`❌ 配置无效\n\n${validationMessage}`);
+          return;
+        }
+
+        const directResult = await ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_ELEVENLABS_CONFIG, testConfig);
+        if (!isCurrentElevenLabsAction(actionToken)) {
+          return;
+        }
+
+        await refreshElevenLabsAuthStatus();
+        if (directResult?.success) {
+          alert(`✅ ${getUiText([
+            'Bearer Token 驗證成功，可直接保存設定並開始使用。',
+            'Bearer Token 验证成功，可直接保存设置并开始使用。',
+            'Bearer token validation succeeded. Save the settings and start using it.',
+          ])}`);
+        } else {
+          alert(formatTtsErrorAlert(directResult, '❌ Bearer Token 验证失败'));
+        }
+        return;
+      }
+
+      let result = null;
+      const extensionBridge = lastElevenLabsAuthStatus?.extensionBridge || {};
+      const hasExtensionCandidate = Boolean(extensionBridge?.candidate?.hasBearerToken || extensionBridge?.candidate?.state === 'pending');
+      if (formAuth.refreshToken) {
         result = await ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_REFRESH_TOKEN, formAuth);
-      } else if (result?.success) {
-        usedBrowserAssist = true;
+      } else if (hasExtensionCandidate) {
+        result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_EXTENSION_BRIDGE_IMPORT, formAuth);
+      } else if (lastElevenLabsAuthStatus?.browserAssist?.isOpen) {
+        result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_BROWSER_ASSIST_LOGIN, formAuth);
+      } else {
+        alert(`ℹ️ ${getUiText([
+          '請先直接貼上 Bearer Token，或點「配置擴展橋接」後用 Chrome 擴展自動導入。',
+          '请先直接贴上 Bearer Token，或点“配置扩展桥接”后用 Chrome 扩展自动导入。',
+          'Paste a bearer token directly, or configure the extension bridge and use the Chrome extension to import it automatically.',
+        ])}`);
+        return;
       }
 
       if (!isCurrentElevenLabsAction(actionToken)) {
         return;
       }
 
+      await refreshElevenLabsAuthStatus();
+      if (!isCurrentElevenLabsAction(actionToken)) {
+        return;
+      }
+
       if (result.success && result.data) {
-        if (usedBrowserAssist) {
-          applyBrowserAssistTokens(result.data);
-        }
+        applyBrowserAssistTokens(result.data, { onlyFillEmpty: true });
 
         const status = result.data.status || result.data.validation?.status || null;
         if (status) {
           renderElevenLabsAuthStatus(status);
         }
 
-        if (usedBrowserAssist) {
-          const imported = result.data.imported || {};
-          const importedParts = [];
-          if (imported.refreshToken) {
-            importedParts.push(getUiText(['Refresh Token', 'Refresh Token', 'Refresh Token']));
-          }
-          if (imported.appCheckToken) {
-            importedParts.push(getUiText(['App Check Token', 'App Check Token', 'App Check Token']));
-          }
-          if (imported.deviceId) {
-            importedParts.push(getUiText(['Device ID', 'Device ID', 'Device ID']));
-          }
+        const imported = result.data.imported || {};
+        const importedParts = [];
+        if (imported.bearerToken) {
+          importedParts.push(getUiText(['Bearer Token', 'Bearer Token', 'Bearer Token']));
+        }
+        if (imported.refreshToken) {
+          importedParts.push(getUiText(['Refresh Token', 'Refresh Token', 'Refresh Token']));
+        }
+        if (imported.appCheckToken) {
+          importedParts.push(getUiText(['App Check Token', 'App Check Token', 'App Check Token']));
+        }
+        if (imported.deviceId) {
+          importedParts.push(getUiText(['Device ID', 'Device ID', 'Device ID']));
+        }
 
-          const summaryText = importedParts.length
-            ? importedParts.join(' / ')
-            : getUiText(['未偵測到可導入欄位', '未检测到可导入字段', 'No importable fields were detected']);
+        const summaryText = importedParts.length
+          ? importedParts.join(' / ')
+          : getUiText(['未偵測到可導入欄位', '未检测到可导入字段', 'No importable fields were detected']);
 
-          if (result.data.validationError) {
-            alert(`❌ ${getUiText([
-              '已從瀏覽器輔助視窗導入欄位，但 Refresh Token 驗證失敗。你仍可檢查欄位內容後再儲存或重試。',
-              '已从浏览器辅助窗口导入字段，但 Refresh Token 验证失败。你仍可检查字段内容后再保存或重试。',
-              'Fields were imported from the browser assist window, but refresh token validation failed. You can still inspect them and save or retry.',
-            ])}\n\n${getUiText(['導入欄位', '导入字段', 'Imported Fields'])}: ${summaryText}\n${getUiText(['錯誤', '错误', 'Error'])}: ${result.data.validationError.message}`);
-          } else {
-            const saveHint = result.data.refreshToken
-              ? getUiText([
-                '已從瀏覽器輔助視窗導入並驗證登入。若要持久化可直接按「保存導入內容」。',
-                '已从浏览器辅助窗口导入并验证登录。若要持久化可直接按“保存导入内容”。',
-                'Imported and validated sign-in from the browser assist window. Click Save Imported to persist it.',
-              ])
-              : getUiText([
-                '已從瀏覽器輔助視窗讀取輔助憑證，但尚未找到 Refresh Token。',
-                '已从浏览器辅助窗口读取辅助凭证，但尚未找到 Refresh Token。',
-                'Imported helper credentials from the browser assist window, but no refresh token was found yet.',
-              ]);
-            alert(`✅ ${saveHint}\n\n${getUiText(['導入欄位', '导入字段', 'Imported Fields'])}: ${summaryText}`);
-          }
-        } else {
-          const credentials = result.data.status?.credentials || {};
-          const saveHint = credentials.hasRefreshToken && !credentials.hasSavedRefreshToken
+        if (result.data.validationMode === 'bearer') {
+          lastValidatedImportedElevenLabsBearerToken = normalizeElevenLabsBearerToken(result.data.bearerToken || '');
+          const sourceLabel = result.data.status?.extensionBridge?.candidate?.hasBearerToken
+            ? getUiText(['Chrome 擴展', 'Chrome 扩展', 'Chrome Extension'])
+            : getUiText(['瀏覽器輔助視窗', '浏览器辅助窗口', 'Browser Assist']);
+          alert(`✅ ${getUiText([
+            '已導入並驗證 Bearer Token。若要持久化可直接按「保存導入內容」。',
+            '已导入并验证 Bearer Token。若要持久化可直接按“保存导入内容”。',
+            'A bearer token was imported and validated. Click Save Imported to persist it.',
+          ])}\n\n${getUiText(['來源', '来源', 'Source'])}: ${sourceLabel}\n${getUiText(['導入欄位', '导入字段', 'Imported Fields'])}: ${summaryText}`);
+        } else if (result.data.validationMode === 'refresh') {
+          const extraNote = result.data.validationError
+            ? `\n${getUiText(['附註', '附注', 'Note'])}: ${result.data.validationError.message}`
+            : '';
+          const refreshSuccessText = imported.refreshToken
             ? getUiText([
-              '目前 Refresh Token 只在表單中，若要持久化可直接按「保存導入內容」。',
-              '当前 Refresh Token 只在表单中，若要持久化可直接按“保存导入内容”。',
-              'The refresh token is only in the form right now; click Save Imported to persist it.',
-            ])
+                '已從瀏覽器輔助視窗讀取並驗證 Refresh Token。',
+                '已从浏览器辅助窗口读取并验证 Refresh Token。',
+                'Refresh token data from browser assist was validated.',
+              ])
             : getUiText([
-              'Refresh Token 驗證成功，可繼續導入 App Check Token 或直接測試連線。',
-              'Refresh Token 验证成功，可继续导入 App Check Token 或直接测试连接。',
-              'Refresh token validation succeeded. You can import the App Check token or test the connection now.',
-            ]);
-          alert(`✅ ${saveHint}`);
+                '已驗證當前表單中的 Refresh Token。',
+                '已验证当前表单中的 Refresh Token。',
+                'The refresh token currently in the form was validated.',
+              ]);
+          alert(`✅ ${refreshSuccessText}\n\n${getUiText(['導入欄位', '导入字段', 'Imported Fields'])}: ${summaryText}${extraNote}`);
+        } else if (result.data.warning) {
+          alert(`ℹ️ ${result.data.warning.message}\n\n${getUiText(['導入欄位', '导入字段', 'Imported Fields'])}: ${summaryText}\n${getUiText(['建議', '建议', 'Suggestion'])}: ${result.data.warning.suggestion}`);
+        } else if (result.data.pending) {
+          alert(`ℹ️ ${getUiText([
+            '尚未檢測到可用 Bearer；請在瀏覽器輔助視窗完成登入後稍候再試。',
+            '尚未检测到可用 Bearer；请在浏览器辅助窗口完成登录后稍后再试。',
+            'No usable bearer token was detected yet. Finish signing in in the browser assist window and try again shortly.',
+          ])}`);
+        } else {
+          alert(`ℹ️ ${getUiText([
+            '已刷新瀏覽器輔助狀態，但尚未取得可直接使用的憑證。',
+            '已刷新浏览器辅助状态，但尚未取得可直接使用的凭证。',
+            'Browser assist status was refreshed, but no usable credentials are available yet.',
+          ])}`);
         }
       } else {
+        await refreshElevenLabsAuthStatus();
+        if (!isCurrentElevenLabsAction(actionToken)) {
+          return;
+        }
+
         alert(formatTtsErrorAlert(result, '❌ 登录检查失败'));
       }
     } catch (error) {
@@ -759,10 +1071,27 @@ function setButton() {
       }
 
       const authOverride = collectElevenLabsAuthOverride();
+      const normalizedBearerToken = normalizeElevenLabsBearerToken(authOverride.bearerToken);
+      const allowImportedBearerSave = Boolean(
+        normalizedBearerToken &&
+        lastValidatedImportedElevenLabsBearerToken &&
+        normalizedBearerToken === lastValidatedImportedElevenLabsBearerToken
+      );
+
+      if (authOverride.bearerToken && !allowImportedBearerSave && !authOverride.refreshToken && !authOverride.appCheckToken && !authOverride.deviceId) {
+        alert(`ℹ️ ${getUiText([
+          '快速保存只會保存已驗證的導入 Bearer。當前 Bearer 不是最近一次成功導入並驗證的值，請先點「檢查登入」或用一般保存設定。',
+          '快速保存只会保存已验证的导入 Bearer。当前 Bearer 不是最近一次成功导入并验证的值，请先点“检查登录”或用一般保存设置。',
+          'Quick Save only persists an imported bearer after successful validation. The current bearer does not match the last validated imported value; run Check Login first or use normal Save Settings.',
+        ])}`);
+        return;
+      }
+
       const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
       config.api = config.api || {};
       config.api.elevenlabs = {
         ...config.api.elevenlabs,
+        ...(allowImportedBearerSave ? { bearerToken: authOverride.bearerToken } : {}),
         ...(authOverride.refreshToken ? { refreshToken: authOverride.refreshToken } : {}),
         ...(authOverride.appCheckToken ? { appCheckToken: authOverride.appCheckToken } : {}),
         ...(authOverride.deviceId ? { deviceId: authOverride.deviceId } : {}),
@@ -774,9 +1103,9 @@ function setButton() {
       }
 
       alert(`✅ ${getUiText([
-        '已快速保存 ElevenLabs 導入憑證。',
-        '已快速保存 ElevenLabs 导入凭证。',
-        'The imported ElevenLabs credentials were saved.',
+        allowImportedBearerSave ? '已快速保存 ElevenLabs 導入憑證（含 Bearer）。' : '已快速保存 ElevenLabs 導入憑證。當前 Bearer 未一併保存。',
+        allowImportedBearerSave ? '已快速保存 ElevenLabs 导入凭证（含 Bearer）。' : '已快速保存 ElevenLabs 导入凭证。当前 Bearer 未一并保存。',
+        allowImportedBearerSave ? 'The imported ElevenLabs credentials, including the bearer token, were saved.' : 'Imported ElevenLabs credentials were saved. The current bearer was not persisted.',
       ])}`);
       ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, 'SETTINGS_SAVED');
     } catch (error) {
@@ -856,7 +1185,7 @@ function setButton() {
 
       if (result.success && result.data) {
         const meta = result.data.meta || {};
-        alert(`✅ 测试成功！\n\n语音: ${meta.voiceId || '默认'}\n模型: ${meta.modelId || '默认'}\n认证方式: ${formatElevenLabsAuthSourceLabel(meta.authSource)}\nToken 刷新: ${meta.didRefreshBearer ? '是' : '否'}\n\n本次测试使用当前表单值。Refresh Token / App Check / Device ID 等保存后会持久化；Bearer Token 不会保存。`);
+        alert(`✅ 测试成功！\n\n语音: ${meta.voiceId || '默认'}\n模型: ${meta.modelId || '默认'}\n认证方式: ${formatElevenLabsAuthSourceLabel(meta.authSource)}\nToken 刷新: ${meta.didRefreshBearer ? '是' : '否'}\n\n本次测试使用当前表单值。保存设置或使用“保存导入内容”后，Bearer / Refresh / App Check / Device ID 都会持久化。`);
       } else {
         alert(formatTtsErrorAlert(result, '❌ 测试失败'));
       }
@@ -999,6 +1328,42 @@ function validateSpeechifyFormConfig(config = {}) {
   return '';
 }
 
+function collectMiMoFormConfig() {
+  return {
+    apiKey: document.getElementById('input-mimo-api-key').value.trim(),
+    model: document.getElementById('input-mimo-model').value.trim(),
+    voice: document.getElementById('input-mimo-voice').value.trim(),
+    responseFormat: document.getElementById('select-mimo-response-format').value,
+    speed: document.getElementById('input-mimo-speed').value,
+    style: document.getElementById('input-mimo-style').value.trim(),
+    emotion: document.getElementById('input-mimo-emotion').value.trim(),
+    language: document.getElementById('input-mimo-language').value.trim(),
+  };
+}
+
+function validateMiMoFormConfig(config = {}) {
+  if (!config.apiKey) {
+    return '请先填写 MiMo API Key';
+  }
+
+  if (!config.voice) {
+    return '请先填写 MiMo 语音 ID (Voice)';
+  }
+
+  if (!['mp3', 'ogg', 'wav'].includes(config.responseFormat)) {
+    return 'MiMo 音频格式无效';
+  }
+
+  if (config.speed) {
+    const speed = Number(config.speed);
+    if (Number.isNaN(speed) || speed < 0.25 || speed > 4) {
+      return 'MiMo 速度必须在 0.25 到 4 之间';
+    }
+  }
+
+  return '';
+}
+
 function collectElevenLabsFormConfig() {
   return {
     bearerToken: document.getElementById('input-elevenlabs-bearer-token').value.trim(),
@@ -1024,6 +1389,10 @@ function validateZeroToOne(value = '', label = '数值') {
 }
 
 function validateElevenLabsFormConfig(config = {}) {
+  if (!config.bearerToken && !config.refreshToken) {
+    return '请先填写 ElevenLabs Bearer Token 或 Refresh Token';
+  }
+
   return [
     validateZeroToOne(config.stability, 'Stability'),
     validateZeroToOne(config.similarityBoost, 'Similarity Boost'),
@@ -1054,10 +1423,212 @@ function formatTtsErrorAlert(result, title = '请求失败') {
   return lines.join('\n\n');
 }
 
-function clearEphemeralElevenLabsBearerInput() {
-  const bearerInput = document.getElementById('input-elevenlabs-bearer-token');
-  if (bearerInput) {
-    bearerInput.value = '';
+// --- Unified TTS test helpers ---
+
+function collectConfigForEngine(engine) {
+  switch (engine) {
+    case 'speechify': return collectSpeechifyFormConfig();
+    case 'elevenlabs': return collectElevenLabsFormConfig();
+    case 'mimo': return collectMiMoFormConfig();
+    case 'google': return {};
+    default: return {};
+  }
+}
+
+function validateConfigForEngine(engine, config) {
+  switch (engine) {
+    case 'speechify': return validateSpeechifyFormConfig(config);
+    case 'elevenlabs': return validateElevenLabsFormConfig(config);
+    case 'mimo': return validateMiMoFormConfig(config);
+    case 'google': return '';
+    default: return '';
+  }
+}
+
+// --- MiMo voice select/custom sync ---
+
+function syncMiMoVoiceFromSelect() {
+  const select = document.getElementById('select-mimo-voice-option');
+  const customRow = document.getElementById('mimo-custom-voice-row');
+  const hiddenInput = document.getElementById('input-mimo-voice');
+  const customInput = document.getElementById('input-mimo-voice-custom');
+
+  if (select.value === '__custom__') {
+    customRow.style.display = '';
+    hiddenInput.value = customInput.value.trim();
+  } else {
+    customRow.style.display = 'none';
+    hiddenInput.value = select.value;
+  }
+}
+
+function syncMiMoVoiceControlsFromStoredValue(storedVoice = '') {
+  const select = document.getElementById('select-mimo-voice-option');
+  const customRow = document.getElementById('mimo-custom-voice-row');
+  const customInput = document.getElementById('input-mimo-voice-custom');
+
+  // Try to match stored voice to an option
+  let found = false;
+  for (let i = 0; i < select.options.length; i++) {
+    if (select.options[i].value === storedVoice && storedVoice !== '__custom__') {
+      select.value = storedVoice;
+      found = true;
+      break;
+    }
+  }
+
+  if (!found && storedVoice) {
+    // Switch to custom mode
+    select.value = '__custom__';
+    customInput.value = storedVoice;
+    customRow.style.display = '';
+  } else if (found) {
+    customRow.style.display = 'none';
+  }
+}
+
+// --- Voice list loading ---
+
+let elevenLabsVoiceRequestId = 0;
+let mimoVoiceRequestId = 0;
+
+async function loadElevenLabsVoices() {
+  const requestId = ++elevenLabsVoiceRequestId;
+  const select = document.getElementById('select-elevenlabs-voice-id');
+  const currentValue = select.value;
+  const btn = document.getElementById('btn-refresh-elevenlabs-voices');
+  const originalText = btn.innerText;
+
+  try {
+    btn.disabled = true;
+    btn.innerText = '...';
+
+    const authConfig = collectElevenLabsFormConfig();
+    if (!authConfig.bearerToken && !authConfig.refreshToken) {
+      return; // No credentials, keep fallback
+    }
+
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.GET_TTS_VOICES, {
+      engine: 'elevenlabs',
+      config: authConfig,
+    });
+
+    if (requestId !== elevenLabsVoiceRequestId) return; // Stale response
+
+    if (result.success && result.data?.voices?.length > 0) {
+      const voices = result.data.voices;
+
+      // Group voices
+      const groups = {};
+      voices.forEach((v) => {
+        const group = v.group || 'Other';
+        if (!groups[group]) groups[group] = [];
+        groups[group].push(v);
+      });
+
+      // Rebuild select
+      select.innerHTML = '';
+      Object.keys(groups).forEach((groupName) => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = groupName;
+        groups[groupName].forEach((v) => {
+          const option = document.createElement('option');
+          option.value = v.value;
+          option.textContent = v.label;
+          optgroup.appendChild(option);
+        });
+        select.appendChild(optgroup);
+      });
+
+      // Restore selection or add synthetic option
+      if (currentValue) {
+        let found = false;
+        for (let i = 0; i < select.options.length; i++) {
+          if (select.options[i].value === currentValue) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          const option = document.createElement('option');
+          option.value = currentValue;
+          option.textContent = `${currentValue} (当前)`;
+          select.insertBefore(option, select.firstChild);
+        }
+        select.value = currentValue;
+      }
+    }
+  } catch (error) {
+    console.warn('[Config] Failed to load ElevenLabs voices:', error.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = originalText;
+  }
+}
+
+async function loadMiMoVoices() {
+  const requestId = ++mimoVoiceRequestId;
+  const select = document.getElementById('select-mimo-voice-option');
+  const hiddenInput = document.getElementById('input-mimo-voice');
+  const currentValue = hiddenInput.value;
+  const btn = document.getElementById('btn-refresh-mimo-voices');
+  const originalText = btn.innerText;
+
+  try {
+    btn.disabled = true;
+    btn.innerText = '...';
+
+    const mimoConfig = collectMiMoFormConfig();
+    if (!mimoConfig.apiKey) {
+      return; // No API key, keep fallback
+    }
+
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.GET_TTS_VOICES, {
+      engine: 'mimo',
+      config: mimoConfig,
+    });
+
+    if (requestId !== mimoVoiceRequestId) return; // Stale response
+
+    if (result.success && result.data?.voices?.length > 0) {
+      const voices = result.data.voices;
+
+      // Group voices
+      const groups = {};
+      voices.forEach((v) => {
+        const group = v.group || 'Other';
+        if (!groups[group]) groups[group] = [];
+        groups[group].push(v);
+      });
+
+      // Rebuild select (keep __custom__ sentinel)
+      select.innerHTML = '';
+      Object.keys(groups).forEach((groupName) => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = groupName;
+        groups[groupName].forEach((v) => {
+          const option = document.createElement('option');
+          option.value = v.value;
+          option.textContent = v.label;
+          optgroup.appendChild(option);
+        });
+        select.appendChild(optgroup);
+      });
+
+      // Re-add custom sentinel
+      const customOption = document.createElement('option');
+      customOption.value = '__custom__';
+      customOption.textContent = '自定义语音 ID...';
+      select.appendChild(customOption);
+
+      // Restore selection
+      syncMiMoVoiceControlsFromStoredValue(currentValue);
+    }
+  } catch (error) {
+    console.warn('[Config] Failed to load MiMo voices:', error.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = originalText;
   }
 }
 
@@ -1077,15 +1648,21 @@ function formatElevenLabsAuthSourceLabel(authSource = '') {
       ]);
     case 'manual-bearer':
       return getUiText([
-        '使用臨時 Bearer（不會保存）',
-        '使用临时 Bearer（不会保存）',
-        'Using a temporary bearer (not persisted)',
+        '使用 Bearer Token',
+        '使用 Bearer Token',
+        'Using a Bearer token',
       ]);
     case 'legacy-bearer-migration':
       return getUiText([
         '使用升級前遷移到記憶體的臨時 Bearer',
         '使用升级前迁移到内存的临时 Bearer',
         'Using the temporary bearer migrated into memory from an older config',
+      ]);
+    case 'extension-bridge':
+      return getUiText([
+        '由 Chrome 擴展自動捕獲',
+        '由 Chrome 扩展自动捕获',
+        'Auto-captured by Chrome extension',
       ]);
     default:
       return getUiText(['未提供', '未提供', 'Not provided']);
@@ -1164,6 +1741,7 @@ async function completeElevenLabsAction(token) {
 
   await refreshElevenLabsAuthStatus();
   await flushPendingElevenLabsBrowserAssistAutoDetect();
+  await flushPendingElevenLabsExtensionBridgeAutoDetect();
   return true;
 }
 
@@ -1196,51 +1774,77 @@ function getElevenLabsNextStep(status = {}) {
   const credentials = status.credentials || {};
   const auth = status.auth || {};
   const browserAssist = status.browserAssist || {};
+  const extensionBridge = status.extensionBridge || {};
+  const bearerInspection = browserAssist.lastInspection?.bearer || {};
 
-  if (!credentials.hasRefreshToken) {
-    if (browserAssist.isOpen) {
+  if (!credentials.hasBearerToken && !credentials.hasRefreshToken) {
+    if (extensionBridge?.candidate?.hasBearerToken) {
       return getUiText([
-        '瀏覽器輔助視窗已開啟；在其中完成登入後，回來點擊「檢查登入」。',
-        '浏览器辅助窗口已开启；在其中完成登录后，回来点击“检查登录”。',
-        'The browser assist window is open. Finish signing in there, then come back and click Check Login.',
+        'Chrome 擴展已捕獲 Bearer；點「檢查登入」可驗證並自動回填。',
+        'Chrome 扩展已捕获 Bearer；点“检查登录”可验证并自动回填。',
+        'The Chrome extension captured a bearer token. Click Check Login to validate and fill it automatically.',
+      ]);
+    }
+
+    if (extensionBridge?.pairing?.active && extensionBridge?.server?.state !== 'listening') {
+      return getUiText([
+        'Chrome 擴展橋接已配置，但應用目前未在監聽；點「配置擴展橋接」即可重新啟動。',
+        'Chrome 扩展桥接已配置，但应用目前未在监听；点“配置扩展桥接”即可重新启动。',
+        'The Chrome extension bridge is configured, but the app is not listening right now. Click Configure Extension Bridge to start it again.',
+      ]);
+    }
+
+    if (extensionBridge?.pairing?.active) {
+      return getUiText([
+        'Chrome 擴展橋接已配置；請在瀏覽器打開 ElevenReader 並觸發一次 Reader 請求，再回來點「檢查登入」。',
+        'Chrome 扩展桥接已配置；请在浏览器打开 ElevenReader 并触发一次 Reader 请求，再回来点“检查登录”。',
+        'Chrome extension bridge is configured. Open ElevenReader in the browser, trigger a Reader request, then come back and click Check Login.',
+      ]);
+    }
+
+    if (browserAssist.isOpen && bearerInspection.status === ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.TRUSTED) {
+      return getUiText([
+        '已在瀏覽器輔助視窗檢測到 Bearer；點「檢查登入」可驗證並自動回填。',
+        '已在浏览器辅助窗口检测到 Bearer；点“检查登录”可验证并自动回填。',
+        'A bearer token was detected in browser assist. Click Check Login to validate and fill it automatically.',
       ]);
     }
 
     return getUiText([
-      '先打開瀏覽器輔助視窗登入 ElevenLabs，然後回來點擊「檢查登入」。',
-      '先打开浏览器辅助窗口登录 ElevenLabs，然后回来点击“检查登录”。',
-      'Open the browser assist window, sign in to ElevenLabs, then come back and click Check Login.',
+      '先填 Bearer Token 直接测试，或启动 Chrome 扩展配对后自动导入。',
+      '先填 Bearer Token 直接测试，或启动 Chrome 扩展配对后自动导入。',
+      'Paste a bearer token and test first, or start Chrome extension pairing to import it automatically.',
     ]);
   }
 
-  if (!credentials.hasSavedRefreshToken || !credentials.hasSavedAppCheckToken || !credentials.hasSavedDeviceId) {
+  if (hasUnsavedElevenLabsCredentials(status)) {
     return getUiText([
-      '目前有尚未保存的憑證；可點「保存導入內容」快速持久化。',
-      '当前有尚未保存的凭证；可点“保存导入内容”快速持久化。',
-      'Some credentials are not saved yet. Click Save Imported to persist them quickly.',
+      '目前有尚未保存的憑證；保存设置后即可供正式 TTS 使用。',
+      '当前有尚未保存的凭证；保存设置后即可供正式 TTS 使用。',
+      'Some credentials are not saved yet. Save the settings to use them for runtime TTS.',
     ]);
   }
 
   if (!credentials.hasAppCheckToken) {
     return getUiText([
-      '下一步導入 App Check Token，再做正式連線測試。',
-      '下一步导入 App Check Token，再做正式连接测试。',
-      'Next, import the App Check token and then run the connection test.',
+      '可先直接測試；若遇到風控或正式請求失敗，再補 App Check Token。',
+      '可先直接测试；若遇到风控或正式请求失败，再补 App Check Token。',
+      'You can test now. Add an App Check token later if protection checks or runtime requests fail.',
     ]);
   }
 
   if (auth.state === 'error') {
     return getUiText([
-      '請檢查瀏覽器輔助視窗中的登入狀態、Refresh Token 或代理設定後重試。',
-      '请检查浏览器辅助窗口中的登录状态、Refresh Token 或代理设置后重试。',
-      'Check the browser assist window login state, refresh token, or proxy settings and try again.',
+      '請檢查 Bearer Token / Refresh Token / App Check Token 或代理設定後重試。',
+      '请检查 Bearer Token / Refresh Token / App Check Token 或代理设置后重试。',
+      'Check the bearer token, refresh token, App Check token, or proxy settings and try again.',
     ]);
   }
 
   return getUiText([
-    '可直接測試連線，或按「保存導入內容」供正式 TTS 使用。',
-    '可直接测试连接，或按“保存导入内容”供正式 TTS 使用。',
-    'You can test the connection now or click Save Imported for runtime TTS.',
+    '可直接測試連線，保存设置后即可供正式 TTS 使用。',
+    '可直接测试连接，保存设置后即可供正式 TTS 使用。',
+    'You can test the connection now. Save the settings to use them for runtime TTS.',
   ]);
 }
 
@@ -1266,8 +1870,72 @@ function buildFallbackElevenLabsStatus(message = '') {
       title: '',
       onElevenLabsOrigin: false,
       isLoading: false,
+      lastInspection: {
+        detectedAt: '',
+        currentUrl: '',
+        title: '',
+        bearerToken: '',
+        refreshToken: '',
+        appCheckToken: '',
+        deviceId: '',
+        sources: {
+          bearerToken: '',
+          refreshToken: '',
+          appCheckToken: '',
+          deviceId: '',
+        },
+        bearer: {
+          status: ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.UNAVAILABLE,
+          confidence: '',
+          expiresAt: '',
+          reasonCode: 'not_found',
+          reasonMessage: '',
+          validationStatus: ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.UNTESTED,
+          validationCode: '',
+          validationMessage: '',
+          validatedAt: '',
+        },
+      },
+    },
+    extensionBridge: {
+      server: {
+        state: 'stopped',
+        port: null,
+        lastErrorCode: '',
+        lastErrorMessage: '',
+      },
+      pairing: {
+        active: false,
+        token: '',
+        issuedAt: '',
+        expiresAt: '',
+        lastUsedAt: '',
+      },
+      candidate: {
+        state: 'unavailable',
+        receivedAt: '',
+        validatedAt: '',
+        expiresAt: '',
+        source: '',
+        requestUrl: '',
+        tabUrl: '',
+        extensionVersion: '',
+        extensionId: '',
+        hasBearerToken: false,
+        hasAppCheckToken: false,
+        hasDeviceId: false,
+        sources: {
+          bearerToken: '',
+          appCheckToken: '',
+          deviceId: '',
+        },
+        validationCode: '',
+        validationMessage: '',
+      },
     },
     credentials: {
+      hasBearerToken: false,
+      hasSavedBearerToken: false,
       hasRefreshToken: false,
       hasSavedRefreshToken: false,
       hasAppCheckToken: false,
@@ -1280,34 +1948,53 @@ function buildFallbackElevenLabsStatus(message = '') {
 
 function collectElevenLabsAuthOverride() {
   return {
+    bearerToken: document.getElementById('input-elevenlabs-bearer-token').value.trim(),
     refreshToken: document.getElementById('input-elevenlabs-refresh-token').value.trim(),
     appCheckToken: document.getElementById('input-elevenlabs-app-check-token').value.trim(),
     deviceId: document.getElementById('input-elevenlabs-device-id').value.trim(),
   };
 }
 
-function applyBrowserAssistTokens(browserData = {}) {
-  if (browserData.refreshToken) {
-    document.getElementById('input-elevenlabs-refresh-token').value = browserData.refreshToken;
+function normalizeElevenLabsBearerToken(token = '') {
+  const trimmed = typeof token === 'string' ? token.trim() : '';
+  if (!trimmed) {
+    return '';
   }
 
-  if (browserData.appCheckToken) {
-    document.getElementById('input-elevenlabs-app-check-token').value = browserData.appCheckToken;
-  }
-
-  if (browserData.deviceId) {
-    document.getElementById('input-elevenlabs-device-id').value = browserData.deviceId;
-  }
+  return /^Bearer\s+/i.test(trimmed) ? trimmed : `Bearer ${trimmed}`;
 }
 
-function isBrowserAssistFallbackError(result = {}) {
-  const authCode = result?.details?.authCode || '';
-  return /^browser_assist_/.test(authCode);
+function applyBrowserAssistTokens(browserData = {}, options = {}) {
+  const { onlyFillEmpty = false } = options;
+  const imported = browserData.imported || {};
+
+  function applyValue(inputId, value, enabled = true) {
+    if (!enabled || !value) {
+      return;
+    }
+
+    const input = document.getElementById(inputId);
+    if (!input) {
+      return;
+    }
+
+    if (onlyFillEmpty && input.value.trim()) {
+      return;
+    }
+
+    input.value = value;
+  }
+
+  applyValue('input-elevenlabs-bearer-token', browserData.bearerToken, Boolean(imported.bearerToken));
+  applyValue('input-elevenlabs-refresh-token', browserData.refreshToken, Boolean(imported.refreshToken));
+  applyValue('input-elevenlabs-app-check-token', browserData.appCheckToken, Boolean(browserData.appCheckToken));
+  applyValue('input-elevenlabs-device-id', browserData.deviceId, Boolean(browserData.deviceId));
 }
 
 function hasUnsavedElevenLabsCredentials(status = {}) {
   const credentials = status.credentials || {};
   return Boolean(
+    (credentials.hasBearerToken && !credentials.hasSavedBearerToken) ||
     (credentials.hasRefreshToken && !credentials.hasSavedRefreshToken) ||
     (credentials.hasAppCheckToken && !credentials.hasSavedAppCheckToken) ||
     (credentials.hasDeviceId && !credentials.hasSavedDeviceId)
@@ -1320,6 +2007,10 @@ function formatBrowserAssistSource(source = '') {
   }
 
   return source.length > 96 ? `${source.slice(0, 93)}...` : source;
+}
+
+function getElevenLabsExtensionSettingsUrl() {
+  return 'chrome://extensions/';
 }
 
 function applyElevenLabsCopyButtonLabels() {
@@ -1336,7 +2027,13 @@ function applyElevenLabsCopyButtonLabels() {
 }
 
 function getElevenLabsAutoDetectNotificationKey(data = {}) {
-  return [data.refreshToken || '', data.appCheckToken || '', data.deviceId || ''].join('|');
+  const imported = data.imported || {};
+  return [
+    imported.bearerToken ? (data.bearerToken || '') : '',
+    imported.refreshToken ? (data.refreshToken || '') : '',
+    data.appCheckToken || '',
+    data.deviceId || '',
+  ].join('|');
 }
 
 function getElevenLabsAutoDetectToggleText(paused = isElevenLabsBrowserAssistAutoDetectPaused) {
@@ -1353,7 +2050,7 @@ function syncElevenLabsAutoDetectToggleButton(status = lastElevenLabsAuthStatus)
 
   const browserAssist = status?.browserAssist || {};
   const currentFormAuth = collectElevenLabsAuthOverride();
-  const canToggle = Boolean(browserAssist.isOpen) && !currentFormAuth.refreshToken;
+  const canToggle = Boolean(browserAssist.isOpen) && !currentFormAuth.refreshToken && !currentFormAuth.bearerToken;
 
   button.innerText = getElevenLabsAutoDetectToggleText();
   button.disabled = !canToggle;
@@ -1363,11 +2060,11 @@ function syncElevenLabsAutoDetectToggleButton(status = lastElevenLabsAuthStatus)
         '控制登录完成后的自动检测。',
         'Control automatic detection after sign-in.',
       ])
-    : currentFormAuth.refreshToken
+      : (currentFormAuth.refreshToken || currentFormAuth.bearerToken)
       ? getUiText([
-          '表單已有 Refresh Token，暫時不需要自動檢測。',
-          '表单已有 Refresh Token，暂时不需要自动检测。',
-          'Auto-detect is not needed while a refresh token is already filled in.',
+          '表單已有 Bearer / Refresh Token，暫時不需要自動檢測。',
+          '表单已有 Bearer / Refresh Token，暂时不需要自动检测。',
+          'Auto-detect is not needed while a bearer or refresh token is already filled in.',
         ])
       : getUiText([
           '請先打開瀏覽器輔助視窗。',
@@ -1385,6 +2082,15 @@ function stopElevenLabsBrowserAssistAutoDetect() {
   pendingElevenLabsBrowserAssistAutoDetect = false;
 }
 
+function stopElevenLabsExtensionBridgeAutoDetect() {
+  if (elevenLabsExtensionBridgeAutoDetectTimer) {
+    clearInterval(elevenLabsExtensionBridgeAutoDetectTimer);
+    elevenLabsExtensionBridgeAutoDetectTimer = null;
+  }
+
+  pendingElevenLabsExtensionBridgeAutoDetect = false;
+}
+
 async function flushPendingElevenLabsBrowserAssistAutoDetect() {
   if (
     !pendingElevenLabsBrowserAssistAutoDetect ||
@@ -1397,6 +2103,20 @@ async function flushPendingElevenLabsBrowserAssistAutoDetect() {
 
   pendingElevenLabsBrowserAssistAutoDetect = false;
   await runElevenLabsBrowserAssistAutoDetect();
+}
+
+async function flushPendingElevenLabsExtensionBridgeAutoDetect() {
+  if (
+    !pendingElevenLabsExtensionBridgeAutoDetect ||
+    activeElevenLabsAction ||
+    isElevenLabsBrowserAssistAutoDetectPaused ||
+    elevenLabsExtensionBridgeAutoDetectInFlight
+  ) {
+    return;
+  }
+
+  pendingElevenLabsExtensionBridgeAutoDetect = false;
+  await runElevenLabsExtensionBridgeAutoDetect();
 }
 
 async function runElevenLabsBrowserAssistAutoDetect() {
@@ -1412,8 +2132,15 @@ async function runElevenLabsBrowserAssistAutoDetect() {
   pendingElevenLabsBrowserAssistAutoDetect = false;
 
   const currentFormAuth = collectElevenLabsAuthOverride();
-  if (currentFormAuth.refreshToken) {
+  if (currentFormAuth.refreshToken || currentFormAuth.bearerToken) {
     stopElevenLabsBrowserAssistAutoDetect();
+    return;
+  }
+
+  const extensionBridge = lastElevenLabsAuthStatus?.extensionBridge || {};
+  const extensionConnected = extensionBridge.extension?.connected || extensionBridge.pairing?.active;
+  const extensionHasBearer = extensionBridge.candidate?.hasBearerToken;
+  if (extensionConnected && extensionHasBearer) {
     return;
   }
 
@@ -1429,17 +2156,25 @@ async function runElevenLabsBrowserAssistAutoDetect() {
       renderElevenLabsAuthStatus(result.data.status);
     }
 
-    const detectedKey = [result.data.refreshToken || '', result.data.appCheckToken || '', result.data.deviceId || ''].join('|');
-    if (!detectedKey || detectedKey === '||' || detectedKey === elevenLabsBrowserAssistAutoDetectKey) {
+    const detectedKey = [
+      result.data.imported?.bearerToken ? (result.data.bearerToken || '') : '',
+      result.data.imported?.refreshToken ? (result.data.refreshToken || '') : '',
+      result.data.appCheckToken || '',
+      result.data.deviceId || '',
+    ].join('|');
+    if (!detectedKey || detectedKey === '|||' || detectedKey === elevenLabsBrowserAssistAutoDetectKey) {
       return;
     }
 
     elevenLabsBrowserAssistAutoDetectKey = detectedKey;
-    applyBrowserAssistTokens(result.data);
+    if (result.data.validationMode === 'bearer' && result.data.imported?.bearerToken) {
+      lastValidatedImportedElevenLabsBearerToken = normalizeElevenLabsBearerToken(result.data.bearerToken || '');
+    }
+    applyBrowserAssistTokens(result.data, { onlyFillEmpty: true });
     await refreshElevenLabsAuthStatus();
 
     const notificationKey = getElevenLabsAutoDetectNotificationKey(result.data);
-    if (notificationKey && notificationKey !== lastElevenLabsAutoDetectNotificationKey) {
+    if ((result.data.imported?.bearerToken || result.data.validationMode === 'refresh') && notificationKey && notificationKey !== lastElevenLabsAutoDetectNotificationKey) {
       lastElevenLabsAutoDetectNotificationKey = notificationKey;
       ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, getUiText([
         '已自動檢測到 ElevenLabs 登入，憑證已回填。',
@@ -1457,7 +2192,8 @@ async function runElevenLabsBrowserAssistAutoDetect() {
       pendingElevenLabsBrowserAssistAutoDetect &&
       !activeElevenLabsAction &&
       !isElevenLabsBrowserAssistAutoDetectPaused &&
-      !latestFormAuth.refreshToken
+      !latestFormAuth.refreshToken &&
+      !latestFormAuth.bearerToken
     ) {
       setTimeout(() => {
         runElevenLabsBrowserAssistAutoDetect();
@@ -1469,7 +2205,7 @@ async function runElevenLabsBrowserAssistAutoDetect() {
 function syncElevenLabsBrowserAssistAutoDetect(status = {}) {
   const browserAssist = status.browserAssist || {};
   const currentFormAuth = collectElevenLabsAuthOverride();
-  const shouldPoll = Boolean(browserAssist.isOpen) && !currentFormAuth.refreshToken && !isElevenLabsBrowserAssistAutoDetectPaused;
+  const shouldPoll = Boolean(browserAssist.isOpen) && !currentFormAuth.refreshToken && !currentFormAuth.bearerToken && !isElevenLabsBrowserAssistAutoDetectPaused;
 
   if (!shouldPoll) {
     stopElevenLabsBrowserAssistAutoDetect();
@@ -1489,6 +2225,104 @@ function syncElevenLabsBrowserAssistAutoDetect(status = {}) {
   syncElevenLabsAutoDetectToggleButton(status);
 }
 
+async function runElevenLabsExtensionBridgeAutoDetect() {
+  if (isConfigWindowClosing) {
+    return;
+  }
+
+  const currentFormAuth = collectElevenLabsAuthOverride();
+  const extensionBridge = lastElevenLabsAuthStatus?.extensionBridge || {};
+  const shouldPoll = Boolean(extensionBridge?.pairing?.active) && extensionBridge?.server?.state === 'listening' && !currentFormAuth.refreshToken && !currentFormAuth.bearerToken && !isElevenLabsBrowserAssistAutoDetectPaused;
+  if (!shouldPoll) {
+    stopElevenLabsExtensionBridgeAutoDetect();
+    return;
+  }
+
+  if (activeElevenLabsAction || elevenLabsExtensionBridgeAutoDetectInFlight) {
+    pendingElevenLabsExtensionBridgeAutoDetect = true;
+    return;
+  }
+
+  pendingElevenLabsExtensionBridgeAutoDetect = false;
+  elevenLabsExtensionBridgeAutoDetectInFlight = true;
+
+  try {
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_EXTENSION_BRIDGE_IMPORT, currentFormAuth);
+    if (isConfigWindowClosing || !result?.success || !result.data) {
+      return;
+    }
+
+    if (result.data.status) {
+      renderElevenLabsAuthStatus(result.data.status);
+    }
+
+    if (!(result.data.imported?.bearerToken && result.data.validationMode === 'bearer')) {
+      return;
+    }
+
+    const detectedKey = [
+      result.data.bearerToken || '',
+      result.data.appCheckToken || '',
+      result.data.deviceId || '',
+      result.data.status?.extensionBridge?.candidate?.receivedAt || '',
+    ].join('|');
+    if (!detectedKey || detectedKey === '|||' || detectedKey === elevenLabsExtensionBridgeAutoDetectKey) {
+      return;
+    }
+
+    elevenLabsExtensionBridgeAutoDetectKey = detectedKey;
+    lastValidatedImportedElevenLabsBearerToken = normalizeElevenLabsBearerToken(result.data.bearerToken || '');
+    applyBrowserAssistTokens(result.data, { onlyFillEmpty: true });
+    await refreshElevenLabsAuthStatus();
+
+    const notificationKey = getElevenLabsAutoDetectNotificationKey(result.data);
+    if (notificationKey && notificationKey !== lastElevenLabsAutoDetectNotificationKey) {
+      lastElevenLabsAutoDetectNotificationKey = notificationKey;
+      ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, getUiText([
+        '已自動從 Chrome 擴展導入 ElevenLabs Bearer。',
+        '已自动从 Chrome 扩展导入 ElevenLabs Bearer。',
+        'An ElevenLabs bearer token was imported automatically from the Chrome extension.',
+      ]));
+    }
+  } catch {
+    // Ignore background polling failures; a visible action will refresh the state later.
+  } finally {
+    elevenLabsExtensionBridgeAutoDetectInFlight = false;
+
+    const latestFormAuth = collectElevenLabsAuthOverride();
+    if (
+      pendingElevenLabsExtensionBridgeAutoDetect &&
+      !activeElevenLabsAction &&
+      !isElevenLabsBrowserAssistAutoDetectPaused &&
+      !latestFormAuth.refreshToken &&
+      !latestFormAuth.bearerToken
+    ) {
+      setTimeout(() => {
+        runElevenLabsExtensionBridgeAutoDetect();
+      }, 0);
+    }
+  }
+}
+
+function syncElevenLabsExtensionBridgeAutoDetect(status = {}) {
+  const extensionBridge = status.extensionBridge || {};
+  const currentFormAuth = collectElevenLabsAuthOverride();
+  const shouldPoll = Boolean(extensionBridge.pairing?.active) && extensionBridge.server?.state === 'listening' && !currentFormAuth.refreshToken && !currentFormAuth.bearerToken;
+
+  if (!shouldPoll) {
+    stopElevenLabsExtensionBridgeAutoDetect();
+    return;
+  }
+
+  if (!elevenLabsExtensionBridgeAutoDetectTimer) {
+    elevenLabsExtensionBridgeAutoDetectKey = '';
+    runElevenLabsExtensionBridgeAutoDetect();
+    elevenLabsExtensionBridgeAutoDetectTimer = setInterval(() => {
+      runElevenLabsExtensionBridgeAutoDetect();
+    }, 4000);
+  }
+}
+
 function renderElevenLabsAuthStatus(status = null) {
   const safeStatus = status || buildFallbackElevenLabsStatus();
   lastElevenLabsAuthStatus = safeStatus;
@@ -1496,12 +2330,15 @@ function renderElevenLabsAuthStatus(status = null) {
   const auth = safeStatus.auth || {};
   const session = safeStatus.session || {};
   const browserAssist = safeStatus.browserAssist || {};
+  const extensionBridge = safeStatus.extensionBridge || {};
   const credentials = safeStatus.credentials || {};
   const currentFormAuth = collectElevenLabsAuthOverride();
   const badge = document.getElementById('span-elevenlabs-auth-badge');
   const summary = document.getElementById('p-elevenlabs-auth-status-summary');
   const sessionLine = document.getElementById('p-elevenlabs-auth-status-session');
+  const extensionLine = document.getElementById('p-elevenlabs-auth-status-extension');
   const browserLine = document.getElementById('p-elevenlabs-auth-status-browser');
+  const browserBearerLine = document.getElementById('p-elevenlabs-auth-status-browser-bearer');
   const browserDetailLine = document.getElementById('p-elevenlabs-auth-status-browser-detail');
   const browserActions = document.getElementById('div-elevenlabs-auth-status-browser-actions');
   const credentialsLine = document.getElementById('p-elevenlabs-auth-status-credentials');
@@ -1509,8 +2346,9 @@ function renderElevenLabsAuthStatus(status = null) {
   const detailsLine = document.getElementById('p-elevenlabs-auth-status-details');
   const clearButton = document.getElementById('btn-clear-elevenlabs-session');
   const saveImportedButton = document.getElementById('btn-save-elevenlabs-imported');
+  const openExtensionSettingsButton = document.getElementById('btn-open-elevenlabs-extension-settings');
 
-  if (!badge || !summary || !sessionLine || !browserLine || !browserDetailLine || !browserActions || !credentialsLine || !nextStepLine || !detailsLine) {
+  if (!badge || !summary || !sessionLine || !extensionLine || !browserLine || !browserBearerLine || !browserDetailLine || !browserActions || !credentialsLine || !nextStepLine || !detailsLine) {
     return;
   }
 
@@ -1529,6 +2367,32 @@ function renderElevenLabsAuthStatus(status = null) {
   }
   sessionLine.innerText = sessionParts.join(' · ');
 
+  const extensionParts = [];
+  const extConnected = extensionBridge.extension?.connected || extensionBridge.pairing?.active;
+  extensionParts.push(`${getUiText(['擴展橋接', '扩展桥接', 'Extension Bridge'])}: ${extConnected ? 'WebSocket ✓' : (extensionBridge.server?.state || 'stopped')}`);
+  if (extensionBridge.server?.port) {
+    extensionParts.push(`Port: ${extensionBridge.server.port}`);
+  }
+  if (extConnected) {
+    const extVersion = extensionBridge.extension?.extensionVersion || '';
+    extensionParts.push(`${getUiText(['擴展', '扩展', 'Extension'])}: ${getUiText(['已連接', '已连接', 'Connected'])}${extVersion ? ` v${extVersion}` : ''}`);
+  } else if (extensionBridge.server?.state === 'listening') {
+    extensionParts.push(getUiText(['等待擴展連接', '等待扩展连接', 'Waiting for extension']));
+  }
+  if (extensionBridge.candidate?.hasBearerToken) {
+    extensionParts.push(`${getUiText(['候選 Bearer', '候选 Bearer', 'Candidate Bearer'])}: ${getUiText(['已捕獲', '已捕获', 'Captured'])}`);
+  } else if (extensionBridge.candidate?.state === 'rejected') {
+    extensionParts.push(`${getUiText(['候選 Bearer', '候选 Bearer', 'Candidate Bearer'])}: ${getUiText(['已拒絕', '已拒绝', 'Rejected'])}`);
+  }
+  extensionLine.innerText = extensionParts.join(' · ');
+  if (openExtensionSettingsButton) {
+    openExtensionSettingsButton.title = getUiText([
+      '打開 Chrome 擴展管理頁面。',
+      '打开 Chrome 扩展管理页面。',
+      'Open Chrome extensions page.',
+    ]);
+  }
+
   const browserParts = [];
   browserParts.push(`${getUiText(['瀏覽器輔助', '浏览器辅助', 'Browser Assist'])}: ${browserAssist.isOpen ? getUiText(['已開啟', '已开启', 'Open']) : getUiText(['未開啟', '未开启', 'Closed'])}`);
   if (browserAssist.isLoading) {
@@ -1537,7 +2401,7 @@ function renderElevenLabsAuthStatus(status = null) {
   if (browserAssist.currentUrl) {
     browserParts.push(`${getUiText(['頁面', '页面', 'Page'])}: ${browserAssist.currentUrl}`);
   }
-  const autoDetectState = currentFormAuth.refreshToken
+  const autoDetectState = (currentFormAuth.refreshToken || currentFormAuth.bearerToken)
     ? getUiText(['已停用', '已停用', 'Disabled'])
     : isElevenLabsBrowserAssistAutoDetectPaused
       ? getUiText(['已暫停', '已暂停', 'Paused'])
@@ -1549,7 +2413,40 @@ function renderElevenLabsAuthStatus(status = null) {
 
   const sourceParts = [];
   const lastInspection = browserAssist.lastInspection || {};
-  const sourceMap = lastInspection.sources || {};
+  const extensionCandidate = extensionBridge.candidate || {};
+  const sourceMap = Object.keys(lastInspection.sources || {}).some((key) => Boolean(lastInspection.sources?.[key]))
+    ? (lastInspection.sources || {})
+    : (extensionCandidate.sources || {});
+  const browserBearer = lastInspection.bearer || {};
+
+  if (browserBearer.status === ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.TRUSTED) {
+    const bearerParts = [getUiText(['瀏覽器 Bearer', '浏览器 Bearer', 'Browser Bearer'])];
+    if (browserBearer.validationStatus === ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.VALIDATED) {
+      bearerParts.push(getUiText(['已驗證', '已验证', 'Validated']));
+    } else if (browserBearer.validationStatus === ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.REJECTED) {
+      bearerParts.push(getUiText(['已拒絕', '已拒绝', 'Rejected']));
+    } else {
+      bearerParts.push(getUiText(['已檢測', '已检测', 'Detected']));
+    }
+    if (browserBearer.expiresAt) {
+      bearerParts.push(`${getUiText(['到期', '到期', 'Expires'])}: ${new Date(browserBearer.expiresAt).toLocaleString()}`);
+    }
+    if (browserBearer.validationMessage) {
+      bearerParts.push(browserBearer.validationMessage);
+    }
+    browserBearerLine.hidden = false;
+    browserBearerLine.innerText = bearerParts.join(' · ');
+  } else if (browserBearer.status === ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.UNTRUSTED) {
+    browserBearerLine.hidden = false;
+    browserBearerLine.innerText = `${getUiText(['瀏覽器 Bearer', '浏览器 Bearer', 'Browser Bearer'])}: ${getUiText(['不自動導入', '不自动导入', 'Not Auto-Imported'])} · ${browserBearer.reasonMessage || getUiText(['來源可信度不足。', '来源可信度不足。', 'Low-confidence source.'])}`;
+  } else {
+    browserBearerLine.hidden = false;
+    browserBearerLine.innerText = `${getUiText(['瀏覽器 Bearer', '浏览器 Bearer', 'Browser Bearer'])}: ${getUiText(['尚未檢測到', '尚未检测到', 'Not Found Yet'])}`;
+  }
+
+  if (sourceMap.bearerToken) {
+    sourceParts.push(`${getUiText(['Bearer 來源', 'Bearer 来源', 'Bearer Source'])}: ${formatBrowserAssistSource(sourceMap.bearerToken)}`);
+  }
   if (sourceMap.refreshToken) {
     sourceParts.push(`${getUiText(['Refresh 來源', 'Refresh 来源', 'Refresh Source'])}: ${formatBrowserAssistSource(sourceMap.refreshToken)}`);
   }
@@ -1562,12 +2459,17 @@ function renderElevenLabsAuthStatus(status = null) {
   if (lastInspection.detectedAt) {
     sourceParts.push(`${getUiText(['最近提取', '最近提取', 'Last Extracted'])}: ${new Date(lastInspection.detectedAt).toLocaleString()}`);
   }
+  if (extensionCandidate.requestUrl) {
+    sourceParts.push(`${getUiText(['擴展請求', '扩展请求', 'Extension Request'])}: ${formatBrowserAssistSource(extensionCandidate.requestUrl)}`);
+  }
   browserDetailLine.hidden = sourceParts.length === 0;
   browserDetailLine.innerText = sourceParts.join(' · ');
 
   applyElevenLabsCopyButtonLabels();
 
   const copyButtonStates = {
+    'btn-copy-elevenlabs-bearer-source': Boolean(sourceMap.bearerToken),
+    'btn-copy-elevenlabs-bearer-token': Boolean(lastInspection.bearerToken),
     'btn-copy-elevenlabs-refresh-source': Boolean(sourceMap.refreshToken),
     'btn-copy-elevenlabs-refresh-token': Boolean(lastInspection.refreshToken),
     'btn-copy-elevenlabs-app-check-source': Boolean(sourceMap.appCheckToken),
@@ -1584,6 +2486,7 @@ function renderElevenLabsAuthStatus(status = null) {
   });
 
   credentialsLine.innerText = [
+    `${getUiText(['Bearer', 'Bearer', 'Bearer'])}: ${getCredentialPresenceLabel(credentials.hasSavedBearerToken, credentials.hasBearerToken)}`,
     `${getUiText(['Refresh', 'Refresh', 'Refresh'])}: ${getCredentialPresenceLabel(credentials.hasSavedRefreshToken, credentials.hasRefreshToken)}`,
     `${getUiText(['App Check', 'App Check', 'App Check'])}: ${getCredentialPresenceLabel(credentials.hasSavedAppCheckToken, credentials.hasAppCheckToken)}`,
     `${getUiText(['Device ID', 'Device ID', 'Device ID'])}: ${getCredentialPresenceLabel(credentials.hasSavedDeviceId, credentials.hasDeviceId)}`,
@@ -1615,6 +2518,7 @@ function renderElevenLabsAuthStatus(status = null) {
 
   syncElevenLabsAutoDetectToggleButton(safeStatus);
   syncElevenLabsBrowserAssistAutoDetect(safeStatus);
+  syncElevenLabsExtensionBridgeAutoDetect(safeStatus);
 }
 
 async function refreshElevenLabsAuthStatus() {
@@ -1652,9 +2556,16 @@ async function readConfig() {
   const version = await ipcRenderer.invoke(IPC_CHANNELS.GET_VERSION);
 
   // read options
-  readOptions(config);
-  clearEphemeralElevenLabsBearerInput();
-  await refreshElevenLabsAuthStatus();
+    readOptions(config);
+
+    // Sync MiMo voice controls from stored value
+    syncMiMoVoiceControlsFromStoredValue(config?.api?.mimo?.voice || '');
+
+    await refreshElevenLabsAuthStatus();
+
+    // Async voice loading (non-blocking)
+    loadElevenLabsVoices().catch(() => {});
+    loadMiMoVoices().catch(() => {});
 
   // channel
   readChannel(config, chatCode);
@@ -2119,7 +3030,45 @@ function getOptionList() {
       ['api', 'speechify', 'sentenceSplitting'],
     ],
 
+    // MiMo TTS
+    [
+      ['input-mimo-api-key', 'value'],
+      ['api', 'mimo', 'apiKey'],
+    ],
+    [
+      ['input-mimo-model', 'value'],
+      ['api', 'mimo', 'model'],
+    ],
+    [
+      ['input-mimo-voice', 'value'],
+      ['api', 'mimo', 'voice'],
+    ],
+    [
+      ['select-mimo-response-format', 'value'],
+      ['api', 'mimo', 'responseFormat'],
+    ],
+    [
+      ['input-mimo-speed', 'value'],
+      ['api', 'mimo', 'speed'],
+    ],
+    [
+      ['input-mimo-style', 'value'],
+      ['api', 'mimo', 'style'],
+    ],
+    [
+      ['input-mimo-emotion', 'value'],
+      ['api', 'mimo', 'emotion'],
+    ],
+    [
+      ['input-mimo-language', 'value'],
+      ['api', 'mimo', 'language'],
+    ],
+
     // ElevenLabs TTS
+    [
+      ['input-elevenlabs-bearer-token', 'value'],
+      ['api', 'elevenlabs', 'bearerToken'],
+    ],
     [
       ['input-elevenlabs-refresh-token', 'value'],
       ['api', 'elevenlabs', 'refreshToken'],

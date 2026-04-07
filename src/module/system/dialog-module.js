@@ -24,6 +24,9 @@ const speechifyTTS = require('../translator/speechify-tts');
 // elevenlabs tts
 const elevenLabsTTS = require('../translator/elevenlabs-tts');
 
+// mimo tts
+const mimoTTS = require('../translator/mimo-tts');
+
 // window module
 const windowModule = require('./window-module');
 const { IPC_CHANNELS } = require('../../constants');
@@ -231,6 +234,20 @@ function saveDialog(dialogData) {
           })
           .catch(error => {
             console.error('[Dialog Module] ElevenLabs TTS error:', error);
+            // Fallback to Google TTS
+            const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
+            windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
+          });
+      } else if (ttsEngine === 'mimo') {
+        // Use MiMo TTS
+        mimoTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
+          .then(urlList => {
+            if (urlList && urlList.length > 0) {
+              windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
+            }
+          })
+          .catch(error => {
+            console.error('[Dialog Module] MiMo TTS error:', error);
             // Fallback to Google TTS
             const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
             windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);

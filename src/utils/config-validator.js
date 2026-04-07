@@ -54,7 +54,7 @@ function validateIndexWindow(indexWindow, errors) {
   }
 
   if (indexWindow.ttsEngine !== undefined) {
-    const validEngines = ['google', 'speechify', 'elevenlabs'];
+    const validEngines = ['google', 'speechify', 'elevenlabs', 'mimo'];
     if (!validEngines.includes(indexWindow.ttsEngine)) {
       errors.push(`indexWindow.ttsEngine must be one of: ${validEngines.join(', ')}`);
     }
@@ -146,6 +146,14 @@ function validateAPI(api, errors) {
       validateElevenLabsConfig(api.elevenlabs, errors);
     }
   }
+
+  if (api.mimo !== undefined) {
+    if (!isPlainObject(api.mimo)) {
+      errors.push('api.mimo must be an object');
+    } else {
+      validateMiMoConfig(api.mimo, errors);
+    }
+  }
 }
 
 function validateSpeechifyConfig(config, errors) {
@@ -161,6 +169,7 @@ function validateSpeechifyConfig(config, errors) {
 
 function validateElevenLabsConfig(config, errors) {
   [
+    'bearerToken',
     'refreshToken',
     'appCheckToken',
     'deviceId',
@@ -173,6 +182,23 @@ function validateElevenLabsConfig(config, errors) {
   });
 
   validateBooleanField(config.useSpeakerBoost, 'api.elevenlabs.useSpeakerBoost', errors);
+}
+
+function validateMiMoConfig(config, errors) {
+  ['apiKey', 'model', 'voice', 'responseFormat', 'style', 'emotion', 'language'].forEach((field) => {
+    validateStringField(config[field], `api.mimo.${field}`, errors);
+  });
+
+  if (config.responseFormat !== undefined && !['mp3', 'ogg', 'wav'].includes(config.responseFormat)) {
+    errors.push('api.mimo.responseFormat must be one of: mp3, ogg, wav');
+  }
+
+  if (config.speed !== undefined) {
+    const speed = Number(config.speed);
+    if (Number.isNaN(speed) || speed < 0.25 || speed > 4) {
+      errors.push('api.mimo.speed must be between 0.25 and 4');
+    }
+  }
 }
 
 function validateAuth(auth, errors) {
@@ -196,6 +222,16 @@ function validateElevenLabsAuthState(config, errors) {
   validateStringField(config.lastErrorCode, 'auth.elevenlabs.lastErrorCode', errors);
   validateStringField(config.lastErrorMessage, 'auth.elevenlabs.lastErrorMessage', errors);
   validateStringField(config.lastAuthSource, 'auth.elevenlabs.lastAuthSource', errors);
+
+  if (config.extensionBridge !== undefined) {
+    if (!isPlainObject(config.extensionBridge)) {
+      errors.push('auth.elevenlabs.extensionBridge must be an object');
+    } else {
+      validateStringField(config.extensionBridge.installToken, 'auth.elevenlabs.extensionBridge.installToken', errors);
+      validateStringField(config.extensionBridge.createdAt, 'auth.elevenlabs.extensionBridge.createdAt', errors);
+      validateStringField(config.extensionBridge.lastUsedAt, 'auth.elevenlabs.extensionBridge.lastUsedAt', errors);
+    }
+  }
 
   if (config.state !== undefined && !Object.values(ELEVENLABS_AUTH_STATES).includes(config.state)) {
     errors.push(`auth.elevenlabs.state must be one of: ${Object.values(ELEVENLABS_AUTH_STATES).join(', ')}`);

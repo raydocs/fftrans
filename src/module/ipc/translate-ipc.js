@@ -8,6 +8,7 @@ const configModule = require('../system/config-module');
 const ttsRequestQueue = require('../system/tts-request-queue');
 const googleTTS = require('../translator/google-tts');
 const speechifyTTS = require('../translator/speechify-tts');
+const mimoTTS = require('../translator/mimo-tts');
 const Logger = require('../../utils/logger');
 const { addTask } = require('../fix/fix-entry');
 
@@ -218,6 +219,16 @@ function setTranslateChannel() {
             return await ttsRequestQueue.enqueue(() => speechifyTTS.getAudioUrl(text, from));
         } catch (error) {
             Logger.error('translate-ipc', 'Failed to generate Speechify audio', error);
+            throw error;
+        }
+    });
+
+    // mimo tts
+    ipcMain.handle(IPC_CHANNELS.MIMO_TTS, async (event, text, from) => {
+        try {
+            return await ttsRequestQueue.enqueue(() => mimoTTS.getAudioUrl(text, from));
+        } catch (error) {
+            Logger.error('translate-ipc', 'Failed to generate MiMo audio', error);
             throw error;
         }
     });

@@ -92,9 +92,12 @@ function isEncrypted(value) {
   return typeof value === 'string' && value.startsWith(ENCRYPTED_PREFIX);
 }
 
-function cloneNestedApiConfig(config) {
+function cloneSensitiveConfig(config) {
   const cloned = { ...config };
-  cloned.api = { ...config.api };
+
+  if (config.api && typeof config.api === 'object') {
+    cloned.api = { ...config.api };
+  }
 
   if (config.api?.speechify && typeof config.api.speechify === 'object') {
     cloned.api.speechify = { ...config.api.speechify };
@@ -102,6 +105,22 @@ function cloneNestedApiConfig(config) {
 
   if (config.api?.elevenlabs && typeof config.api.elevenlabs === 'object') {
     cloned.api.elevenlabs = { ...config.api.elevenlabs };
+  }
+
+  if (config.api?.mimo && typeof config.api.mimo === 'object') {
+    cloned.api.mimo = { ...config.api.mimo };
+  }
+
+  if (config.auth && typeof config.auth === 'object') {
+    cloned.auth = { ...config.auth };
+  }
+
+  if (config.auth?.elevenlabs && typeof config.auth.elevenlabs === 'object') {
+    cloned.auth.elevenlabs = { ...config.auth.elevenlabs };
+  }
+
+  if (config.auth?.elevenlabs?.extensionBridge && typeof config.auth.elevenlabs.extensionBridge === 'object') {
+    cloned.auth.elevenlabs.extensionBridge = { ...config.auth.elevenlabs.extensionBridge };
   }
 
   return cloned;
@@ -127,7 +146,7 @@ function encryptApiKeys(config) {
     'openRouterApiKey'
   ];
 
-  const encrypted = cloneNestedApiConfig(config);
+  const encrypted = cloneSensitiveConfig(config);
 
   apiKeyFields.forEach((field) => {
     if (encrypted.api[field]) {
@@ -139,12 +158,24 @@ function encryptApiKeys(config) {
     encrypted.api.speechify.bearerToken = encryptString(encrypted.api.speechify.bearerToken);
   }
 
+  if (encrypted.api.elevenlabs?.bearerToken) {
+    encrypted.api.elevenlabs.bearerToken = encryptString(encrypted.api.elevenlabs.bearerToken);
+  }
+
   if (encrypted.api.elevenlabs?.refreshToken) {
     encrypted.api.elevenlabs.refreshToken = encryptString(encrypted.api.elevenlabs.refreshToken);
   }
 
   if (encrypted.api.elevenlabs?.appCheckToken) {
     encrypted.api.elevenlabs.appCheckToken = encryptString(encrypted.api.elevenlabs.appCheckToken);
+  }
+
+  if (encrypted.api.mimo?.apiKey) {
+    encrypted.api.mimo.apiKey = encryptString(encrypted.api.mimo.apiKey);
+  }
+
+  if (encrypted.auth?.elevenlabs?.extensionBridge?.installToken) {
+    encrypted.auth.elevenlabs.extensionBridge.installToken = encryptString(encrypted.auth.elevenlabs.extensionBridge.installToken);
   }
 
   return encrypted;
@@ -170,7 +201,7 @@ function decryptApiKeys(config) {
     'openRouterApiKey'
   ];
 
-  const decrypted = cloneNestedApiConfig(config);
+  const decrypted = cloneSensitiveConfig(config);
 
   apiKeyFields.forEach((field) => {
     if (decrypted.api[field]) {
@@ -192,6 +223,14 @@ function decryptApiKeys(config) {
 
   if (decrypted.api.elevenlabs?.appCheckToken) {
     decrypted.api.elevenlabs.appCheckToken = decryptString(decrypted.api.elevenlabs.appCheckToken);
+  }
+
+  if (decrypted.api.mimo?.apiKey) {
+    decrypted.api.mimo.apiKey = decryptString(decrypted.api.mimo.apiKey);
+  }
+
+  if (decrypted.auth?.elevenlabs?.extensionBridge?.installToken) {
+    decrypted.auth.elevenlabs.extensionBridge.installToken = decryptString(decrypted.auth.elevenlabs.extensionBridge.installToken);
   }
 
   return decrypted;

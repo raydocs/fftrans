@@ -12,6 +12,9 @@ function getConfigLocation() {
 }
 
 let isConfigDirty = false;
+let configRevision = 0;
+let savedConfigRevision = 0;
+let saveInFlightPromise = null;
 let legacyElevenLabsSession = null;
 
 const defaultConfig = {
@@ -96,6 +99,7 @@ const defaultConfig = {
       sentenceSplitting: false,
     },
     elevenlabs: {
+      bearerToken: '',
       refreshToken: '',
       appCheckToken: '',
       deviceId: '',
@@ -106,6 +110,16 @@ const defaultConfig = {
       style: '0',
       useSpeakerBoost: true,
     },
+    mimo: {
+      apiKey: '',
+      model: 'MiMo-V2-TTS',
+      voice: '',
+      responseFormat: 'mp3',
+      speed: '1',
+      style: '',
+      emotion: '',
+      language: '',
+    },
   },
   auth: {
     elevenlabs: {
@@ -114,6 +128,11 @@ const defaultConfig = {
       lastErrorCode: '',
       lastErrorMessage: '',
       lastAuthSource: ELEVENLABS_AUTH_SOURCES.NONE,
+      extensionBridge: {
+        installToken: '',
+        createdAt: '',
+        lastUsedAt: '',
+      },
     },
   },
   ai: {
@@ -154,6 +173,11 @@ function areValuesEqual(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function markConfigDirty() {
+  isConfigDirty = true;
+  configRevision += 1;
+}
+
 function mergeWithDefaults(currentNode, defaultNode, path = []) {
   if (Array.isArray(defaultNode)) {
     return Array.isArray(currentNode) ? deepClone(currentNode) : deepClone(defaultNode);
@@ -188,14 +212,17 @@ function captureLegacyElevenLabsSession(config) {
   const bearerToken = typeof config?.api?.elevenlabs?.bearerToken === 'string'
     ? config.api.elevenlabs.bearerToken.trim()
     : '';
+  const expiresAt = typeof config?.api?.elevenlabs?.bearerTokenExpiresAt === 'string'
+    ? config.api.elevenlabs.bearerTokenExpiresAt.trim()
+    : '';
 
-  if (!bearerToken) {
+  if (!bearerToken || !expiresAt) {
     return;
   }
 
   legacyElevenLabsSession = {
     bearerToken,
-    expiresAt: config?.api?.elevenlabs?.bearerTokenExpiresAt || '',
+    expiresAt,
     source: ELEVENLABS_AUTH_SOURCES.LEGACY_BEARER_MIGRATION,
   };
 }
@@ -204,8 +231,14 @@ function normalizePersistedElevenLabsAuthState(config) {
   const savedRefreshToken = typeof config?.api?.elevenlabs?.refreshToken === 'string'
     ? config.api.elevenlabs.refreshToken.trim()
     : '';
+  const savedBearerToken = typeof config?.api?.elevenlabs?.bearerToken === 'string'
+    ? config.api.elevenlabs.bearerToken.trim()
+    : '';
+  const savedBridgeToken = typeof config?.auth?.elevenlabs?.extensionBridge?.installToken === 'string'
+    ? config.auth.elevenlabs.extensionBridge.installToken.trim()
+    : '';
 
-  if (savedRefreshToken || legacyElevenLabsSession) {
+  if (savedRefreshToken || savedBearerToken || savedBridgeToken || legacyElevenLabsSession) {
     return;
   }
 
@@ -242,18 +275,18 @@ function loadConfig() {
 
     const configAfterFix = JSON.stringify(currentConfig);
     if (configBeforeFix !== configAfterFix) {
-      isConfigDirty = true;
+      markConfigDirty();
     }
 
     if (currentConfig.system.firstTime === true) {
       currentConfig.system.firstTime = false;
-      isConfigDirty = true;
+      markConfigDirty();
     }
   } catch (error) {
     console.log(error);
     legacyElevenLabsSession = null;
     currentConfig = getDefaultConfig();
-    isConfigDirty = true;
+    markConfigDirty();
   }
 
   const validationResult = configValidator.validate(currentConfig, defaultConfig);
@@ -271,16 +304,34 @@ function loadConfig() {
 }
 
 async function saveConfig() {
+  if (saveInFlightPromise) {
+    return saveInFlightPromise;
+  }
+
   if (!isConfigDirty) {
     return;
   }
 
+  saveInFlightPromise = (async () => {
+    while (isConfigDirty) {
+      const revisionToSave = configRevision;
+      try {
+        const encryptedConfig = cryptoHelper.encryptApiKeys(deepClone(currentConfig));
+        await fileModule.writeAsync(getConfigLocation(), encryptedConfig, 'json');
+        savedConfigRevision = revisionToSave;
+        isConfigDirty = savedConfigRevision < configRevision;
+      } catch (error) {
+        console.log(error);
+        markConfigDirty();
+        break;
+      }
+    }
+  })();
+
   try {
-    const encryptedConfig = cryptoHelper.encryptApiKeys(currentConfig);
-    await fileModule.writeAsync(getConfigLocation(), encryptedConfig, 'json');
-    isConfigDirty = false;
-  } catch (error) {
-    console.log(error);
+    await saveInFlightPromise;
+  } finally {
+    saveInFlightPromise = null;
   }
 }
 
@@ -290,7 +341,7 @@ function getConfig() {
 
 function setConfig(newConfig) {
   currentConfig = normalizeConfigShape(newConfig);
-  isConfigDirty = true;
+  markConfigDirty();
   setSSLCertificate();
   saveConfig();
 }
@@ -323,7 +374,7 @@ function mergeConfigPatch(pathSegments = [], patch = {}) {
     }
 
     currentConfig = nextValue;
-    isConfigDirty = true;
+    markConfigDirty();
     saveConfig();
     return getConfig();
   }
@@ -349,7 +400,7 @@ function mergeConfigPatch(pathSegments = [], patch = {}) {
   }
 
   current[targetKey] = nextValue;
-  isConfigDirty = true;
+  markConfigDirty();
   saveConfig();
   return getConfig();
 }
