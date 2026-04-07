@@ -945,12 +945,18 @@ function setButton() {
       } else if (lastElevenLabsAuthStatus?.browserAssist?.isOpen) {
         result = await ipcRenderer.invoke(IPC_CHANNELS.CHECK_BROWSER_ASSIST_LOGIN, formAuth);
       } else {
-        alert(`ℹ️ ${getUiText([
-          '請先直接貼上 Bearer Token，或點「配置擴展橋接」後用 Chrome 擴展自動導入。',
-          '请先直接贴上 Bearer Token，或点“配置扩展桥接”后用 Chrome 扩展自动导入。',
-          'Paste a bearer token directly, or configure the extension bridge and use the Chrome extension to import it automatically.',
-        ])}`);
-        return;
+        // Fallback: re-read refresh token directly in case formAuth missed it
+        const directRefreshToken = document.getElementById('input-elevenlabs-refresh-token').value.trim();
+        if (directRefreshToken) {
+          result = await ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_REFRESH_TOKEN, { ...formAuth, refreshToken: directRefreshToken });
+        } else {
+          alert(`ℹ️ ${getUiText([
+            '請先填寫 Refresh Token，或直接貼上 Bearer Token。',
+            '请先填写 Refresh Token，或直接贴上 Bearer Token。',
+            'Please fill in the Refresh Token first, or paste a Bearer Token directly.',
+          ])}`);
+          return;
+        }
       }
 
       if (!isCurrentElevenLabsAction(actionToken)) {
