@@ -57,6 +57,7 @@
     <nav class="settings-tabs">
       <button class="tab-item active" data-target="div-appearance" id="tab-appearance">外观</button>
       <button class="tab-item" data-target="div-translation" id="tab-translation">翻译</button>
+      <button class="tab-item" data-target="div-speech" id="tab-speech">语音</button>
       <button class="tab-item" data-target="div-api" id="tab-api">API</button>
       <button class="tab-item" data-target="div-ai" id="tab-ai">AI</button>
       <button class="tab-item" data-target="div-system" id="tab-system">系统</button>
@@ -67,6 +68,7 @@
     <select class="form-select" name="" id="select-option" hidden>
       <option value="div-appearance" selected></option>
       <option value="div-translation"></option>
+      <option value="div-speech"></option>
       <option value="div-api"></option>
       <option value="div-ai"></option>
       <option value="div-system"></option>
@@ -221,42 +223,6 @@
             <div class="setting-control">
               <span id="span-background-transparency" class="setting-value"></span>
               <input type="range" class="form-range" min="0" max="255" id="input-background-transparency" style="width: 120px" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 语音设置分组 -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-            <span id="section-speech">语音设置</span>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-speech-speed">语音速度</div>
-              <div class="setting-description" id="desc-speech-speed">TTS 播放速度倍率</div>
-            </div>
-            <div class="setting-control">
-              <span id="span-speech-speed" class="setting-value"></span>
-              <input type="range" class="form-range" min="0.1" max="3" step="0.1" id="input-speech-speed" style="width: 120px" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-tts-engine">语音引擎</div>
-              <div class="setting-description" id="desc-tts-engine">选择 TTS 语音合成引擎</div>
-            </div>
-            <div class="setting-control setting-control-group">
-              <select class="form-select" id="select-tts-engine" style="width: 160px">
-                <option value="google">Google TTS</option>
-                <option value="elevenlabs">ElevenLabs</option>
-                <option value="speechify">Speechify</option>
-                <option value="mimo">MiMo TTS</option>
-              </select>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-test-current-tts-engine">测试连接</button>
             </div>
           </div>
         </div>
@@ -480,6 +446,374 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- speech page -->
+      <div id="div-speech" class="config-page" hidden>
+        <!-- TTS Engine & Speed -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span id="section-speech-engine">语音引擎</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-tts-engine">语音引擎</div>
+              <div class="setting-description" id="desc-tts-engine">选择 TTS 语音合成引擎</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select" id="select-tts-engine" style="width: 160px">
+                <option value="google">Google TTS</option>
+                <option value="elevenlabs">ElevenLabs</option>
+                <option value="speechify">Speechify</option>
+                <option value="mimo">MiMo TTS</option>
+              </select>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-test-current-tts-engine">测试连接</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-speech-speed">语音速度</div>
+              <div class="setting-description" id="desc-speech-speed">TTS 播放速度倍率</div>
+            </div>
+            <div class="setting-control">
+              <span id="span-speech-speed" class="setting-value"></span>
+              <input type="range" class="form-range" min="0.1" max="3" step="0.1" id="input-speech-speed" style="width: 120px" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ElevenLabs TTS (Simplified) -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <span id="p-elevenlabs-tts">ElevenLabs Reader</span>
+            <a href="#" id="a-open-elevenlabs-token-helper" class="header-link">Token Helper</a>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Refresh Token</div>
+              <div class="setting-description">用于自动换取短期 Bearer Token</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
+              <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="长效 Refresh Token" />
+              <button type="button" class="btn btn-primary btn-sm" id="btn-validate-refresh-token-direct">验证</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">语音</div>
+              <div class="setting-description">选择 TTS 语音角色</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select voice-select" id="select-elevenlabs-voice-id">
+                <optgroup label="推荐">
+                  <option value="nPczCjzI2devNBz1zQrb">Brian - 专业旁白</option>
+                  <option value="EXAVITQu4vr4xnSDxMaL">Sarah - 年轻女声</option>
+                </optgroup>
+                <optgroup label="女性语音">
+                  <option value="Xb7hH8MSUJpSbSDYk0k2">Alice - 英式</option>
+                  <option value="pFZP5JQG7iQjIQuC4Bku">Lily - 专业</option>
+                  <option value="XrExE9yKIg1WjnnlVkGX">Matilda - 美式</option>
+                  <option value="cgSgspJ2msm6clMCkdW9">Jessica - 年轻</option>
+                  <option value="FGY2WhTYpPnrIDTdsKH5">Laura - 活力</option>
+                </optgroup>
+                <optgroup label="男性语音">
+                  <option value="onwK4e9ZLuTAKqWW03F9">Daniel - 英式</option>
+                  <option value="JBFqnCBsd6RMkjVDRZzb">George - 温暖</option>
+                  <option value="CwhRBWXzGAHq8TQ4Fs17">Roger - 美式</option>
+                  <option value="cjVigY5qzO86Huf0OWal">Eric - 中年</option>
+                  <option value="iP95p4xoKVk53GoZ742B">Chris - 自然</option>
+                  <option value="pqHfZKP75CvOlQylNhV4">Bill - 年长</option>
+                  <option value="TX3LPaxmHKxFdv7VOQHJ">Liam - 年轻</option>
+                  <option value="bIHbv24MWmeRgasZH58o">Will - 轻松</option>
+                </optgroup>
+                <optgroup label="其他">
+                  <option value="2EiwWnXFnvU5JabPnv8n">Clyde - 动画</option>
+                  <option value="IKne3meq5aSn9XLyUdCD">Charlie - 澳式</option>
+                  <option value="SOYHLrjzK2X1ezoPC6cr">Harry - 战士</option>
+                  <option value="SAz9YHcvj6GT2YYXdXww">River - 中性</option>
+                  <option value="N2lVS1w4EtoT3dr4eOWO">Callum - 独特</option>
+                </optgroup>
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-elevenlabs-voice">试听</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-elevenlabs-voices">刷新</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">模型</div>
+              <div class="setting-description">TTS 模型版本</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-elevenlabs-model" style="width: 200px">
+                <option value="eleven_turbo_v2_5" selected>Turbo v2.5 (推荐)</option>
+                <option value="eleven_multilingual_v2">Multilingual v2</option>
+                <option value="eleven_monolingual_v1">Monolingual v1</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Stability</div>
+              <div class="setting-description">控制声音稳定度，值越高越平稳</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-stability" min="0" max="1" step="0.05" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Similarity Boost</div>
+              <div class="setting-description">提升与目标音色的相似度</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-similarity-boost" min="0" max="1" step="0.05" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Style</div>
+              <div class="setting-description">调节表达风格强度，过高可能更不稳定</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-style" min="0" max="1" step="0.05" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Speaker Boost</div>
+              <div class="setting-description">增强说话人特征，通常建议开启</div>
+            </div>
+            <div class="setting-control">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-speaker-boost" />
+              </div>
+            </div>
+          </div>
+          <!-- Hidden inputs for save/load -->
+          <input type="hidden" id="input-elevenlabs-bearer-token" />
+          <input type="hidden" id="input-elevenlabs-app-check-token" />
+          <input type="hidden" id="input-elevenlabs-device-id" />
+        </div>
+
+        <!-- Speechify TTS -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span id="p-speechify-tts">Speechify TTS</span>
+            <a href="#" id="a-open-speechify-guide" class="header-link">配置指南</a>
+            <button type="button" class="btn btn-primary btn-sm header-btn" id="btn-test-speechify">测试</button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Bearer Token</div>
+              <div class="setting-description">从 Speechify 获取的认证令牌</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-speechify-bearer-token" />
+              <input type="password" class="form-control token-input" id="input-speechify-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">语音</div>
+              <div class="setting-description">选择 TTS 语音角色</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select voice-select" id="select-speechify-voice-id">
+                <optgroup label="女性语音 (推荐)">
+                  <option value="gwyneth">Gwyneth - 名人风格</option>
+                  <option value="joanna">Joanna - 清晰自然</option>
+                  <option value="olivia">Olivia - 游戏对话</option>
+                </optgroup>
+                <optgroup label="女性语音">
+                  <option value="ivy">Ivy</option>
+                  <option value="salli">Salli</option>
+                  <option value="kimberly">Kimberly</option>
+                  <option value="emma">Emma</option>
+                  <option value="amy">Amy</option>
+                  <option value="nicole">Nicole</option>
+                  <option value="aria">Aria</option>
+                </optgroup>
+                <optgroup label="男性语音 (推荐)">
+                  <option value="snoop">Snoop - 独特风格</option>
+                  <option value="mrbeast">MrBeast - 年轻活力</option>
+                  <option value="matthew">Matthew - 游戏旁白</option>
+                </optgroup>
+                <optgroup label="男性语音">
+                  <option value="henry">Henry</option>
+                  <option value="justin">Justin</option>
+                  <option value="joey">Joey</option>
+                  <option value="stephen">Stephen</option>
+                  <option value="brian">Brian</option>
+                  <option value="russell">Russell</option>
+                </optgroup>
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-voice">试听</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">音频格式</div>
+              <div class="setting-description">输出音频的格式</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-speechify-audio-format" style="width: 120px">
+                <option value="mp3" selected>MP3</option>
+                <option value="ogg">OGG</option>
+                <option value="wav">WAV</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">句子分段</div>
+              <div class="setting-description">允许 Speechify 在合成时自动做句子级分段</div>
+            </div>
+            <div class="setting-control">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-speechify-sentence-splitting" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MiMo TTS -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span id="p-mimo-tts">MiMo TTS</span>
+            <button type="button" class="btn btn-primary btn-sm header-btn" id="btn-test-mimo">测试</button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-api-key">API Key</div>
+              <div class="setting-description" id="desc-mimo-api-key">MiMo TTS API 密钥</div>
+            </div>
+            <div class="setting-control api-key-control">
+              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-mimo-api-key" />
+              <input type="password" class="form-control token-input" id="input-mimo-api-key" placeholder="sk-..." />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-model">模型</div>
+              <div class="setting-description" id="desc-mimo-model">TTS 模型名称</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-mimo-model" style="width: 200px" placeholder="MiMo-V2-TTS" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-voice">语音</div>
+              <div class="setting-description" id="desc-mimo-voice">选择 MiMo 语音角色，或输入自定义语音 ID</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select voice-select" id="select-mimo-voice-option">
+                <optgroup label="推荐">
+                  <option value="Chelsie">Chelsie - 女声</option>
+                  <option value="Xiaoyi">Xiaoyi - 小艺</option>
+                </optgroup>
+                <optgroup label="中文">
+                  <option value="Zhonger">Zhonger - 中文女声</option>
+                  <option value="Yunjian">Yunjian - 中文男声</option>
+                  <option value="Yunxi">Yunxi - 中文男声</option>
+                  <option value="Yunxia">Yunxia - 中文女声</option>
+                  <option value="Xiaobei">Xiaobei - 中文女声</option>
+                </optgroup>
+                <optgroup label="English">
+                  <option value="alloy">alloy</option>
+                  <option value="echo">echo</option>
+                  <option value="fable">fable</option>
+                  <option value="onyx">onyx</option>
+                  <option value="nova">nova</option>
+                  <option value="shimmer">shimmer</option>
+                </optgroup>
+                <option value="__custom__">自定义语音 ID...</option>
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-mimo-voice">试听</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-mimo-voices">刷新</button>
+            </div>
+          </div>
+          <div class="setting-item" id="mimo-custom-voice-row" style="display: none;">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-voice-custom">自定义语音 ID</div>
+              <div class="setting-description" id="desc-mimo-voice-custom">手动输入 MiMo 语音 ID</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-mimo-voice-custom" style="width: 200px" placeholder="输入语音 ID" />
+            </div>
+          </div>
+          <input type="hidden" id="input-mimo-voice" />
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-response-format">音频格式</div>
+              <div class="setting-description" id="desc-mimo-response-format">输出音频的格式</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select" id="select-mimo-response-format" style="width: 120px">
+                <option value="mp3" selected>MP3</option>
+                <option value="ogg">OGG</option>
+                <option value="wav">WAV</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-speed">速度</div>
+              <div class="setting-description" id="desc-mimo-speed">语音播放速度 (0.25 - 4)</div>
+            </div>
+            <div class="setting-control">
+              <input type="number" class="form-control" id="input-mimo-speed" min="0.25" max="4" step="0.05" style="width: 100px" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-style">风格</div>
+              <div class="setting-description" id="desc-mimo-style">语音风格 (可选)</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-mimo-style" style="width: 200px" placeholder="可选" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-emotion">情感</div>
+              <div class="setting-description" id="desc-mimo-emotion">语音情感 (可选)</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-mimo-emotion" style="width: 200px" placeholder="可选" />
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-mimo-language">语言</div>
+              <div class="setting-description" id="desc-mimo-language">目标语言 (可选)</div>
+            </div>
+            <div class="setting-control">
+              <input type="text" class="form-control" id="input-mimo-language" style="width: 200px" placeholder="可选" />
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- api page -->
@@ -751,451 +1085,6 @@
           </div>
         </div>
 
-        <!-- Speechify TTS -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-            <span id="p-speechify-tts">Speechify TTS</span>
-            <a href="#" id="a-open-speechify-guide" class="header-link">配置指南</a>
-            <button type="button" class="btn btn-primary btn-sm header-btn" id="btn-test-speechify">测试</button>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Bearer Token</div>
-              <div class="setting-description">从 Speechify 获取的认证令牌</div>
-            </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-speechify-bearer-token" />
-              <input type="password" class="form-control token-input" id="input-speechify-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">语音</div>
-              <div class="setting-description">选择 TTS 语音角色</div>
-            </div>
-            <div class="setting-control setting-control-group">
-              <select class="form-select voice-select" id="select-speechify-voice-id">
-                <optgroup label="女性语音 (推荐)">
-                  <option value="gwyneth">Gwyneth - 名人风格</option>
-                  <option value="joanna">Joanna - 清晰自然</option>
-                  <option value="olivia">Olivia - 游戏对话</option>
-                </optgroup>
-                <optgroup label="女性语音">
-                  <option value="ivy">Ivy</option>
-                  <option value="salli">Salli</option>
-                  <option value="kimberly">Kimberly</option>
-                  <option value="emma">Emma</option>
-                  <option value="amy">Amy</option>
-                  <option value="nicole">Nicole</option>
-                  <option value="aria">Aria</option>
-                </optgroup>
-                <optgroup label="男性语音 (推荐)">
-                  <option value="snoop">Snoop - 独特风格</option>
-                  <option value="mrbeast">MrBeast - 年轻活力</option>
-                  <option value="matthew">Matthew - 游戏旁白</option>
-                </optgroup>
-                <optgroup label="男性语音">
-                  <option value="henry">Henry</option>
-                  <option value="justin">Justin</option>
-                  <option value="joey">Joey</option>
-                  <option value="stephen">Stephen</option>
-                  <option value="brian">Brian</option>
-                  <option value="russell">Russell</option>
-                </optgroup>
-              </select>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-voice">试听</button>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">音频格式</div>
-              <div class="setting-description">输出音频的格式</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-speechify-audio-format" style="width: 120px">
-                <option value="mp3" selected>MP3</option>
-                <option value="ogg">OGG</option>
-                <option value="wav">WAV</option>
-              </select>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">句子分段</div>
-              <div class="setting-description">允许 Speechify 在合成时自动做句子级分段</div>
-            </div>
-            <div class="setting-control">
-              <div class="form-check form-switch">
-                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-speechify-sentence-splitting" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- MiMo TTS -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-            <span id="p-mimo-tts">MiMo TTS</span>
-            <button type="button" class="btn btn-primary btn-sm header-btn" id="btn-test-mimo">测试</button>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-api-key">API Key</div>
-              <div class="setting-description" id="desc-mimo-api-key">MiMo TTS API 密钥</div>
-            </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-mimo-api-key" />
-              <input type="password" class="form-control token-input" id="input-mimo-api-key" placeholder="sk-..." />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-model">模型</div>
-              <div class="setting-description" id="desc-mimo-model">TTS 模型名称</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-model" style="width: 200px" placeholder="MiMo-V2-TTS" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-voice">语音</div>
-              <div class="setting-description" id="desc-mimo-voice">选择 MiMo 语音角色，或输入自定义语音 ID</div>
-            </div>
-            <div class="setting-control setting-control-group">
-              <select class="form-select voice-select" id="select-mimo-voice-option">
-                <optgroup label="推荐">
-                  <option value="Chelsie">Chelsie - 女声</option>
-                  <option value="Xiaoyi">Xiaoyi - 小艺</option>
-                </optgroup>
-                <optgroup label="中文">
-                  <option value="Zhonger">Zhonger - 中文女声</option>
-                  <option value="Yunjian">Yunjian - 中文男声</option>
-                  <option value="Yunxi">Yunxi - 中文男声</option>
-                  <option value="Yunxia">Yunxia - 中文女声</option>
-                  <option value="Xiaobei">Xiaobei - 中文女声</option>
-                </optgroup>
-                <optgroup label="English">
-                  <option value="alloy">alloy</option>
-                  <option value="echo">echo</option>
-                  <option value="fable">fable</option>
-                  <option value="onyx">onyx</option>
-                  <option value="nova">nova</option>
-                  <option value="shimmer">shimmer</option>
-                </optgroup>
-                <option value="__custom__">自定义语音 ID...</option>
-              </select>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-mimo-voice">试听</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-mimo-voices">刷新</button>
-            </div>
-          </div>
-          <div class="setting-item" id="mimo-custom-voice-row" style="display: none;">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-voice-custom">自定义语音 ID</div>
-              <div class="setting-description" id="desc-mimo-voice-custom">手动输入 MiMo 语音 ID</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-voice-custom" style="width: 200px" placeholder="输入语音 ID" />
-            </div>
-          </div>
-          <input type="hidden" id="input-mimo-voice" />
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-response-format">音频格式</div>
-              <div class="setting-description" id="desc-mimo-response-format">输出音频的格式</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-mimo-response-format" style="width: 120px">
-                <option value="mp3" selected>MP3</option>
-                <option value="ogg">OGG</option>
-                <option value="wav">WAV</option>
-              </select>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-speed">速度</div>
-              <div class="setting-description" id="desc-mimo-speed">语音播放速度 (0.25 - 4)</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control" id="input-mimo-speed" min="0.25" max="4" step="0.05" style="width: 100px" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-style">风格</div>
-              <div class="setting-description" id="desc-mimo-style">语音风格 (可选)</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-style" style="width: 200px" placeholder="可选" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-emotion">情感</div>
-              <div class="setting-description" id="desc-mimo-emotion">语音情感 (可选)</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-emotion" style="width: 200px" placeholder="可选" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-language">语言</div>
-              <div class="setting-description" id="desc-mimo-language">目标语言 (可选)</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-language" style="width: 200px" placeholder="可选" />
-            </div>
-          </div>
-        </div>
-
-        <!-- ElevenLabs TTS -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-            <span id="p-elevenlabs-tts">ElevenLabs Reader</span>
-            <a href="#" id="a-open-elevenlabs-token-helper" class="header-link">Token Helper</a>
-          </div>
-
-          <div class="elevenlabs-auth-panel">
-            <div class="elevenlabs-auth-panel-header">
-              <span id="span-elevenlabs-auth-status-title">认证状态</span>
-              <span id="span-elevenlabs-auth-badge" class="elevenlabs-auth-badge elevenlabs-auth-badge-unconfigured">未配置</span>
-            </div>
-            <p id="p-elevenlabs-auth-status-summary" class="elevenlabs-auth-status-line">尚未检查登录状态。</p>
-            <p id="p-elevenlabs-auth-status-session" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-extension" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-browser" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-browser-bearer" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-browser-detail" class="elevenlabs-auth-status-line subtle"></p>
-            <div id="div-elevenlabs-auth-status-browser-actions" class="elevenlabs-auth-status-actions" hidden>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-bearer-source" title="复制 Bearer 来源">B↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-bearer-token" title="复制 Bearer Token">B🔑</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-refresh-source" title="复制 Refresh 来源">R↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-refresh-token" title="复制 Refresh Token">R🔑</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-app-check-source" title="复制 App Check 来源">A↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-app-check-token" title="复制 App Check Token">A🔐</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-device-source" title="复制 Device 来源">D↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-device-id" title="复制 Device ID">D🆔</button>
-            </div>
-            <p id="p-elevenlabs-auth-status-credentials" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-next-step" class="elevenlabs-auth-status-line hint"></p>
-            <p id="p-elevenlabs-auth-status-details" class="elevenlabs-auth-status-line error" hidden></p>
-          </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">1</span>
-              <div>
-                <span id="span-elevenlabs-step-browser" class="elevenlabs-auth-step-title">打开浏览器</span>
-                <p id="p-elevenlabs-step-browser-desc" class="elevenlabs-auth-step-description">用默认浏览器打开 ElevenReader 登录页。若要自动导入 Bearer，请先配置扩展桥接。</p>
-              </div>
-            </div>
-            <div class="elevenlabs-auth-step-actions">
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-elevenlabs-browser">打开浏览器</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-start-elevenlabs-extension-pairing">配置扩展桥接</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-elevenlabs-extension-settings">打开扩展设置</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-elevenlabs-auto-detect">暂停自动检测</button>
-            </div>
-          </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">2</span>
-              <div>
-                <span id="span-elevenlabs-step-login" class="elevenlabs-auth-step-title">检查登录</span>
-                <p id="p-elevenlabs-step-login-desc" class="elevenlabs-auth-step-description">可直接粘贴 Bearer Token；也可在完成 Chrome 扩展桥接设置后自动导入并验证。</p>
-              </div>
-            </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">Refresh Token</div>
-                <div class="setting-description">可选；需要自动换取短期 Bearer 时再填写</div>
-              </div>
-              <div class="setting-control api-key-control">
-                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
-                <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="长效 Refresh Token" />
-                <button type="button" class="btn btn-primary btn-sm" id="btn-validate-refresh-token-direct">验证</button>
-              </div>
-            </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">Device ID</div>
-                <div class="setting-description">可选，未填写将自动生成</div>
-              </div>
-              <div class="setting-control">
-                <input type="text" class="form-control" id="input-elevenlabs-device-id" style="width: 180px" placeholder="UUID" />
-              </div>
-            </div>
-            <div class="elevenlabs-auth-step-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="btn-validate-elevenlabs-refresh-token">检查登录</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-save-elevenlabs-imported">保存导入内容</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-elevenlabs-session">清除会话</button>
-            </div>
-          </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">3</span>
-              <div>
-                <span id="span-elevenlabs-step-import" class="elevenlabs-auth-step-title">导入 Token</span>
-                <p id="p-elevenlabs-step-import-desc" class="elevenlabs-auth-step-description">导入 Reader 的 App Check Token，作为正式请求辅助凭证。</p>
-              </div>
-            </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">App Check Token</div>
-                <div class="setting-description">保存的 Reader App Check 凭证，可用“提取”辅助导入</div>
-              </div>
-              <div class="setting-control api-key-control">
-                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-app-check-token" />
-                <input type="password" class="form-control token-input" id="input-elevenlabs-app-check-token" placeholder="xi-app-check-token JWT" />
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">提取</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">4</span>
-              <div>
-                <span id="span-elevenlabs-step-test" class="elevenlabs-auth-step-title">测试连接</span>
-                <p id="p-elevenlabs-step-test-desc" class="elevenlabs-auth-step-description">确认当前表单值可正常请求 ElevenLabs，并预览语音参数。</p>
-              </div>
-            </div>
-            <div class="elevenlabs-auth-step-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="btn-test-elevenlabs">测试连接</button>
-            </div>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">语音</div>
-              <div class="setting-description">选择 TTS 语音角色</div>
-            </div>
-            <div class="setting-control setting-control-group">
-              <select class="form-select voice-select" id="select-elevenlabs-voice-id">
-                <optgroup label="推荐">
-                  <option value="nPczCjzI2devNBz1zQrb">Brian - 专业旁白</option>
-                  <option value="EXAVITQu4vr4xnSDxMaL">Sarah - 年轻女声</option>
-                </optgroup>
-                <optgroup label="女性语音">
-                  <option value="Xb7hH8MSUJpSbSDYk0k2">Alice - 英式</option>
-                  <option value="pFZP5JQG7iQjIQuC4Bku">Lily - 专业</option>
-                  <option value="XrExE9yKIg1WjnnlVkGX">Matilda - 美式</option>
-                  <option value="cgSgspJ2msm6clMCkdW9">Jessica - 年轻</option>
-                  <option value="FGY2WhTYpPnrIDTdsKH5">Laura - 活力</option>
-                </optgroup>
-                <optgroup label="男性语音">
-                  <option value="onwK4e9ZLuTAKqWW03F9">Daniel - 英式</option>
-                  <option value="JBFqnCBsd6RMkjVDRZzb">George - 温暖</option>
-                  <option value="CwhRBWXzGAHq8TQ4Fs17">Roger - 美式</option>
-                  <option value="cjVigY5qzO86Huf0OWal">Eric - 中年</option>
-                  <option value="iP95p4xoKVk53GoZ742B">Chris - 自然</option>
-                  <option value="pqHfZKP75CvOlQylNhV4">Bill - 年长</option>
-                  <option value="TX3LPaxmHKxFdv7VOQHJ">Liam - 年轻</option>
-                  <option value="bIHbv24MWmeRgasZH58o">Will - 轻松</option>
-                </optgroup>
-                <optgroup label="其他">
-                  <option value="2EiwWnXFnvU5JabPnv8n">Clyde - 动画</option>
-                  <option value="IKne3meq5aSn9XLyUdCD">Charlie - 澳式</option>
-                  <option value="SOYHLrjzK2X1ezoPC6cr">Harry - 战士</option>
-                  <option value="SAz9YHcvj6GT2YYXdXww">River - 中性</option>
-                  <option value="N2lVS1w4EtoT3dr4eOWO">Callum - 独特</option>
-                </optgroup>
-              </select>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-elevenlabs-voice">试听</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-elevenlabs-voices">刷新</button>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">模型</div>
-              <div class="setting-description">TTS 模型版本</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-elevenlabs-model" style="width: 200px">
-                <option value="eleven_turbo_v2_5" selected>Turbo v2.5 (推荐)</option>
-                <option value="eleven_multilingual_v2">Multilingual v2</option>
-                <option value="eleven_monolingual_v1">Monolingual v1</option>
-              </select>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Stability</div>
-              <div class="setting-description">控制声音稳定度，值越高越平稳</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-stability" min="0" max="1" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Similarity Boost</div>
-              <div class="setting-description">提升与目标音色的相似度</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-similarity-boost" min="0" max="1" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Style</div>
-              <div class="setting-description">调节表达风格强度，过高可能更不稳定</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-style" min="0" max="1" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Speaker Boost</div>
-              <div class="setting-description">增强说话人特征，通常建议开启</div>
-            </div>
-            <div class="setting-control">
-              <div class="form-check form-switch">
-                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-speaker-boost" />
-              </div>
-            </div>
-          </div>
-
-          <div class="elevenlabs-advanced-block">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index elevenlabs-auth-step-index-advanced">⚙</span>
-              <div>
-                <span id="span-elevenlabs-advanced-title" class="elevenlabs-auth-step-title">Bearer Token</span>
-                <p id="p-elevenlabs-advanced-desc" class="elevenlabs-auth-step-description">主认证入口；建议优先填写并保存 Bearer Token。</p>
-              </div>
-            </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">Bearer Token</div>
-                <div class="setting-description">主认证凭证；保存后正式 TTS 将优先使用它</div>
-              </div>
-              <div class="setting-control api-key-control">
-                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-bearer-token" />
-                <input type="password" class="form-control token-input" id="input-elevenlabs-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- AI -->
