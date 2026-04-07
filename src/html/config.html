@@ -973,227 +973,120 @@
             <a href="#" id="a-open-elevenlabs-token-helper" class="header-link">Token Helper</a>
           </div>
 
-          <div class="elevenlabs-auth-panel">
-            <div class="elevenlabs-auth-panel-header">
-              <span id="span-elevenlabs-auth-status-title">认证状态</span>
-              <span id="span-elevenlabs-auth-badge" class="elevenlabs-auth-badge elevenlabs-auth-badge-unconfigured">未配置</span>
+          <!-- Simplified: Refresh Token only -->
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”>Refresh Token</div>
+              <div class=”setting-description”>从 ElevenReader 获取，填入后 Bearer Token 会自动刷新</div>
             </div>
-            <p id="p-elevenlabs-auth-status-summary" class="elevenlabs-auth-status-line">尚未检查登录状态。</p>
-            <p id="p-elevenlabs-auth-status-session" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-extension" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-browser" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-browser-bearer" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-browser-detail" class="elevenlabs-auth-status-line subtle"></p>
-            <div id="div-elevenlabs-auth-status-browser-actions" class="elevenlabs-auth-status-actions" hidden>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-bearer-source" title="复制 Bearer 来源">B↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-bearer-token" title="复制 Bearer Token">B🔑</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-refresh-source" title="复制 Refresh 来源">R↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-refresh-token" title="复制 Refresh Token">R🔑</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-app-check-source" title="复制 App Check 来源">A↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-app-check-token" title="复制 App Check Token">A🔐</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-device-source" title="复制 Device 来源">D↗</button>
-              <button type="button" class="btn btn-secondary btn-sm elevenlabs-auth-copy-btn" id="btn-copy-elevenlabs-device-id" title="复制 Device ID">D🆔</button>
-            </div>
-            <p id="p-elevenlabs-auth-status-credentials" class="elevenlabs-auth-status-line subtle"></p>
-            <p id="p-elevenlabs-auth-status-next-step" class="elevenlabs-auth-status-line hint"></p>
-            <p id="p-elevenlabs-auth-status-details" class="elevenlabs-auth-status-line error" hidden></p>
-          </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">1</span>
-              <div>
-                <span id="span-elevenlabs-step-browser" class="elevenlabs-auth-step-title">打开浏览器</span>
-                <p id="p-elevenlabs-step-browser-desc" class="elevenlabs-auth-step-description">用默认浏览器打开 ElevenReader 登录页。若要自动导入 Bearer，请先配置扩展桥接。</p>
-              </div>
-            </div>
-            <div class="elevenlabs-auth-step-actions">
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-elevenlabs-browser">打开浏览器</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-start-elevenlabs-extension-pairing">配置扩展桥接</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-elevenlabs-extension-settings">打开扩展设置</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-elevenlabs-auto-detect">暂停自动检测</button>
+            <div class=”setting-control api-key-control”>
+              <img class=”btn-visibility” src=”./img/ui/visibility_off_white_48dp.svg” id=”img-visibility-elevenlabs-refresh-token” />
+              <input type=”password” class=”form-control token-input” id=”input-elevenlabs-refresh-token” placeholder=”AMf-vByx...” />
             </div>
           </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">2</span>
-              <div>
-                <span id="span-elevenlabs-step-login" class="elevenlabs-auth-step-title">检查登录</span>
-                <p id="p-elevenlabs-step-login-desc" class="elevenlabs-auth-step-description">可直接粘贴 Bearer Token；也可在完成 Chrome 扩展桥接设置后自动导入并验证。</p>
-              </div>
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”></div>
+              <div class=”setting-description”></div>
             </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">Refresh Token</div>
-                <div class="setting-description">可选；需要自动换取短期 Bearer 时再填写</div>
-              </div>
-              <div class="setting-control api-key-control">
-                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
-                <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="长效 Refresh Token" />
-              </div>
-            </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">Device ID</div>
-                <div class="setting-description">可选，未填写将自动生成</div>
-              </div>
-              <div class="setting-control">
-                <input type="text" class="form-control" id="input-elevenlabs-device-id" style="width: 180px" placeholder="UUID" />
-              </div>
-            </div>
-            <div class="elevenlabs-auth-step-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="btn-validate-elevenlabs-refresh-token">检查登录</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-save-elevenlabs-imported">保存导入内容</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-elevenlabs-session">清除会话</button>
+            <div class=”setting-control”>
+              <button type=”button” class=”btn btn-primary btn-sm” id=”btn-test-elevenlabs”>测试连接</button>
+              <button type=”button” class=”btn btn-secondary btn-sm” id=”btn-preview-elevenlabs-voice”>试听</button>
+              <button type=”button” class=”btn btn-secondary btn-sm” id=”btn-refresh-elevenlabs-voices”>刷新语音</button>
             </div>
           </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">3</span>
-              <div>
-                <span id="span-elevenlabs-step-import" class="elevenlabs-auth-step-title">导入 Token</span>
-                <p id="p-elevenlabs-step-import-desc" class="elevenlabs-auth-step-description">导入 Reader 的 App Check Token，作为正式请求辅助凭证。</p>
-              </div>
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”>语音</div>
+              <div class=”setting-description”>选择 TTS 语音角色</div>
             </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">App Check Token</div>
-                <div class="setting-description">保存的 Reader App Check 凭证，可用“提取”辅助导入</div>
-              </div>
-              <div class="setting-control api-key-control">
-                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-app-check-token" />
-                <input type="password" class="form-control token-input" id="input-elevenlabs-app-check-token" placeholder="xi-app-check-token JWT" />
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-import-elevenlabs-app-check">提取</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="elevenlabs-auth-step">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index">4</span>
-              <div>
-                <span id="span-elevenlabs-step-test" class="elevenlabs-auth-step-title">测试连接</span>
-                <p id="p-elevenlabs-step-test-desc" class="elevenlabs-auth-step-description">确认当前表单值可正常请求 ElevenLabs，并预览语音参数。</p>
-              </div>
-            </div>
-            <div class="elevenlabs-auth-step-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="btn-test-elevenlabs">测试连接</button>
-            </div>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">语音</div>
-              <div class="setting-description">选择 TTS 语音角色</div>
-            </div>
-            <div class="setting-control setting-control-group">
-              <select class="form-select voice-select" id="select-elevenlabs-voice-id">
-                <optgroup label="推荐">
-                  <option value="nPczCjzI2devNBz1zQrb">Brian - 专业旁白</option>
-                  <option value="EXAVITQu4vr4xnSDxMaL">Sarah - 年轻女声</option>
+            <div class=”setting-control”>
+              <select class=”form-select voice-select” id=”select-elevenlabs-voice-id”>
+                <optgroup label=”推荐”>
+                  <option value=”nPczCjzI2devNBz1zQrb”>Brian - 专业旁白</option>
+                  <option value=”EXAVITQu4vr4xnSDxMaL”>Sarah - 年轻女声</option>
                 </optgroup>
-                <optgroup label="女性语音">
-                  <option value="Xb7hH8MSUJpSbSDYk0k2">Alice - 英式</option>
-                  <option value="pFZP5JQG7iQjIQuC4Bku">Lily - 专业</option>
-                  <option value="XrExE9yKIg1WjnnlVkGX">Matilda - 美式</option>
-                  <option value="cgSgspJ2msm6clMCkdW9">Jessica - 年轻</option>
-                  <option value="FGY2WhTYpPnrIDTdsKH5">Laura - 活力</option>
+                <optgroup label=”女性语音”>
+                  <option value=”Xb7hH8MSUJpSbSDYk0k2”>Alice - 英式</option>
+                  <option value=”pFZP5JQG7iQjIQuC4Bku”>Lily - 专业</option>
+                  <option value=”XrExE9yKIg1WjnnlVkGX”>Matilda - 美式</option>
+                  <option value=”cgSgspJ2msm6clMCkdW9”>Jessica - 年轻</option>
+                  <option value=”FGY2WhTYpPnrIDTdsKH5”>Laura - 活力</option>
                 </optgroup>
-                <optgroup label="男性语音">
-                  <option value="onwK4e9ZLuTAKqWW03F9">Daniel - 英式</option>
-                  <option value="JBFqnCBsd6RMkjVDRZzb">George - 温暖</option>
-                  <option value="CwhRBWXzGAHq8TQ4Fs17">Roger - 美式</option>
-                  <option value="cjVigY5qzO86Huf0OWal">Eric - 中年</option>
-                  <option value="iP95p4xoKVk53GoZ742B">Chris - 自然</option>
-                  <option value="pqHfZKP75CvOlQylNhV4">Bill - 年长</option>
-                  <option value="TX3LPaxmHKxFdv7VOQHJ">Liam - 年轻</option>
-                  <option value="bIHbv24MWmeRgasZH58o">Will - 轻松</option>
+                <optgroup label=”男性语音”>
+                  <option value=”onwK4e9ZLuTAKqWW03F9”>Daniel - 英式</option>
+                  <option value=”JBFqnCBsd6RMkjVDRZzb”>George - 温暖</option>
+                  <option value=”CwhRBWXzGAHq8TQ4Fs17”>Roger - 美式</option>
+                  <option value=”cjVigY5qzO86Huf0OWal”>Eric - 中年</option>
+                  <option value=”iP95p4xoKVk53GoZ742B”>Chris - 自然</option>
+                  <option value=”pqHfZKP75CvOlQylNhV4”>Bill - 年长</option>
+                  <option value=”TX3LPaxmHKxFdv7VOQHJ”>Liam - 年轻</option>
+                  <option value=”bIHbv24MWmeRgasZH58o”>Will - 轻松</option>
                 </optgroup>
-                <optgroup label="其他">
-                  <option value="2EiwWnXFnvU5JabPnv8n">Clyde - 动画</option>
-                  <option value="IKne3meq5aSn9XLyUdCD">Charlie - 澳式</option>
-                  <option value="SOYHLrjzK2X1ezoPC6cr">Harry - 战士</option>
-                  <option value="SAz9YHcvj6GT2YYXdXww">River - 中性</option>
-                  <option value="N2lVS1w4EtoT3dr4eOWO">Callum - 独特</option>
+                <optgroup label=”其他”>
+                  <option value=”IKne3meq5aSn9XLyUdCD”>Charlie - 澳式</option>
+                  <option value=”SOYHLrjzK2X1ezoPC6cr”>Harry - 战士</option>
+                  <option value=”SAz9YHcvj6GT2YYXdXww”>River - 中性</option>
+                  <option value=”N2lVS1w4EtoT3dr4eOWO”>Callum - 独特</option>
                 </optgroup>
               </select>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-elevenlabs-voice">试听</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-elevenlabs-voices">刷新</button>
             </div>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">模型</div>
-              <div class="setting-description">TTS 模型版本</div>
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”>模型</div>
+              <div class=”setting-description”>TTS 模型版本</div>
             </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-elevenlabs-model" style="width: 200px">
-                <option value="eleven_turbo_v2_5" selected>Turbo v2.5 (推荐)</option>
-                <option value="eleven_multilingual_v2">Multilingual v2</option>
-                <option value="eleven_monolingual_v1">Monolingual v1</option>
+            <div class=”setting-control”>
+              <select class=”form-select” id=”select-elevenlabs-model” style=”width: 200px”>
+                <option value=”eleven_turbo_v2_5” selected>Turbo v2.5 (推荐)</option>
+                <option value=”eleven_multilingual_v2”>Multilingual v2</option>
+                <option value=”eleven_monolingual_v1”>Monolingual v1</option>
               </select>
             </div>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Stability</div>
-              <div class="setting-description">控制声音稳定度，值越高越平稳</div>
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”>Stability</div>
+              <div class=”setting-description”>控制声音稳定度，值越高越平稳</div>
             </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-stability" min="0" max="1" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Similarity Boost</div>
-              <div class="setting-description">提升与目标音色的相似度</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-similarity-boost" min="0" max="1" step="0.05" />
+            <div class=”setting-control”>
+              <input type=”number” class=”form-control tts-tuning-input” id=”input-elevenlabs-stability” min=”0” max=”1” step=”0.05” />
             </div>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Style</div>
-              <div class="setting-description">调节表达风格强度，过高可能更不稳定</div>
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”>Similarity Boost</div>
+              <div class=”setting-description”>提升与目标音色的相似度</div>
             </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-style" min="0" max="1" step="0.05" />
+            <div class=”setting-control”>
+              <input type=”number” class=”form-control tts-tuning-input” id=”input-elevenlabs-similarity-boost” min=”0” max=”1” step=”0.05” />
             </div>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Speaker Boost</div>
-              <div class="setting-description">增强说话人特征，通常建议开启</div>
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”>Style</div>
+              <div class=”setting-description”>调节表达风格强度，过高可能更不稳定</div>
             </div>
-            <div class="setting-control">
-              <div class="form-check form-switch">
-                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-speaker-boost" />
+            <div class=”setting-control”>
+              <input type=”number” class=”form-control tts-tuning-input” id=”input-elevenlabs-style” min=”0” max=”1” step=”0.05” />
+            </div>
+          </div>
+          <div class=”setting-item”>
+            <div class=”setting-info”>
+              <div class=”setting-label”>Speaker Boost</div>
+              <div class=”setting-description”>增强说话人特征，通常建议开启</div>
+            </div>
+            <div class=”setting-control”>
+              <div class=”form-check form-switch”>
+                <input type=”checkbox” class=”form-check-input” role=”switch” id=”checkbox-elevenlabs-speaker-boost” />
               </div>
             </div>
           </div>
-
-          <div class="elevenlabs-advanced-block">
-            <div class="elevenlabs-auth-step-header">
-              <span class="elevenlabs-auth-step-index elevenlabs-auth-step-index-advanced">⚙</span>
-              <div>
-                <span id="span-elevenlabs-advanced-title" class="elevenlabs-auth-step-title">Bearer Token</span>
-                <p id="p-elevenlabs-advanced-desc" class="elevenlabs-auth-step-description">主认证入口；建议优先填写并保存 Bearer Token。</p>
-              </div>
-            </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <div class="setting-label">Bearer Token</div>
-                <div class="setting-description">主认证凭证；保存后正式 TTS 将优先使用它</div>
-              </div>
-              <div class="setting-control api-key-control">
-                <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-bearer-token" />
-                <input type="password" class="form-control token-input" id="input-elevenlabs-bearer-token" placeholder="eyJhbGciOiJSUzI1NiIs..." />
-              </div>
-            </div>
-          </div>
+          <!-- Hidden fields for persistence (Bearer Token auto-managed, others kept for compatibility) -->
+          <input type=”hidden” id=”input-elevenlabs-bearer-token” />
+          <input type=”hidden” id=”input-elevenlabs-app-check-token” />
+          <input type=”hidden” id=”input-elevenlabs-device-id” />
         </div>
       </div>
 
