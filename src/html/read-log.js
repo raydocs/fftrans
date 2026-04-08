@@ -48,7 +48,10 @@ function setButton() {
   // view
   document.getElementById('button-view-log').onclick = async () => {
     const logPath = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'log');
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `start "" "${logPath}"`);
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.OPEN_PATH, logPath);
+    if (!result?.success) {
+      alert(`打开路径失败\n${result?.message || '未知错误'}`);
+    }
   };
 
   // close

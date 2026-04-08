@@ -102,7 +102,11 @@ function setButton() {
 
   // view files
   document.getElementById('button-view-files').onclick = async () => {
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, `start "" "${await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'text')}"`);
+    const path = await ipcRenderer.invoke(IPC_CHANNELS.GET_USER_DATA_PATH, 'text');
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.OPEN_PATH, path);
+    if (!result?.success) {
+      alert(`打开路径失败\n${result?.message || '未知错误'}`);
+    }
   };
 
   // clear cache

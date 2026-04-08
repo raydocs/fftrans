@@ -1,16 +1,25 @@
 'use strict';
 
-const { BrowserWindow } = require('electron');
+const { BrowserWindow, shell } = require('electron');
 const Logger = require('../../utils/logger');
+const elevenLabsAuth = require('../translator/elevenlabs-auth');
+const {
+  ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS,
+  ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION,
+} = require('../../constants');
 
 const ASSIST_PARTITION = 'persist:elevenlabs-browser-assist';
-const DEFAULT_ASSIST_URL = 'https://elevenlabs.io/sign-in';
-const ELEVENLABS_URL_PATTERN = /^https:\/\/([^.]+\.)?elevenlabs\.io/i;
+const DEFAULT_ASSIST_URL = 'https://elevenreader.io/reader/sign-in';
+const ASSIST_ALLOWED_HOSTS = [
+  'elevenreader.io',
+  'elevenlabs.io',
+];
 const FALLBACK_DB_NAMES = [
   'firebaseLocalStorageDb',
   'firebase-installations-database',
   'firebase-app-check-database',
 ];
+const BEARER_EXPIRY_BUFFER_MS = 5 * 60 * 1000;
 
 let assistWindow = null;
 
@@ -19,13 +28,26 @@ function createEmptyInspection() {
     detectedAt: '',
     currentUrl: '',
     title: '',
+    bearerToken: '',
     refreshToken: '',
     appCheckToken: '',
     deviceId: '',
     sources: {
+      bearerToken: '',
       refreshToken: '',
       appCheckToken: '',
       deviceId: '',
+    },
+    bearer: {
+      status: ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.UNAVAILABLE,
+      confidence: '',
+      expiresAt: '',
+      reasonCode: 'not_found',
+      reasonMessage: '尚未在浏览器辅助窗口中检测到 Bearer Token。',
+      validationStatus: ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.UNTESTED,
+      validationCode: '',
+      validationMessage: '',
+      validatedAt: '',
     },
   };
 }
@@ -38,6 +60,9 @@ function cloneInspectionData(inspection = lastInspection) {
     sources: {
       ...(inspection?.sources || {}),
     },
+    bearer: {
+      ...(inspection?.bearer || createEmptyInspection().bearer),
+    },
   };
 }
 
@@ -45,8 +70,37 @@ function buildAssistError(message, code = 'browser_assist_error') {
   const error = new Error(message);
   error.authCode = code;
   error.retryable = false;
-  error.suggestion = '请先打开 ElevenLabs 浏览器辅助窗口并完成登录';
+  error.suggestion = '请先打开 ElevenReader 浏览器辅助窗口并完成登录';
   return error;
+}
+
+function isAllowedAssistUrl(url = '') {
+  try {
+    const parsed = new URL(url || DEFAULT_ASSIST_URL);
+    if (parsed.protocol !== 'https:') {
+      return false;
+    }
+
+    return ASSIST_ALLOWED_HOSTS.some((host) => parsed.hostname === host || parsed.hostname.endsWith(`.${host}`));
+  } catch {
+    return false;
+  }
+}
+
+function getSanitizedAssistUserAgent(webContents) {
+  try {
+    const defaultUserAgent = webContents?.getUserAgent?.() || '';
+    if (!defaultUserAgent) {
+      return '';
+    }
+
+    return defaultUserAgent
+      .replace(/\sElectron\/[^\s]+/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  } catch {
+    return '';
+  }
 }
 
 function getAssistWindow() {
@@ -71,7 +125,7 @@ function ensureAssistWindow() {
     minHeight: 720,
     show: false,
     autoHideMenuBar: true,
-    title: 'ElevenLabs Browser Assist',
+    title: 'ElevenReader Browser Assist',
     backgroundColor: '#101114',
     webPreferences: {
       partition: ASSIST_PARTITION,
@@ -80,6 +134,36 @@ function ensureAssistWindow() {
       sandbox: true,
       spellcheck: false,
     },
+  });
+
+  const sanitizedUserAgent = getSanitizedAssistUserAgent(window.webContents);
+  if (sanitizedUserAgent) {
+    window.webContents.setUserAgent(sanitizedUserAgent);
+  }
+
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+      window.loadURL(url).catch((error) => {
+        Logger.error('elevenlabs-browser-assist', 'Failed to load popup URL in assist window', error);
+      });
+      return { action: 'deny' };
+    }
+
+    if (typeof url === 'string' && url.trim()) {
+      shell.openExternal(url).catch((error) => {
+        Logger.error('elevenlabs-browser-assist', 'Failed to open external assist popup URL', error);
+      });
+    }
+
+    return { action: 'deny' };
+  });
+
+  window.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+    if (!isMainFrame || errorCode === -3) {
+      return;
+    }
+
+    Logger.error('elevenlabs-browser-assist', `Assist page failed to load: ${validatedURL || DEFAULT_ASSIST_URL} (${errorCode}) ${errorDescription}`);
   });
 
   window.once('ready-to-show', () => {
@@ -120,8 +204,8 @@ function getBrowserAssistStatus() {
   return {
     isOpen: true,
     currentUrl,
-    title: window.getTitle() || 'ElevenLabs Browser Assist',
-    onElevenLabsOrigin: ELEVENLABS_URL_PATTERN.test(currentUrl || DEFAULT_ASSIST_URL),
+    title: window.getTitle() || 'ElevenReader Browser Assist',
+    onElevenLabsOrigin: isAllowedAssistUrl(currentUrl),
     isLoading: window.webContents.isLoading(),
     lastInspection: cloneInspectionData(),
   };
@@ -140,7 +224,7 @@ function focusBrowserAssistWindow() {
   return {
     opened: true,
     url: window.webContents.getURL() || DEFAULT_ASSIST_URL,
-    title: window.getTitle() || 'ElevenLabs Browser Assist',
+    title: window.getTitle() || 'ElevenReader Browser Assist',
     browserAssist: getBrowserAssistStatus(),
   };
 }
@@ -152,23 +236,50 @@ function buildInspectionScript() {
       const results = {
         currentUrl: location.href,
         title: document.title || '',
+        bearerTokens: [],
         refreshTokens: [],
         appCheckTokens: [],
         deviceIds: [],
       };
       const seen = {
+        bearer: new Map(),
         refresh: new Set(),
         appCheck: new Set(),
         device: new Set(),
       };
 
-      function add(kind, value, source) {
+      function confidenceScore(value) {
+        return value === 'high' ? 2 : value === 'medium' ? 1 : 0;
+      }
+
+      function add(kind, value, source, meta = {}) {
         if (typeof value !== 'string') {
           return;
         }
 
         const trimmed = value.trim();
         if (!trimmed) {
+          return;
+        }
+
+        if (kind === 'bearer') {
+          const existingIndex = seen.bearer.get(trimmed);
+          const nextEntry = {
+            value: trimmed,
+            source,
+            confidence: meta.confidence || 'low',
+          };
+
+          if (typeof existingIndex === 'number') {
+            const existingEntry = results.bearerTokens[existingIndex];
+            if (!existingEntry || confidenceScore(nextEntry.confidence) > confidenceScore(existingEntry.confidence)) {
+              results.bearerTokens[existingIndex] = nextEntry;
+            }
+            return;
+          }
+
+          seen.bearer.set(trimmed, results.bearerTokens.length);
+          results.bearerTokens.push(nextEntry);
           return;
         }
 
@@ -203,6 +314,14 @@ function buildInspectionScript() {
         }
       }
 
+      function getJwtCandidates(value) {
+        if (typeof value !== 'string') {
+          return [];
+        }
+
+        return value.match(/(?:Bearer\s+)?eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g) || [];
+      }
+
       function recordString(value, source) {
         if (typeof value !== 'string') {
           return;
@@ -213,19 +332,32 @@ function buildInspectionScript() {
           return;
         }
 
-        if (/refresh[_-]?token/i.test(source) && trimmed.length > 20) {
+        const lowerSource = String(source || '').toLowerCase();
+        const jwtMatches = getJwtCandidates(trimmed);
+        const isAppCheckSource = /app.?check/.test(lowerSource);
+        const isRefreshSource = /refresh[_-]?token/.test(lowerSource);
+        const isDeviceSource = /device[_-]?id/.test(lowerSource);
+        const isHighConfidenceBearerSource = /(firebase:authuser|ststokenmanager\.accesstoken|authorization|bearer|(^|[^a-z])(access|id)[_-]?token([^a-z]|$))/.test(lowerSource);
+
+        if (isRefreshSource && trimmed.length > 20) {
           add('refresh', trimmed, source);
         }
 
-        if (/device[_-]?id/i.test(source) && trimmed.length >= 6) {
+        if (isDeviceSource && trimmed.length >= 6) {
           add('device', trimmed, source);
         }
 
-        const jwtMatches = trimmed.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g) || [];
-        if (/app.?check/i.test(source)) {
+        if (isAppCheckSource) {
           for (const candidate of jwtMatches.length ? jwtMatches : [trimmed]) {
             add('appCheck', candidate, source);
           }
+          return;
+        }
+
+        if (jwtMatches.length > 0) {
+          jwtMatches.forEach((candidate) => {
+            add('bearer', candidate, source, { confidence: isHighConfidenceBearerSource ? 'high' : 'low' });
+          });
         }
       }
 
@@ -264,12 +396,17 @@ function buildInspectionScript() {
             }
 
             if (/app.?check/i.test(key)) {
-              const jwtMatches = nextValue.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g) || [nextValue];
-              jwtMatches.forEach((candidate) => add('appCheck', candidate, nextSource));
+              const jwtMatches = getJwtCandidates(nextValue);
+              jwtMatches.length ? jwtMatches.forEach((candidate) => add('appCheck', candidate, nextSource)) : add('appCheck', nextValue, nextSource);
             }
 
             if (/device[_-]?id/i.test(key) && nextValue.trim()) {
               add('device', nextValue, nextSource);
+            }
+
+            if (/(^|[^a-z])(access|id)[_-]?token([^a-z]|$)|authorization|bearer/i.test(key)) {
+              const jwtMatches = getJwtCandidates(nextValue);
+              jwtMatches.forEach((candidate) => add('bearer', candidate, nextSource, { confidence: 'high' }));
             }
           }
 
@@ -406,37 +543,239 @@ function pickCandidate(candidates = []) {
   return candidates[0];
 }
 
+function isJwtLikeToken(token = '') {
+  return /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token);
+}
+
+function getNormalizedBearerToken(token = '') {
+  return elevenLabsAuth.normalizeBearerToken(token).trim();
+}
+
+function getBearerExpiry(candidate = {}) {
+  const normalizedToken = getNormalizedBearerToken(candidate?.value || '');
+  const rawToken = normalizedToken.replace(/^Bearer\s+/i, '').trim();
+  const expiresAtMs = elevenLabsAuth.decodeTokenExpiry(rawToken);
+
+  return {
+    normalizedToken,
+    rawToken,
+    expiresAtMs,
+    expiresAt: expiresAtMs ? new Date(expiresAtMs).toISOString() : '',
+  };
+}
+
+function isHighConfidenceBearerCandidate(candidate = {}) {
+  if ((candidate?.confidence || '').toLowerCase() === 'high') {
+    return true;
+  }
+
+  const source = String(candidate?.source || '');
+  return /(firebase:authUser|stsTokenManager\.accessToken|(^|[.\[])(accessToken|idToken)(?:$|[.\]])|authorization|bearer)/i.test(source);
+}
+
+function compareBearerCandidates(a = {}, b = {}) {
+  const confidenceDelta = (b.confidenceScore || 0) - (a.confidenceScore || 0);
+  if (confidenceDelta !== 0) {
+    return confidenceDelta;
+  }
+
+  const expiryDelta = (b.expiresAtMs || 0) - (a.expiresAtMs || 0);
+  if (expiryDelta !== 0) {
+    return expiryDelta;
+  }
+
+  return String(b.source || '').length - String(a.source || '').length;
+}
+
+function classifyBearerCandidates(candidates = []) {
+  const unavailable = createEmptyInspection().bearer;
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    return {
+      bearerToken: '',
+      source: '',
+      bearer: unavailable,
+    };
+  }
+
+  const trustedCandidates = [];
+  const fallbackCandidates = [];
+
+  candidates.forEach((candidate) => {
+    const { normalizedToken, rawToken, expiresAtMs, expiresAt } = getBearerExpiry(candidate);
+    const highConfidence = isHighConfidenceBearerCandidate(candidate);
+    const confidence = highConfidence ? 'high' : 'low';
+    const confidenceScore = highConfidence ? 2 : 0;
+
+    if (!normalizedToken || !isJwtLikeToken(rawToken)) {
+      fallbackCandidates.push({
+        bearerToken: normalizedToken,
+        source: candidate?.source || '',
+        confidence,
+        confidenceScore,
+        expiresAtMs,
+        expiresAt,
+        reasonCode: 'invalid_format',
+        reasonMessage: '检测到的 Bearer 值不是有效 JWT。',
+      });
+      return;
+    }
+
+    if (expiresAtMs && expiresAtMs <= Date.now() + BEARER_EXPIRY_BUFFER_MS) {
+      fallbackCandidates.push({
+        bearerToken: normalizedToken,
+        source: candidate?.source || '',
+        confidence,
+        confidenceScore,
+        expiresAtMs,
+        expiresAt,
+        reasonCode: 'expired',
+        reasonMessage: '检测到的 Bearer 已过期或即将过期。',
+      });
+      return;
+    }
+
+    if (!highConfidence) {
+      fallbackCandidates.push({
+        bearerToken: normalizedToken,
+        source: candidate?.source || '',
+        confidence,
+        confidenceScore,
+        expiresAtMs,
+        expiresAt,
+        reasonCode: 'low_confidence',
+        reasonMessage: '检测到 JWT，但来源路径可信度不足，暂不自动导入。',
+      });
+      return;
+    }
+
+    trustedCandidates.push({
+      bearerToken: normalizedToken,
+      source: candidate?.source || '',
+      confidence,
+      confidenceScore,
+      expiresAtMs,
+      expiresAt,
+    });
+  });
+
+  if (trustedCandidates.length > 0) {
+    trustedCandidates.sort(compareBearerCandidates);
+    const selected = trustedCandidates[0];
+    return {
+      bearerToken: selected.bearerToken,
+      source: selected.source,
+      bearer: {
+        status: ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.TRUSTED,
+        confidence: selected.confidence,
+        expiresAt: selected.expiresAt,
+        reasonCode: '',
+        reasonMessage: '',
+        validationStatus: ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.UNTESTED,
+        validationCode: '',
+        validationMessage: '',
+        validatedAt: '',
+      },
+    };
+  }
+
+  if (fallbackCandidates.length > 0) {
+    fallbackCandidates.sort((a, b) => {
+      const reasonPriority = {
+        low_confidence: 0,
+        expired: 1,
+        invalid_format: 2,
+      };
+      const reasonDelta = (reasonPriority[a.reasonCode] ?? 9) - (reasonPriority[b.reasonCode] ?? 9);
+      if (reasonDelta !== 0) {
+        return reasonDelta;
+      }
+      return compareBearerCandidates(a, b);
+    });
+
+    const selected = fallbackCandidates[0];
+    return {
+      bearerToken: selected.bearerToken,
+      source: selected.source,
+      bearer: {
+        status: ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.UNTRUSTED,
+        confidence: selected.confidence,
+        expiresAt: selected.expiresAt,
+        reasonCode: selected.reasonCode,
+        reasonMessage: selected.reasonMessage,
+        validationStatus: ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.UNTESTED,
+        validationCode: '',
+        validationMessage: '',
+        validatedAt: '',
+      },
+    };
+  }
+
+  return {
+    bearerToken: '',
+    source: '',
+    bearer: unavailable,
+  };
+}
+
+function updateBearerValidationResult(bearerToken = '', {
+  validationStatus = ELEVENLABS_BROWSER_ASSIST_BEARER_VALIDATION.UNTESTED,
+  validationCode = '',
+  validationMessage = '',
+} = {}) {
+  const normalizedToken = getNormalizedBearerToken(bearerToken);
+  const currentToken = getNormalizedBearerToken(lastInspection?.bearerToken || '');
+  if (!normalizedToken || !currentToken || normalizedToken !== currentToken) {
+    return cloneInspectionData();
+  }
+
+  lastInspection = {
+    ...lastInspection,
+    bearer: {
+      ...(lastInspection?.bearer || createEmptyInspection().bearer),
+      validationStatus,
+      validationCode,
+      validationMessage,
+      validatedAt: new Date().toISOString(),
+    },
+  };
+
+  return cloneInspectionData();
+}
+
 async function inspectBrowserAssistLogin() {
   const window = getAssistWindow();
   if (!window) {
-    throw buildAssistError('请先点击“连接浏览器”打开 ElevenLabs 登录窗口', 'browser_assist_not_open');
+    throw buildAssistError('请先点击“连接浏览器”打开 ElevenReader 登录窗口', 'browser_assist_not_open');
   }
 
   const currentUrl = window.webContents.getURL() || '';
-  if (currentUrl && !ELEVENLABS_URL_PATTERN.test(currentUrl)) {
-    throw buildAssistError('浏览器辅助窗口当前不在 ElevenLabs 页面，请返回 ElevenLabs 后重试', 'browser_assist_wrong_origin');
+  if (currentUrl && !isAllowedAssistUrl(currentUrl)) {
+    throw buildAssistError('浏览器辅助窗口当前不在 ElevenReader / ElevenLabs 页面，请返回目标站点后重试', 'browser_assist_wrong_origin');
   }
 
   const inspection = await window.webContents.executeJavaScript(buildInspectionScript(), true);
+  const bearerCandidate = classifyBearerCandidates(inspection?.bearerTokens || []);
   const refreshTokenCandidate = pickCandidate(inspection?.refreshTokens || []);
   const appCheckCandidate = pickCandidate(inspection?.appCheckTokens || []);
   const deviceIdCandidate = pickCandidate(inspection?.deviceIds || []);
 
-  if (!refreshTokenCandidate && !appCheckCandidate && !deviceIdCandidate) {
-    throw buildAssistError('未在浏览器辅助窗口中检测到 ElevenLabs 登录凭证，请确认已经完成登录并等待页面加载完成', 'browser_assist_no_tokens');
-  }
-
   lastInspection = {
     detectedAt: new Date().toISOString(),
     currentUrl: inspection?.currentUrl || currentUrl,
-    title: inspection?.title || window.getTitle() || 'ElevenLabs Browser Assist',
+    title: inspection?.title || window.getTitle() || 'ElevenReader Browser Assist',
+    bearerToken: bearerCandidate.bearerToken || '',
     refreshToken: refreshTokenCandidate?.value || '',
     appCheckToken: appCheckCandidate?.value || '',
     deviceId: deviceIdCandidate?.value || '',
     sources: {
+      bearerToken: bearerCandidate.source || '',
       refreshToken: refreshTokenCandidate?.source || '',
       appCheckToken: appCheckCandidate?.source || '',
       deviceId: deviceIdCandidate?.source || '',
+    },
+    bearer: {
+      ...createEmptyInspection().bearer,
+      ...(bearerCandidate.bearer || {}),
     },
   };
 
@@ -447,4 +786,5 @@ module.exports = {
   focusBrowserAssistWindow,
   inspectBrowserAssistLogin,
   getBrowserAssistStatus,
+  updateBearerValidationResult,
 };

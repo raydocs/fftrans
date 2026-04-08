@@ -1,10 +1,10 @@
 'use strict';
 
-const { ipcMain, BrowserWindow } = require('electron');
+const { ipcMain, BrowserWindow, shell } = require('electron');
+const path = require('path');
 const windowModule = require('../system/window-module');
 const configModule = require('../system/config-module');
 const dialogModule = require('../system/dialog-module');
-const childProcess = require('child_process');
 const { IPC_CHANNELS } = require('../../constants');
 
 function setWindowChannel() {
@@ -117,11 +117,44 @@ function setWindowChannel() {
         });
     });
 
-    // execute command
-    ipcMain.on(IPC_CHANNELS.EXECUTE_COMMAND, (event, command) => {
-        childProcess.exec(command, () => {
-            //console.log(error.message);
-        });
+    ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL_URL, async (event, url) => {
+        if (typeof url !== 'string' || url.trim() === '') {
+            return { success: false, message: 'Invalid URL' };
+        }
+
+        try {
+            const parsedUrl = new URL(url);
+            const allowedProtocols = new Set(['https:', 'chrome:', 'chrome-extension:']);
+            if (!allowedProtocols.has(parsedUrl.protocol)) {
+                return { success: false, message: 'Only HTTPS or Chrome extension URLs are allowed' };
+            }
+
+            await shell.openExternal(url);
+            return { success: true };
+        } catch (error) {
+            return { success: false, message: error?.message || 'Failed to open external URL' };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.OPEN_PATH, async (event, pathValue) => {
+        if (typeof pathValue !== 'string' || pathValue.trim() === '') {
+            return { success: false, message: 'Invalid path' };
+        }
+
+        try {
+            if (!path.isAbsolute(pathValue) || pathValue.startsWith('\\\\')) {
+                return { success: false, message: 'Only absolute local paths are allowed' };
+            }
+
+            const errorMessage = await shell.openPath(pathValue);
+            if (errorMessage) {
+                return { success: false, message: errorMessage };
+            }
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, message: error?.message || 'Failed to open path' };
+        }
     });
 
     ipcMain.on(IPC_CHANNELS.SHOW_INFO, (event, message = '') => {

@@ -47,7 +47,10 @@ function base64UrlDecode(str = '') {
 
 function decodeTokenExpiry(token = '') {
   try {
-    const parts = token.split('.');
+    const normalizedToken = typeof token === 'string'
+      ? token.replace(/^Bearer\s+/i, '').trim()
+      : '';
+    const parts = normalizedToken.split('.');
     if (parts.length < 2) {
       return null;
     }
@@ -61,6 +64,15 @@ function decodeTokenExpiry(token = '') {
   }
 
   return null;
+}
+
+function normalizeBearerToken(bearerToken = '') {
+  const trimmedToken = typeof bearerToken === 'string' ? bearerToken.trim() : '';
+  if (!trimmedToken) {
+    return '';
+  }
+
+  return /^Bearer\s+/i.test(trimmedToken) ? trimmedToken : `Bearer ${trimmedToken}`;
 }
 
 function shouldRefreshToken(bearerToken = '', expiresAt) {
@@ -127,6 +139,7 @@ function buildDefaultAuthState() {
 
 function sanitizeAuthOverride(configOverride = {}) {
   return {
+    bearerToken: typeof configOverride?.bearerToken === 'string' ? configOverride.bearerToken.trim() : '',
     refreshToken: typeof configOverride?.refreshToken === 'string' ? configOverride.refreshToken.trim() : '',
     appCheckToken: typeof configOverride?.appCheckToken === 'string' ? configOverride.appCheckToken.trim() : '',
     deviceId: typeof configOverride?.deviceId === 'string' ? configOverride.deviceId.trim() : '',
@@ -139,9 +152,11 @@ function getAuthContext(configOverride = {}) {
   const savedAuth = config?.auth?.elevenlabs || {};
   const override = sanitizeAuthOverride(configOverride);
   const hasActiveBearer = isSessionValid(sessionState.bearerToken, sessionState.expiresAtMs);
+  const savedBearerToken = typeof savedConfig.bearerToken === 'string' ? savedConfig.bearerToken.trim() : '';
   const savedRefreshToken = typeof savedConfig.refreshToken === 'string' ? savedConfig.refreshToken.trim() : '';
   const savedAppCheckToken = typeof savedConfig.appCheckToken === 'string' ? savedConfig.appCheckToken.trim() : '';
   const savedDeviceId = typeof savedConfig.deviceId === 'string' ? savedConfig.deviceId.trim() : '';
+  const mergedBearerToken = override.bearerToken || savedBearerToken;
   const mergedRefreshToken = override.refreshToken || savedRefreshToken;
   const mergedAppCheckToken = override.appCheckToken || savedAppCheckToken;
   const mergedDeviceId = override.deviceId || savedDeviceId;
@@ -152,9 +167,11 @@ function getAuthContext(configOverride = {}) {
     savedAuth,
     override,
     hasActiveBearer,
+    savedBearerToken,
     savedRefreshToken,
     savedAppCheckToken,
     savedDeviceId,
+    mergedBearerToken,
     mergedRefreshToken,
     mergedAppCheckToken,
     mergedDeviceId,
@@ -437,7 +454,7 @@ function buildResolvedConfig(mergedConfig = {}, {
 } = {}) {
   return {
     ...mergedConfig,
-    bearerToken: (bearerToken || '').trim(),
+    bearerToken: normalizeBearerToken(bearerToken),
     refreshToken: (refreshToken || '').trim(),
     deviceId: (deviceId || '').trim(),
     didRefreshBearer: Boolean(didRefreshBearer),
@@ -449,10 +466,10 @@ function buildResolvedConfig(mergedConfig = {}, {
 }
 
 function buildMissingCredentialsError() {
-  return buildAuthError('缺少 ElevenLabs 凭证，请填写 Refresh Token，或仅在测试时粘贴 Bearer Token', new Error('Missing credentials'), {
+  return buildAuthError('缺少 ElevenLabs 凭证，请填写 Bearer Token 或 Refresh Token', new Error('Missing credentials'), {
     authCode: 'missing_bearer_token',
     retryable: false,
-    suggestion: '请保存 Refresh Token；Bearer Token 仅用于临时测试或调试',
+    suggestion: '请先填写 Bearer Token；如需自动续期，再填写 Refresh Token',
   });
 }
 
@@ -493,8 +510,11 @@ function getAuthStatus(configOverride = {}) {
     ...context.savedAuth,
   };
 
-  if (!context.mergedRefreshToken && !context.hasActiveBearer) {
+  if (!context.mergedBearerToken && !context.mergedRefreshToken && !context.hasActiveBearer) {
     Object.assign(auth, buildDefaultAuthState());
+  } else if (!context.mergedRefreshToken && (context.mergedBearerToken || context.hasActiveBearer)) {
+    auth.state = ELEVENLABS_AUTH_STATES.SESSION_ONLY;
+    auth.lastAuthSource = context.hasActiveBearer ? sessionState.source : ELEVENLABS_AUTH_SOURCES.MANUAL_BEARER;
   } else if (!context.mergedRefreshToken && context.hasActiveBearer && sessionState.source === ELEVENLABS_AUTH_SOURCES.LEGACY_BEARER_MIGRATION) {
     auth.state = ELEVENLABS_AUTH_STATES.SESSION_ONLY;
     auth.lastAuthSource = ELEVENLABS_AUTH_SOURCES.LEGACY_BEARER_MIGRATION;
@@ -510,6 +530,8 @@ function getAuthStatus(configOverride = {}) {
       refreshInFlight: Boolean(sessionState.refreshInFlight),
     },
     credentials: {
+      hasBearerToken: Boolean(context.mergedBearerToken) || context.hasActiveBearer,
+      hasSavedBearerToken: Boolean(context.savedBearerToken),
       hasRefreshToken: Boolean(context.mergedRefreshToken),
       hasSavedRefreshToken: Boolean(context.savedRefreshToken),
       hasAppCheckToken: Boolean(context.mergedAppCheckToken),
@@ -603,21 +625,23 @@ async function resolveAuthConfig(configOverride = {}, options = {}) {
     persistGeneratedDeviceId = true,
   } = options;
   const mergedConfig = getMergedConfig(configOverride);
-  const manualBearerToken = (configOverride?.bearerToken || '').trim();
+  const bearerToken = (mergedConfig.bearerToken || '').trim();
   const refreshToken = (mergedConfig.refreshToken || '').trim();
   const appCheckToken = (mergedConfig.appCheckToken || '').trim();
   const { deviceId, didGenerateDeviceId } = resolveDeviceId(mergedConfig.deviceId, persistGeneratedDeviceId);
+  const bearerTokenExpiry = decodeTokenExpiry(bearerToken);
+  const shouldPreferBearer = Boolean(bearerToken) && (!refreshToken || !bearerTokenExpiry || Date.now() + EXPIRY_BUFFER_MS < bearerTokenExpiry);
 
-  if (manualBearerToken) {
+  if (shouldPreferBearer) {
     return buildResolvedConfig(mergedConfig, {
-      bearerToken: manualBearerToken,
+      bearerToken,
       refreshToken,
       deviceId,
       didGenerateDeviceId,
       didRefreshBearer: false,
       authSource: ELEVENLABS_AUTH_SOURCES.MANUAL_BEARER,
       appCheckToken,
-      expiresAt: decodeTokenExpiry(manualBearerToken),
+      expiresAt: decodeTokenExpiry(bearerToken),
     });
   }
 
@@ -742,6 +766,7 @@ module.exports = {
   resolveAuthConfig,
   refreshBearerToken,
   decodeTokenExpiry,
+  normalizeBearerToken,
   hydrateSession,
   clearSession,
   handlePersistedConfigChange,

@@ -9,7 +9,7 @@
 const Logger = require('./logger');
 const { ELEVENLABS_AUTH_STATES, ELEVENLABS_AUTH_SOURCES } = require('../constants');
 
-function validate(config, defaultConfig) {
+function validate(config) {
   const errors = [];
 
   if (!config || typeof config !== 'object') {

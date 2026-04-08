@@ -32,6 +32,7 @@ const { globalMonitor } = require('./module/system/performance-monitor');
 // translation cache
 const { globalCache } = require('./module/system/translation-cache');
 const { globalTTSAudioCache } = require('./module/system/tts-audio-cache');
+const elevenLabsExtensionBridge = require('./module/system/elevenlabs-extension-bridge');
 
 // text detect module
 const textDetectModule = require('./module/system/text-detect-module');
@@ -69,12 +70,10 @@ app.on('before-quit', async (event) => {
     // Cleanup translation cache (stop auto-save interval, final save)
     await globalCache.cleanup();
     await globalTTSAudioCache.cleanup();
+    await elevenLabsExtensionBridge.shutdown();
 
     // Cleanup OCR worker
     await textDetectModule.cleanup();
-
-    // Cleanup IPC handlers (prevent memory leaks)
-    ipcModule.cleanupIPC();
 
     // Performance monitor final report
     globalMonitor.cleanup();

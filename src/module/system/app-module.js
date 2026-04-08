@@ -21,6 +21,7 @@ const windowModule = require('./window-module');
 // ipc module
 const ipcModule = require('../ipc/index');
 const elevenLabsAuth = require('../translator/elevenlabs-auth');
+const elevenLabsExtensionBridge = require('./elevenlabs-extension-bridge');
 
 // translation cache
 const { globalCache } = require('./translation-cache');
@@ -44,6 +45,8 @@ function startApp() {
   if (legacyElevenLabsSession) {
     elevenLabsAuth.hydrateSession(legacyElevenLabsSession);
   }
+
+  void elevenLabsExtensionBridge.initialize();
 
   // load chat code
   chatCodeModule.loadChatCode();

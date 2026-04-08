@@ -4,8 +4,6 @@
 const { ipcRenderer } = require('electron');
 const { IPC_CHANNELS } = require('../constants');
 
-let isConfigWindowClosing = false;
-
 // 折叠切换函数 - 暴露到 window 供 HTML onclick 调用
 window.toggleMoreEnginesClick = function() {
   const header = document.getElementById('toggle-more-engines');
@@ -23,10 +21,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   await setView();
   setEvent();
   setButton();
-});
-
-window.addEventListener('beforeunload', () => {
-  isConfigWindowClosing = true;
 });
 
 // set IPC
@@ -1089,14 +1083,6 @@ async function loadMiMoVoices() {
     btn.innerText = originalText;
   }
 }
-
-function getUiText(entries = ['', '', '']) {
-  const appLanguage = document.getElementById('select-app-language')?.value || 'app-zhs';
-  const index = appLanguage === 'app-zht' ? 0 : appLanguage === 'app-zhs' ? 1 : 2;
-  return entries[index] || entries[1] || entries[2] || '';
-}
-
-
 
 
 // read config

@@ -211,8 +211,11 @@ function setButton() {
     ipcRenderer.send(IPC_CHANNELS.SET_CLICK_THROUGH_CONFIG, clickThrough);
   };
 
-  document.getElementById('img-button-update').onclick = () => {
-    ipcRenderer.send(IPC_CHANNELS.EXECUTE_COMMAND, 'explorer "https://github.com/raydocs/fftrans/releases/latest/"');
+  document.getElementById('img-button-update').onclick = async () => {
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.OPEN_EXTERNAL_URL, 'https://github.com/raydocs/fftrans/releases/latest/');
+    if (!result?.success) {
+      alert(`打开链接失败\n${result?.message || '未知错误'}`);
+    }
   };
 
   document.getElementById('img-button-compact').onclick = async () => {

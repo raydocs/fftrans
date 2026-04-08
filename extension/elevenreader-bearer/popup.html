@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FFTrans Bearer Bridge</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; width: 300px; padding: 16px; color: #1f2937; font-size: 13px; }
+    h1 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    .status-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+    .status-row:last-child { border-bottom: none; }
+    .label { color: #6b7280; }
+    .value { font-weight: 600; }
+    .connected { color: #059669; }
+    .disconnected { color: #dc2626; }
+    .validated { color: #059669; }
+    .pending { color: #d97706; }
+    .rejected { color: #dc2626; }
+    .none { color: #9ca3af; }
+    .btn { display: block; width: 100%; margin-top: 12px; padding: 8px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; text-align: center; }
+    .btn-refresh { background: #2563eb; color: white; }
+    .btn-refresh:hover { background: #1d4ed8; }
+    .time { font-size: 11px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <h1>FFTrans Bearer Bridge</h1>
+  <div id="status-list">
+    <div class="status-row">
+      <span class="label">Connection</span>
+      <span class="value" id="val-connection">—</span>
+    </div>
+    <div class="status-row">
+      <span class="label">Port</span>
+      <span class="value" id="val-port">39393</span>
+    </div>
+    <div class="status-row">
+      <span class="label">Last Capture</span>
+      <span class="value" id="val-last-capture">—</span>
+    </div>
+    <div class="status-row">
+      <span class="label">Token Status</span>
+      <span class="value" id="val-token-status">—</span>
+    </div>
+    <div class="status-row">
+      <span class="label">Buffered</span>
+      <span class="value" id="val-buffered">—</span>
+    </div>
+  </div>
+  <button class="btn btn-refresh" id="btn-refresh">Refresh Token Now</button>
+  <script src="popup.js"></script>
+</body>
+</html>

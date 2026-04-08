@@ -40,7 +40,8 @@
     "sharp": "^0.34.5",
     "string-similarity": "^4.0.4",
     "temp": "^0.9.4",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^7.0.0",
+    "ws": "^8.20.0"
   },
   "build": {
     "appId": "com.app.tataru.assistant",
