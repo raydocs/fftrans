@@ -19,7 +19,7 @@
     <img src="https://img.shields.io/github/downloads/raydocs/tataru/total?style=flat-square&color=green" alt="Downloads">
   </a>
   <img src="https://img.shields.io/badge/platform-Windows-lightgrey?style=flat-square" alt="Platform">
-  <img src="https://img.shields.io/badge/version-0.1.1-orange?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.1.2-orange?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/electron-37.2.6-blue?style=flat-square" alt="Electron">
 </p>
 

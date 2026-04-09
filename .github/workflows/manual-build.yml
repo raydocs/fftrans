@@ -5,11 +5,11 @@ on:
       ref:
         description: Git ref to build (tag, branch, or commit)
         required: true
-        default: v0.1.1
+        default: v0.1.2
       release_tag:
         description: Existing GitHub release tag to upload assets to
         required: true
-        default: v0.1.1
+        default: v0.1.2
 
 permissions:
   contents: write
