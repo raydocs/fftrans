@@ -12,6 +12,9 @@ let targetLog = null;
 
 // current audio URLs
 let currentAudioUrls = [];
+let currentAudioRequestId = '';
+let audioRequestSequence = 0;
+let progressiveAudioState = createProgressiveAudioState();
 
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
@@ -32,6 +35,18 @@ function setIPC() {
   // send data
   ipcRenderer.on(IPC_CHANNELS.SEND_DATA, async (event, id) => {
     await readLog(id);
+  });
+
+  ipcRenderer.on(IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE_CHUNK, (event, payload = {}) => {
+    handleElevenLabsProgressiveChunk(payload);
+  });
+
+  ipcRenderer.on(IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE_COMPLETE, (event, payload = {}) => {
+    handleElevenLabsProgressiveComplete(payload);
+  });
+
+  ipcRenderer.on(IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE_ERROR, (event, payload = {}) => {
+    handleElevenLabsProgressiveError(payload);
   });
 }
 
@@ -217,6 +232,266 @@ async function readLog(id = '') {
   }
 }
 
+function createProgressiveAudioState(requestId = '') {
+  return {
+    requestId,
+    elements: new Map(),
+    skippedIndexes: new Set(),
+    playingAudio: null,
+    playingIndex: null,
+    lastCompletedIndex: -1,
+  };
+}
+
+function createAudioRequestId() {
+  audioRequestSequence += 1;
+  return `edit-tts-${Date.now()}-${audioRequestSequence}`;
+}
+
+function isCurrentAudioRequest(requestId = '') {
+  return Boolean(requestId) && requestId === currentAudioRequestId;
+}
+
+function resetAudioRequestState(requestId = '') {
+  try {
+    document.querySelectorAll('#div-audio audio').forEach((audio) => {
+      try {
+        audio.pause();
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
+  currentAudioRequestId = requestId;
+  currentAudioUrls = [];
+  progressiveAudioState = createProgressiveAudioState(requestId);
+  resetAudioView('⏳ 正在生成语音...');
+}
+
+function resetAudioView(statusText = '') {
+  const divAudio = document.getElementById('div-audio');
+  divAudio.innerHTML = '';
+
+  const status = document.createElement('p');
+  status.id = 'tts-status';
+  status.innerText = statusText;
+
+  const audioList = document.createElement('div');
+  audioList.id = 'tts-audio-list';
+
+  divAudio.appendChild(status);
+  divAudio.appendChild(audioList);
+}
+
+function getAudioViewElements() {
+  let status = document.getElementById('tts-status');
+  let audioList = document.getElementById('tts-audio-list');
+
+  if (!status || !audioList) {
+    resetAudioView('');
+    status = document.getElementById('tts-status');
+    audioList = document.getElementById('tts-audio-list');
+  }
+
+  return { status, audioList };
+}
+
+function updateAudioStatus(message = '', color = '') {
+  const { status } = getAudioViewElements();
+  status.innerText = message;
+  status.style.color = color;
+}
+
+function renderBatchAudio(urlList = []) {
+  const { audioList } = getAudioViewElements();
+  audioList.innerHTML = '';
+
+  urlList.forEach((url, index) => {
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.preload = 'metadata';
+    audio.src = url;
+    if (index === 0) {
+      audio.autoplay = true;
+    }
+
+    audioList.appendChild(audio);
+    audioList.appendChild(document.createElement('br'));
+  });
+}
+
+function tryPlayNextProgressiveAudio(requestId = '') {
+  if (!isCurrentAudioRequest(requestId) || progressiveAudioState.playingAudio) {
+    return;
+  }
+
+  let nextIndex = progressiveAudioState.lastCompletedIndex + 1;
+  while (!progressiveAudioState.elements.has(nextIndex) && progressiveAudioState.skippedIndexes.has(nextIndex)) {
+    progressiveAudioState.lastCompletedIndex = nextIndex;
+    nextIndex += 1;
+  }
+
+  const nextAudio = progressiveAudioState.elements.get(nextIndex);
+  if (!nextAudio) {
+    return;
+  }
+
+  progressiveAudioState.playingAudio = nextAudio;
+  progressiveAudioState.playingIndex = nextIndex;
+
+  const playResult = nextAudio.play();
+  if (playResult && typeof playResult.catch === 'function') {
+    playResult.catch((error) => {
+      if (!isCurrentAudioRequest(requestId)) {
+        return;
+      }
+
+      console.error('Progressive audio playback failed:', error);
+      progressiveAudioState.playingAudio = null;
+      progressiveAudioState.playingIndex = null;
+    });
+  }
+}
+
+function appendProgressiveAudioElement(requestId = '', chunkIndex = 0, audioUrl = '') {
+  if (!isCurrentAudioRequest(requestId) || !audioUrl || progressiveAudioState.elements.has(chunkIndex)) {
+    return;
+  }
+
+  const { audioList } = getAudioViewElements();
+  const wrapper = document.createElement('div');
+  wrapper.className = 'tts-progressive-audio-item';
+  wrapper.dataset.chunkIndex = `${chunkIndex}`;
+
+  const label = document.createElement('p');
+  label.innerText = `第 ${chunkIndex + 1} 段`;
+
+  const audio = document.createElement('audio');
+  audio.controls = true;
+  audio.preload = 'metadata';
+  audio.src = audioUrl;
+  audio.dataset.requestId = requestId;
+  audio.dataset.chunkIndex = `${chunkIndex}`;
+
+  audio.onplay = () => {
+    if (!isCurrentAudioRequest(requestId)) {
+      return;
+    }
+    progressiveAudioState.playingAudio = audio;
+    progressiveAudioState.playingIndex = chunkIndex;
+  };
+
+  audio.onended = () => {
+    if (!isCurrentAudioRequest(requestId)) {
+      return;
+    }
+
+    progressiveAudioState.playingAudio = null;
+    progressiveAudioState.playingIndex = null;
+    progressiveAudioState.lastCompletedIndex = Math.max(progressiveAudioState.lastCompletedIndex, chunkIndex);
+    tryPlayNextProgressiveAudio(requestId);
+  };
+
+  audio.onerror = () => {
+    if (!isCurrentAudioRequest(requestId)) {
+      return;
+    }
+
+    progressiveAudioState.playingAudio = null;
+    progressiveAudioState.playingIndex = null;
+    progressiveAudioState.lastCompletedIndex = Math.max(progressiveAudioState.lastCompletedIndex, chunkIndex);
+    tryPlayNextProgressiveAudio(requestId);
+  };
+
+  wrapper.appendChild(label);
+  wrapper.appendChild(audio);
+  audioList.appendChild(wrapper);
+
+  progressiveAudioState.elements.set(chunkIndex, audio);
+  tryPlayNextProgressiveAudio(requestId);
+}
+
+function handleElevenLabsProgressiveChunk(payload = {}) {
+  const {
+    requestId = '',
+    chunkIndex = -1,
+    totalChunks = 0,
+    audioUrl = '',
+  } = payload;
+
+  if (!isCurrentAudioRequest(requestId) || chunkIndex < 0 || !audioUrl) {
+    return;
+  }
+
+  for (let index = progressiveAudioState.lastCompletedIndex + 1; index < chunkIndex; index++) {
+    if (!progressiveAudioState.elements.has(index)) {
+      progressiveAudioState.skippedIndexes.add(index);
+    }
+  }
+
+  currentAudioUrls[chunkIndex] = audioUrl;
+  appendProgressiveAudioElement(requestId, chunkIndex, audioUrl);
+
+  const receivedCount = currentAudioUrls.filter(Boolean).length;
+  updateAudioStatus(`⏳ 正在接收语音片段...（${receivedCount}/${totalChunks || receivedCount}）`);
+}
+
+function handleElevenLabsProgressiveComplete(payload = {}) {
+  const {
+    requestId = '',
+    totalChunks = 0,
+    failureCount = 0,
+    failedChunkIndexes = [],
+  } = payload;
+
+  if (!isCurrentAudioRequest(requestId)) {
+    return;
+  }
+
+  failedChunkIndexes.forEach((index) => {
+    if (!progressiveAudioState.elements.has(index)) {
+      progressiveAudioState.skippedIndexes.add(index);
+    }
+  });
+  tryPlayNextProgressiveAudio(requestId);
+
+  const successCount = currentAudioUrls.filter(Boolean).length;
+  if (successCount === 0) {
+    updateAudioStatus('⚠️ 未生成可播放音频，请先到设置页测试当前 TTS 配置。', 'orange');
+    return;
+  }
+
+  if (failureCount > 0) {
+    const displayIndexes = failedChunkIndexes.map((index) => index + 1).join(', ');
+    updateAudioStatus(`⚠️ 已收到 ${successCount}/${totalChunks || successCount} 段语音，失败片段：${displayIndexes}`, 'orange');
+    return;
+  }
+
+  updateAudioStatus(`✅ 已收到全部 ${successCount} 段语音`, 'green');
+}
+
+function handleElevenLabsProgressiveError(payload = {}) {
+  const {
+    requestId = '',
+    message = '生成语音失败',
+  } = payload;
+
+  if (!isCurrentAudioRequest(requestId)) {
+    return;
+  }
+
+  const successCount = currentAudioUrls.filter(Boolean).length;
+  if (successCount > 0) {
+    updateAudioStatus(`⚠️ 已收到部分语音，但后续处理失败：${message}`, 'orange');
+    return;
+  }
+
+  updateAudioStatus(`❌ 生成语音失败: ${message}`, 'red');
+}
+
 // play audio
 async function playAudio() {
   if (!targetLog) {
@@ -230,19 +505,28 @@ async function playAudio() {
 
   const ttsEngine = document.getElementById('select-tts-engine').value;
   const fromLang = targetLog.translation.from;
-
-  document.getElementById('div-audio').innerHTML = '<p>⏳ 正在生成语音...</p>';
+  const requestId = createAudioRequestId();
+  resetAudioRequestState(requestId);
 
   try {
+    if (ttsEngine === 'elevenlabs') {
+      const startResult = await ipcRenderer.invoke(IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE, {
+        requestId,
+        text,
+        from: fromLang,
+      });
+
+      if (!startResult?.success) {
+        updateAudioStatus('❌ 启动 ElevenLabs 渐进语音失败', 'red');
+      }
+      return;
+    }
+
     let urlList = [];
 
-    // Call different TTS engines based on selection
     switch (ttsEngine) {
       case 'google':
         urlList = await ipcRenderer.invoke(IPC_CHANNELS.GOOGLE_TTS, text, fromLang);
-        break;
-      case 'elevenlabs':
-        urlList = await ipcRenderer.invoke(IPC_CHANNELS.ELEVENLABS_TTS, text, fromLang);
         break;
       case 'speechify':
         urlList = await ipcRenderer.invoke(IPC_CHANNELS.SPEECHIFY_TTS, text, fromLang);
@@ -254,36 +538,38 @@ async function playAudio() {
         urlList = await ipcRenderer.invoke(IPC_CHANNELS.GOOGLE_TTS, text, fromLang);
     }
 
+    if (!isCurrentAudioRequest(requestId)) {
+      return;
+    }
+
     console.log(`[${ttsEngine}] TTS urls:`, urlList);
 
-    // Store for download
-    currentAudioUrls = urlList;
+    currentAudioUrls = Array.isArray(urlList) ? [...urlList] : [];
 
     if (!Array.isArray(urlList) || urlList.length === 0) {
-      document.getElementById('div-audio').innerHTML = '<p style="color: orange;">⚠️ 未生成可播放音频，请先到设置页测试当前 TTS 配置。</p>';
+      updateAudioStatus('⚠️ 未生成可播放音频，请先到设置页测试当前 TTS 配置。', 'orange');
       currentAudioUrls = [];
       return;
     }
 
-    let innerHTML = '';
-    for (let index = 0; index < urlList.length; index++) {
-      const url = urlList[index];
-      innerHTML += `
-                <audio controls preload="metadata" ${index === 0 ? 'autoplay' : ''} src="${url}"></audio>
-                <br>
-            `;
+    updateAudioStatus(`✅ 已生成 ${urlList.length} 段语音`, 'green');
+    renderBatchAudio(urlList);
+  } catch (error) {
+    if (!isCurrentAudioRequest(requestId)) {
+      return;
     }
 
-    document.getElementById('div-audio').innerHTML = innerHTML;
-  } catch (error) {
     console.error('Error generating audio:', error);
-    document.getElementById('div-audio').innerHTML = `<p style="color: red;">❌ 生成语音失败: ${error.message}</p>`;
+    updateAudioStatus(`❌ 生成语音失败: ${error.message}`, 'red');
   }
 }
 
 // download audio
 async function downloadAudio() {
-  if (currentAudioUrls.length === 0) {
+  const audioEntries = currentAudioUrls
+    .map((url, index) => (url ? { url, chunkIndex: index } : null))
+    .filter(Boolean);
+  if (audioEntries.length === 0) {
     alert('请先点击"播放语音"生成音频');
     return;
   }
@@ -292,8 +578,8 @@ async function downloadAudio() {
   const timestamp = Date.now();
 
   try {
-    for (let index = 0; index < currentAudioUrls.length; index++) {
-      const url = currentAudioUrls[index];
+    for (let index = 0; index < audioEntries.length; index++) {
+      const { url, chunkIndex } = audioEntries[index];
 
       // Create hidden link and trigger download
       const link = document.createElement('a');
@@ -312,19 +598,19 @@ async function downloadAudio() {
       // Create filename with dialogue info
       const nameInfo = targetLog.name ? `${targetLog.name.substring(0, 10)}_` : '';
       const textInfo = (targetLog.text || '').substring(0, 20).replace(/[^a-zA-Z0-9]/g, '_');
-      link.download = `${ttsEngine}_${nameInfo}${textInfo}_part${index + 1}_${timestamp}.${ext}`;
+      link.download = `${ttsEngine}_${nameInfo}${textInfo}_part${chunkIndex + 1}_${timestamp}.${ext}`;
 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
       // Small delay between downloads
-      if (index < currentAudioUrls.length - 1) {
+      if (index < audioEntries.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
-    ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, `已下载 ${currentAudioUrls.length} 个音频文件`);
+    ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, `已下载 ${audioEntries.length} 个音频文件`);
   } catch (error) {
     console.error('Download error:', error);
     alert(`下载失败: ${error.message}`);

@@ -160,6 +160,7 @@ async function synthesizeSpeech(text, language, config) {
         headers,
         timeoutMs: 30000,
         responseType: 'arraybuffer',
+        transportProfile: requestModule.TRANSPORT_PROFILES.TTS,
       })
     );
 

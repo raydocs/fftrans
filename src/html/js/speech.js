@@ -1,83 +1,139 @@
 'use strict';
 
 {
-  // tts object
   const tts = {
     list: [],
-    interval: null,
     speed: 1,
     enable: false,
     isPlaying: false,
     audio: null,
   };
 
-  // add url
   document.addEventListener('add-to-playlist', (event) => {
-    if (tts.enable) tts.list = tts.list.concat(event.detail);
+    if (!tts.enable) {
+      return;
+    }
+
+    const incomingList = Array.isArray(event.detail)
+      ? event.detail.filter((url) => typeof url === 'string' && url)
+      : [];
+
+    if (incomingList.length === 0) {
+      return;
+    }
+
+    tts.list.push(...incomingList);
+    drainPlaylist();
   });
 
-  // set speech speed
   document.addEventListener('set-speech-speed', (event) => {
     const speed = parseFloat(event.detail);
-    if (typeof speed === 'number' && !isNaN(speed)) tts.speed = speed;
-  });
-
-  // start playing
-  document.addEventListener('start-playing', () => {
-    console.log('[TTS] start-playing event received, enabling TTS');
-    tts.enable = true;
-    setPlayInterval();
-  });
-
-  // stop playing
-  document.addEventListener('stop-playing', () => {
-    console.log('[TTS] stop-playing event received, disabling TTS');
-    clearInterval(tts.interval);
-    tts.enable = false;
-    tts.list = [];
-
-    try {
-      tts.audio.pause();
-    } catch (error) {
-      console.log(error);
+    if (typeof speed === 'number' && !isNaN(speed)) {
+      tts.speed = speed;
+      if (tts.audio) {
+        tts.audio.playbackRate = tts.speed;
+      }
     }
   });
 
-  function setPlayInterval() {
-    clearInterval(tts.interval);
-    tts.interval = setInterval(() => {
-      if (tts.isPlaying) return;
+  document.addEventListener('start-playing', () => {
+    console.log('[TTS] start-playing event received, enabling TTS');
+    tts.enable = true;
+    drainPlaylist();
+  });
 
-      const url = tts.list.shift();
+  document.addEventListener('stop-playing', () => {
+    console.log('[TTS] stop-playing event received, disabling TTS');
+    tts.enable = false;
+    tts.list = [];
+    tts.isPlaying = false;
 
-      if (url) {
-        try {
-          tts.audio = new Audio(url);
-          tts.audio.currentTime = 0;
-          tts.audio.volume = 1;
-          tts.audio.playbackRate = tts.speed;
-
-          tts.audio.onplay = () => {
-            tts.isPlaying = true;
-          };
-
-          tts.audio.onpause = () => {
-            tts.isPlaying = false;
-          };
-
-          tts.audio.onended = () => {
-            tts.isPlaying = false;
-          };
-
-          tts.audio.onerror = () => {
-            tts.isPlaying = false;
-          };
-
-          tts.audio.play();
-        } catch (error) {
-          console.log(error);
-        }
+    try {
+      if (tts.audio) {
+        tts.audio.pause();
+        tts.audio.src = '';
       }
-    }, 1000);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      tts.audio = null;
+    }
+  });
+
+  function cleanupCurrentAudio(audio) {
+    if (!audio) {
+      return;
+    }
+
+    audio.onplay = null;
+    audio.onended = null;
+    audio.onerror = null;
+    audio.onpause = null;
+  }
+
+  function drainPlaylist() {
+    if (!tts.enable || tts.isPlaying) {
+      return;
+    }
+
+    const url = tts.list.shift();
+    if (!url) {
+      return;
+    }
+
+    try {
+      cleanupCurrentAudio(tts.audio);
+
+      const audio = new Audio(url);
+      tts.audio = audio;
+      tts.isPlaying = true;
+      audio.currentTime = 0;
+      audio.volume = 1;
+      audio.playbackRate = tts.speed;
+
+      audio.onplay = () => {
+        tts.isPlaying = true;
+      };
+
+      audio.onended = () => {
+        tts.isPlaying = false;
+        if (tts.audio === audio) {
+          tts.audio = null;
+        }
+        drainPlaylist();
+      };
+
+      audio.onerror = () => {
+        tts.isPlaying = false;
+        if (tts.audio === audio) {
+          tts.audio = null;
+        }
+        drainPlaylist();
+      };
+
+      audio.onpause = () => {
+        if (audio.ended) {
+          return;
+        }
+        tts.isPlaying = false;
+      };
+
+      const playResult = audio.play();
+      if (playResult && typeof playResult.catch === 'function') {
+        playResult.catch((error) => {
+          console.log(error);
+          tts.isPlaying = false;
+          if (tts.audio === audio) {
+            tts.audio = null;
+          }
+          drainPlaylist();
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      tts.isPlaying = false;
+      tts.audio = null;
+      drainPlaylist();
+    }
   }
 }

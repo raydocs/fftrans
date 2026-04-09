@@ -105,25 +105,52 @@ setInterval(() => {
 // const restrictedHeaders = ['Content-Length', 'Host', 'Trailer', 'Te', 'Upgrade', 'Cookie2', 'Keep-Alive', 'Transfer-Encoding'];
 const restrictedHeaders = ['content-length', 'host', 'trailer', 'te', 'upgrade', 'cookie2', 'keep-alive', 'transfer-encoding', 'connection'];
 
-// HTTP/HTTPS agents with keep-alive for connection pooling
-// This significantly reduces latency by reusing TCP connections
-// OPTIMIZATION: Aggressive configuration for game translation workload
-const httpAgent = new http.Agent({
-  keepAlive: true,
-  keepAliveMsecs: 120000,  // Keep connection alive for 2 minutes (game sessions)
-  maxSockets: 50,          // Max concurrent connections per host (high concurrency)
-  maxFreeSockets: 20,      // Max idle connections to keep open (more hot connections)
-  timeout: 60000           // Socket timeout: 60 seconds
+const TRANSPORT_PROFILES = Object.freeze({
+  DEFAULT: 'default',
+  TTS: 'tts',
 });
 
-const httpsAgent = new https.Agent({
-  keepAlive: true,
-  keepAliveMsecs: 120000,  // 2 minutes for persistent gaming sessions
-  maxSockets: 50,          // Support high concurrent translation requests
-  maxFreeSockets: 20,      // Maintain more warm connections for faster responses
-  timeout: 60000,          // Socket timeout: 60 seconds
-  lookup: cachedDnsLookup  // OPTIMIZATION: Use cached DNS lookup
+// HTTP/HTTPS agents with keep-alive for connection pooling.
+// Use a dedicated TTS profile so synthesis traffic can reuse its own warm sockets.
+const AGENT_PROFILE_SETTINGS = Object.freeze({
+  [TRANSPORT_PROFILES.DEFAULT]: Object.freeze({
+    keepAlive: true,
+    keepAliveMsecs: 120000, // 2 minutes for persistent gaming sessions
+    maxSockets: 50,         // Support high concurrent translation requests
+    maxFreeSockets: 20,     // Maintain more warm connections for faster responses
+    timeout: 60000,         // Socket timeout: 60 seconds
+  }),
+  [TRANSPORT_PROFILES.TTS]: Object.freeze({
+    keepAlive: true,
+    keepAliveMsecs: 180000, // Keep TTS sockets warm slightly longer for repeated playback
+    maxSockets: 24,
+    maxFreeSockets: 12,
+    timeout: 90000,
+  }),
 });
+
+function createAgentPair(settings = {}) {
+  return {
+    httpAgent: new http.Agent({
+      ...settings,
+    }),
+    httpsAgent: new https.Agent({
+      ...settings,
+      lookup: cachedDnsLookup, // OPTIMIZATION: Use cached DNS lookup
+    }),
+  };
+}
+
+const transportAgents = Object.keys(AGENT_PROFILE_SETTINGS).reduce((profiles, profileName) => {
+  profiles[profileName] = createAgentPair(AGENT_PROFILE_SETTINGS[profileName]);
+  return profiles;
+}, {});
+
+function resolveTransportProfile(transportProfile = TRANSPORT_PROFILES.DEFAULT) {
+  return transportAgents[transportProfile]
+    ? transportProfile
+    : TRANSPORT_PROFILES.DEFAULT;
+}
 
 // sec-ch-ua
 let scu = '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"';
@@ -287,8 +314,12 @@ function buildAxiosConfig(options = {}) {
   const {
     headers = {},
     timeoutMs = null,
+    transportProfile = TRANSPORT_PROFILES.DEFAULT,
+    connectionProfile = null,
     ...rest
   } = options;
+  const resolvedTransportProfile = resolveTransportProfile(connectionProfile || transportProfile);
+  const agents = transportAgents[resolvedTransportProfile];
 
   const configuredTimeout = parseInt(config.translation.timeout, 10);
   const axiosConfig = {
@@ -296,8 +327,8 @@ function buildAxiosConfig(options = {}) {
     timeout: Number.isFinite(timeoutMs)
       ? timeoutMs
       : Math.max(requestTimeout, (Number.isNaN(configuredTimeout) ? requestTimeout / 1000 : configuredTimeout) * 1000),
-    httpAgent: httpAgent,
-    httpsAgent: httpsAgent,
+    httpAgent: agents.httpAgent,
+    httpsAgent: agents.httpsAgent,
     ...rest,
   };
 
@@ -332,6 +363,7 @@ module.exports = {
   setUA,
   toParameters,
   buildAxiosConfig,
-  getHttpAgent: () => httpAgent,
-  getHttpsAgent: () => httpsAgent,
+  getHttpAgent: (transportProfile = TRANSPORT_PROFILES.DEFAULT) => transportAgents[resolveTransportProfile(transportProfile)].httpAgent,
+  getHttpsAgent: (transportProfile = TRANSPORT_PROFILES.DEFAULT) => transportAgents[resolveTransportProfile(transportProfile)].httpsAgent,
+  TRANSPORT_PROFILES,
 };

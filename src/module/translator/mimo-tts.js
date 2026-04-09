@@ -158,6 +158,7 @@ async function synthesizeSpeech(text, language, config) {
         headers,
         timeoutMs: 30000,
         responseType: 'arraybuffer',
+        transportProfile: requestModule.TRANSPORT_PROFILES.TTS,
       })
     );
 
@@ -317,6 +318,7 @@ async function getVoices(configOverride = null) {
           Authorization: `Bearer ${resolvedConfig.apiKey}`,
         },
         timeoutMs: 10000,
+        transportProfile: requestModule.TRANSPORT_PROFILES.TTS,
       })
     );
 

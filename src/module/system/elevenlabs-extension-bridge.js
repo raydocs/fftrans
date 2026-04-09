@@ -429,7 +429,7 @@ async function validateCandidateGeneration(expectedGeneration) {
 
       const elevenLabsTTS = require('../translator/elevenlabs-tts');
       const ttsRequestQueue = require('./tts-request-queue');
-      await ttsRequestQueue.enqueue(() => elevenLabsTTS.validateConfiguration({
+      await ttsRequestQueue.enqueueBackground(() => elevenLabsTTS.validateConfiguration({
         bearerToken: candidate.values.bearerToken,
         refreshToken: '',
         appCheckToken: candidate.values.appCheckToken || '',

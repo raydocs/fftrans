@@ -15,17 +15,7 @@ const fileModule = require('./file-module');
 // notification module
 const notificationModule = require('./notification-module');
 
-// google tts
-const googleTTS = require('../translator/google-tts');
-
-// speechify tts
-const speechifyTTS = require('../translator/speechify-tts');
-
-// elevenlabs tts
-const elevenLabsTTS = require('../translator/elevenlabs-tts');
-
-// mimo tts
-const mimoTTS = require('../translator/mimo-tts');
+const ttsService = require('./tts-service');
 
 // window module
 const windowModule = require('./window-module');
@@ -170,6 +160,37 @@ function getStyle(code = '003D') {
 let cachedLog = null;
 let cachedLogPath = '';
 let logWriteChain = Promise.resolve(); // Serialize async writes to prevent race conditions
+let dialogPlaybackChain = Promise.resolve(); // Keep auto-play lines in order and prevent cross-line interleaving
+
+function enqueueDialogPlayback(dialogData = {}, config = configModule.getConfig()) {
+  const playbackTask = dialogPlaybackChain
+    .catch(() => undefined)
+    .then(async () => {
+      const result = await ttsService.getConfiguredAudioUrlProgressiveWithFallback(
+        dialogData.audioText,
+        dialogData.translation.from,
+        {
+          config,
+          onError: (error, engine) => {
+            console.error(`[Dialog Module] ${engine} TTS error:`, error);
+          },
+        }
+      );
+
+      const urlList = Array.isArray(result?.urls)
+        ? result.urls.filter((audioUrl) => typeof audioUrl === 'string' && audioUrl)
+        : [];
+
+      if (urlList.length > 0) {
+        windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
+      }
+
+      return result;
+    });
+
+  dialogPlaybackChain = playbackTask.then(() => undefined, () => undefined);
+  return playbackTask;
+}
 
 // save dialog
 function saveDialog(dialogData) {
@@ -208,55 +229,8 @@ function saveDialog(dialogData) {
     // speech text at first time
     if (!cachedLog[item.id] && npcChannel.includes(dialogData.code) && dialogData.audioText !== '') {
       const currentConfig = configModule.getConfig();
-      const ttsEngine = currentConfig.indexWindow.ttsEngine || 'google';
-
-      if (ttsEngine === 'speechify') {
-        // Use Speechify TTS
-        speechifyTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
-          .then(urlList => {
-            if (urlList && urlList.length > 0) {
-              windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
-            }
-          })
-          .catch(error => {
-            console.error('[Dialog Module] Speechify TTS error:', error);
-            // Fallback to Google TTS
-            const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-            windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
-          });
-      } else if (ttsEngine === 'elevenlabs') {
-        // Use ElevenLabs TTS
-        elevenLabsTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
-          .then(urlList => {
-            if (urlList && urlList.length > 0) {
-              windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
-            }
-          })
-          .catch(error => {
-            console.error('[Dialog Module] ElevenLabs TTS error:', error);
-            // Fallback to Google TTS
-            const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-            windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
-          });
-      } else if (ttsEngine === 'mimo') {
-        // Use MiMo TTS
-        mimoTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from)
-          .then(urlList => {
-            if (urlList && urlList.length > 0) {
-              windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
-            }
-          })
-          .catch(error => {
-            console.error('[Dialog Module] MiMo TTS error:', error);
-            // Fallback to Google TTS
-            const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-            windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
-          });
-      } else {
-        // Use Google TTS (default)
-        const urlList = googleTTS.getAudioUrl(dialogData.audioText, dialogData.translation.from);
-        windowModule.sendIndex(IPC_CHANNELS.ADD_TO_PLAYLIST, urlList);
-      }
+      enqueueDialogPlayback(dialogData, currentConfig)
+        .catch(error => console.error('[Dialog Module] Failed to queue TTS audio:', error));
     }
 
     // update log in memory

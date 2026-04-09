@@ -5,10 +5,7 @@ const { IPC_CHANNELS } = require('../../constants');
 const engineModule = require('../system/engine-module');
 const translateModule = require('../system/translate-module');
 const configModule = require('../system/config-module');
-const ttsRequestQueue = require('../system/tts-request-queue');
-const googleTTS = require('../translator/google-tts');
-const speechifyTTS = require('../translator/speechify-tts');
-const mimoTTS = require('../translator/mimo-tts');
+const ttsService = require('../system/tts-service');
 const Logger = require('../../utils/logger');
 const { addTask } = require('../fix/fix-entry');
 
@@ -19,6 +16,20 @@ function withTimeout(promise, ms, label) {
             setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
         )
     ]);
+}
+
+function safeSendTtsEvent(webContents, channel, payload) {
+    try {
+        if (!webContents || typeof webContents.isDestroyed !== 'function' || webContents.isDestroyed()) {
+            return false;
+        }
+
+        webContents.send(channel, payload);
+        return true;
+    } catch (error) {
+        Logger.warn('translate-ipc', `Failed to send TTS event: ${channel}`, error);
+        return false;
+    }
 }
 
 function setTranslateChannel() {
@@ -198,25 +209,74 @@ function setTranslateChannel() {
     });
 
     // google tts
-    ipcMain.handle(IPC_CHANNELS.GOOGLE_TTS, (event, text, from) => {
-        return googleTTS.getAudioUrl(text, from);
+    ipcMain.handle(IPC_CHANNELS.GOOGLE_TTS, async (event, text, from) => {
+        return ttsService.getAudioUrlForEngine('google', text, from);
     });
 
     // elevenlabs tts
     ipcMain.handle(IPC_CHANNELS.ELEVENLABS_TTS, async (event, text, from) => {
-        const elevenLabsTTS = require('../translator/elevenlabs-tts');
         try {
-            return await ttsRequestQueue.enqueue(() => elevenLabsTTS.getAudioUrl(text, from));
+            return await ttsService.getAudioUrlForEngine('elevenlabs', text, from);
         } catch (error) {
             Logger.error('translate-ipc', 'Failed to generate ElevenLabs audio', error);
             throw error;
         }
     });
 
+    ipcMain.handle(IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE, async (event, payload = {}) => {
+        const {
+            requestId = `elevenlabs-${Date.now()}`,
+            text = '',
+            from = 'English',
+        } = payload;
+        const webContents = event.sender;
+
+        void (async () => {
+            try {
+                const result = await ttsService.getAudioUrlProgressiveForEngine('elevenlabs', text, from, {
+                    onChunk: ({ chunkIndex, totalChunks, text: chunkText, audioUrl }) => {
+                        safeSendTtsEvent(webContents, IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE_CHUNK, {
+                            requestId,
+                            chunkIndex,
+                            totalChunks,
+                            text: chunkText,
+                            audioUrl,
+                        });
+                    },
+                });
+
+                safeSendTtsEvent(webContents, IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE_COMPLETE, {
+                    requestId,
+                    totalChunks: result.totalChunks,
+                    urls: result.urls,
+                    failureCount: Array.isArray(result.failures) ? result.failures.length : 0,
+                    failedChunkIndexes: Array.isArray(result.failures)
+                        ? result.failures.map((failure) => failure.chunkIndex)
+                        : [],
+                });
+            } catch (error) {
+                Logger.error('translate-ipc', 'Failed to stream ElevenLabs audio', error);
+                safeSendTtsEvent(webContents, IPC_CHANNELS.ELEVENLABS_TTS_PROGRESSIVE_ERROR, {
+                    requestId,
+                    message: error?.message || 'ElevenLabs TTS progressive request failed',
+                    failureCount: Array.isArray(error?.failures) ? error.failures.length : 0,
+                    failedChunkIndexes: Array.isArray(error?.failures)
+                        ? error.failures.map((failure) => failure.chunkIndex)
+                        : [],
+                });
+            }
+        })();
+
+        return {
+            success: true,
+            requestId,
+        };
+    });
+
     // speechify tts
     ipcMain.handle(IPC_CHANNELS.SPEECHIFY_TTS, async (event, text, from) => {
         try {
-            return await ttsRequestQueue.enqueue(() => speechifyTTS.getAudioUrl(text, from));
+            return await ttsService.getAudioUrlForEngine('speechify', text, from);
         } catch (error) {
             Logger.error('translate-ipc', 'Failed to generate Speechify audio', error);
             throw error;
@@ -226,7 +286,7 @@ function setTranslateChannel() {
     // mimo tts
     ipcMain.handle(IPC_CHANNELS.MIMO_TTS, async (event, text, from) => {
         try {
-            return await ttsRequestQueue.enqueue(() => mimoTTS.getAudioUrl(text, from));
+            return await ttsService.getAudioUrlForEngine('mimo', text, from);
         } catch (error) {
             Logger.error('translate-ipc', 'Failed to generate MiMo audio', error);
             throw error;

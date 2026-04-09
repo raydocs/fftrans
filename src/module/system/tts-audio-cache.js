@@ -197,6 +197,32 @@ class TTSAudioCache {
     }
   }
 
+  async has(key = '') {
+    await this.ensureReady();
+    if (!key) {
+      return false;
+    }
+
+    if (this.memoryCache.has(key)) {
+      return true;
+    }
+
+    const entry = this.entries.get(key);
+    if (!entry?.fileName) {
+      return false;
+    }
+
+    const filePath = fileModule.getPath(this.getCacheDir(), entry.fileName);
+    if (!fs.existsSync(filePath)) {
+      this.entries.delete(key);
+      this.memoryCache.delete(key);
+      this.isDirty = true;
+      return false;
+    }
+
+    return true;
+  }
+
   getRecentFailure(key = '') {
     if (!key || this.failureCacheTtlMs <= 0) {
       return null;
@@ -272,7 +298,14 @@ class TTSAudioCache {
 
   async getOrCreate(key = '', factory = async () => null, options = {}) {
     await this.ensureReady();
-    const { useCache = true } = options;
+    const {
+      useCache = true,
+      persistOnSuccess = useCache,
+      rememberFailures = useCache,
+      respectRecentFailures = useCache,
+      reusePending = useCache,
+      registerPending = useCache,
+    } = options;
 
     if (useCache) {
       const cached = await this.get(key);
@@ -280,12 +313,14 @@ class TTSAudioCache {
         return cached;
       }
 
-      const recentFailure = this.getRecentFailure(key);
-      if (recentFailure) {
-        throw recentFailure;
+      if (respectRecentFailures) {
+        const recentFailure = this.getRecentFailure(key);
+        if (recentFailure) {
+          throw recentFailure;
+        }
       }
 
-      if (this.pending.has(key)) {
+      if (reusePending && this.pending.has(key)) {
         return this.pending.get(key);
       }
     }
@@ -293,31 +328,43 @@ class TTSAudioCache {
     const promise = (async () => {
       try {
         const value = await factory();
-        if (useCache) {
+        if (persistOnSuccess) {
           await this.set(key, value);
         } else if (key) {
           this.clearRecentFailure(key);
         }
         return value;
       } catch (error) {
-        if (useCache) {
+        if (rememberFailures) {
           this.rememberFailure(key, error);
         }
         throw error;
       }
     })();
 
-    if (useCache) {
+    if (registerPending && key) {
       this.pending.set(key, promise);
     }
 
     try {
       return await promise;
     } finally {
-      if (useCache) {
+      if (registerPending && key) {
         this.pending.delete(key);
       }
     }
+  }
+
+  async preCache(key = '', factory = async () => null, options = {}) {
+    return this.getOrCreate(key, factory, {
+      useCache: true,
+      persistOnSuccess: true,
+      rememberFailures: false,
+      respectRecentFailures: false,
+      reusePending: false,
+      registerPending: false,
+      ...options,
+    });
   }
 
   async evictIfNeeded() {

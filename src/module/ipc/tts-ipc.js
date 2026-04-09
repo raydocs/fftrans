@@ -124,6 +124,18 @@ const TTS_VOICE_DISPATCHERS = {
   mimo: (config) => mimoTTS.getVoices(config),
 };
 
+function enqueueControl(task) {
+  return ttsRequestQueue.enqueueControl(task);
+}
+
+function enqueueSynthesis(task) {
+  return ttsRequestQueue.enqueueSynthesis(task);
+}
+
+function enqueueBackground(task) {
+  return ttsRequestQueue.enqueueBackground(task);
+}
+
 function setTTSChannel() {
   // Unified: test current TTS engine
   ipcMain.handle(IPC_CHANNELS.TEST_CURRENT_TTS_ENGINE, async (event, payload = {}) => {
@@ -144,7 +156,7 @@ function setTTSChannel() {
     }
 
     try {
-      const result = await ttsRequestQueue.enqueue(() => dispatcher(config));
+      const result = await enqueueSynthesis(() => dispatcher(config));
       return IPCResponse.success({ engine, provider: result.provider, supported: true, result }, `${result.provider} 测试成功`);
     } catch (error) {
       Logger.error('tts-ipc', `Failed to test TTS engine: ${engine}`, error);
@@ -162,7 +174,7 @@ function setTTSChannel() {
     }
 
     try {
-      const result = await ttsRequestQueue.enqueue(() => dispatcher(config));
+      const result = await enqueueControl(() => dispatcher(config));
       return IPCResponse.success({ engine, ...result });
     } catch (error) {
       Logger.error('tts-ipc', `Failed to get voices for: ${engine}`, error);
@@ -172,7 +184,7 @@ function setTTSChannel() {
 
   ipcMain.handle(IPC_CHANNELS.TEST_SPEECHIFY_CONFIG, async (event, configOverride = {}) => {
     try {
-      const result = await ttsRequestQueue.enqueue(() => speechifyTTS.testConfiguration(configOverride));
+      const result = await enqueueSynthesis(() => speechifyTTS.testConfiguration(configOverride));
       return IPCResponse.success(result, 'Speechify 配置测试成功');
     } catch (error) {
       Logger.error('tts-ipc', 'Failed to test Speechify config', error);
@@ -277,9 +289,10 @@ function setTTSChannel() {
 
   ipcMain.handle(IPC_CHANNELS.CHECK_BROWSER_ASSIST_LOGIN, async (event, configOverride = {}, options = {}) => {
     const { background = false } = options;
+    const enqueueLane = background ? enqueueBackground : enqueueControl;
 
     try {
-      const browserData = await ttsRequestQueue.enqueue(() => elevenLabsBrowserAssist.inspectBrowserAssistLogin());
+      const browserData = await enqueueLane(() => elevenLabsBrowserAssist.inspectBrowserAssistLogin());
       const mergedAuthInput = {
         refreshToken: (configOverride?.refreshToken || '').trim() || browserData.refreshToken,
         appCheckToken: (configOverride?.appCheckToken || '').trim() || browserData.appCheckToken,
@@ -299,7 +312,7 @@ function setTTSChannel() {
 
       if (browserData?.bearerToken && browserData?.bearer?.status === ELEVENLABS_BROWSER_ASSIST_BEARER_STATUS.TRUSTED) {
         try {
-          validation = await ttsRequestQueue.enqueue(() => elevenLabsTTS.validateConfiguration({
+          validation = await enqueueLane(() => elevenLabsTTS.validateConfiguration({
             bearerToken: browserData.bearerToken,
             appCheckToken: mergedAuthInput.appCheckToken,
             deviceId: mergedAuthInput.deviceId,
@@ -323,7 +336,7 @@ function setTTSChannel() {
 
       if (!validatedBearerToken && mergedAuthInput.refreshToken) {
         try {
-          validation = await ttsRequestQueue.enqueue(() => elevenLabsAuth.validateRefreshToken(mergedAuthInput));
+          validation = await enqueueLane(() => elevenLabsAuth.validateRefreshToken(mergedAuthInput));
           validationMode = 'refresh';
           imported.refreshToken = Boolean(browserData.refreshToken);
         } catch (error) {
@@ -380,7 +393,7 @@ function setTTSChannel() {
 
   ipcMain.handle(IPC_CHANNELS.VALIDATE_ELEVENLABS_CONFIG, async (event, configOverride = {}) => {
     try {
-      const result = await ttsRequestQueue.enqueue(() => elevenLabsTTS.validateConfiguration(configOverride));
+      const result = await enqueueControl(() => elevenLabsTTS.validateConfiguration(configOverride));
       return IPCResponse.success(result, 'ElevenLabs 凭证验证成功');
     } catch (error) {
       Logger.error('tts-ipc', 'Failed to validate ElevenLabs config', error);
@@ -390,7 +403,7 @@ function setTTSChannel() {
 
   ipcMain.handle(IPC_CHANNELS.VALIDATE_REFRESH_TOKEN, async (event, configOverride = {}) => {
     try {
-      const result = await ttsRequestQueue.enqueue(() => elevenLabsAuth.validateRefreshToken(configOverride));
+      const result = await enqueueControl(() => elevenLabsAuth.validateRefreshToken(configOverride));
       return IPCResponse.success(result, 'ElevenLabs Refresh Token 验证成功');
     } catch (error) {
       Logger.error('tts-ipc', 'Failed to validate ElevenLabs refresh token', error);
@@ -415,7 +428,7 @@ function setTTSChannel() {
     const { text = '', config = {} } = payload;
 
     try {
-      const audioUrl = await ttsRequestQueue.enqueue(() => speechifyTTS.synthesizeSpeech(text, 'English', config));
+      const audioUrl = await enqueueSynthesis(() => speechifyTTS.synthesizeSpeech(text, 'English', config));
       return IPCResponse.success({
         provider: 'Speechify',
         audioUrl,
@@ -433,7 +446,7 @@ function setTTSChannel() {
 
   ipcMain.handle(IPC_CHANNELS.TEST_ELEVENLABS_CONFIG, async (event, configOverride = {}) => {
     try {
-      const result = await ttsRequestQueue.enqueue(() => elevenLabsTTS.testConfiguration(configOverride));
+      const result = await enqueueSynthesis(() => elevenLabsTTS.testConfiguration(configOverride));
       return IPCResponse.success(result, 'ElevenLabs 配置测试成功');
     } catch (error) {
       Logger.error('tts-ipc', 'Failed to test ElevenLabs config', error);
@@ -444,7 +457,7 @@ function setTTSChannel() {
   // MiMo: Test configuration
   ipcMain.handle(IPC_CHANNELS.TEST_MIMO_CONFIG, async (event, configOverride = {}) => {
     try {
-      const result = await ttsRequestQueue.enqueue(() => mimoTTS.testConfiguration(configOverride));
+      const result = await enqueueSynthesis(() => mimoTTS.testConfiguration(configOverride));
       return IPCResponse.success(result, 'MiMo 配置测试成功');
     } catch (error) {
       Logger.error('tts-ipc', 'Failed to test MiMo config', error);
@@ -471,7 +484,7 @@ function setTTSChannel() {
     const { text = '', config = {} } = payload;
 
     try {
-      const audioUrl = await ttsRequestQueue.enqueue(() => mimoTTS.synthesizeSpeech(text, 'English', config));
+      const audioUrl = await enqueueSynthesis(() => mimoTTS.synthesizeSpeech(text, 'English', config));
       return IPCResponse.success({
         provider: 'MiMo',
         audioUrl,
@@ -492,7 +505,7 @@ function setTTSChannel() {
     const { text = '', config = {} } = payload;
 
     try {
-      const audioUrl = await ttsRequestQueue.enqueue(() => elevenLabsTTS.synthesizeSpeech(text, 'English', config, {
+      const audioUrl = await enqueueSynthesis(() => elevenLabsTTS.synthesizeSpeech(text, 'English', config, {
         authOptions: {
           allowRefresh: true,
           cacheResolvedSession: false,

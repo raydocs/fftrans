@@ -138,6 +138,10 @@ const IPC_CHANNELS = {
     GOOGLE_TTS: 'google-tts',
     SPEECHIFY_TTS: 'speechify-tts',
     ELEVENLABS_TTS: 'elevenlabs-tts',
+    ELEVENLABS_TTS_PROGRESSIVE: 'elevenlabs-tts-progressive',
+    ELEVENLABS_TTS_PROGRESSIVE_CHUNK: 'elevenlabs-tts-progressive-chunk',
+    ELEVENLABS_TTS_PROGRESSIVE_COMPLETE: 'elevenlabs-tts-progressive-complete',
+    ELEVENLABS_TTS_PROGRESSIVE_ERROR: 'elevenlabs-tts-progressive-error',
     MIMO_TTS: 'mimo-tts',
 
     // Global Shortcut

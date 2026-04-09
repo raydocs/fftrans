@@ -22,7 +22,8 @@ class PromiseQueue {
         const { task, resolve, reject } = this.queue.shift();
         this.running++;
 
-        task()
+        Promise.resolve()
+            .then(() => task())
             .then(resolve)
             .catch(reject)
             .finally(() => {
