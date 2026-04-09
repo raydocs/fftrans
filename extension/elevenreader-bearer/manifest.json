@@ -3,7 +3,7 @@
   "name": "FFTrans ElevenReader Bearer Bridge",
   "version": "0.3.0",
   "description": "Captures ElevenReader bearer headers and forwards them to FFTrans via WebSocket.",
-  "permissions": ["webRequest", "alarms", "tabs", "scripting"],
+  "permissions": ["webRequest", "alarms", "tabs", "scripting", "storage"],
   "host_permissions": [
     "https://api.elevenlabs.io/*",
     "https://elevenreader.io/*",

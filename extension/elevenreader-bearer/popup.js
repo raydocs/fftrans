@@ -1,4 +1,5 @@
 'use strict';
+/* global chrome */
 
 function formatTime(ms) {
   if (!ms) return '—';

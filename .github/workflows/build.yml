@@ -7,6 +7,8 @@ on:
 jobs:
   version-check:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       status: ${{ steps.auto-check.outputs.status }}
       release_tag: ${{ steps.auto-check.outputs.release_tag }}
@@ -18,12 +20,36 @@ jobs:
         id: auto-check
         run: bash .github/workflows/autocheck.sh
 
-  build-windows:
+  preflight:
     needs: version-check
     if: needs.version-check.outputs.status == 'ready'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint targeted code paths
+        run: npm run lint
+
+      - name: Syntax and release-asset verification
+        run: npm run test
+
+      - name: Verify workflow shell syntax
+        run: bash -n .github/workflows/autocheck.sh
+
+  build-windows:
+    needs: [version-check, preflight]
+    if: needs.version-check.outputs.status == 'ready'
     runs-on: windows-latest
-    permissions:
-      contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -55,31 +81,17 @@ jobs:
           }
         shell: powershell
 
-      - name: Create release
-        id: create_release
-        uses: comnoco/create-release-action@v2
-        env:
-          RELEASE_VERSION: ${{ needs.version-check.outputs.release_tag }}
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v${{ env.RELEASE_VERSION }}
-          release_name: Release v${{ env.RELEASE_VERSION }}
-
-      - name: Upload Windows installer
-        uses: actions/upload-release-asset@v1
-        env:
-          RELEASE_VERSION: ${{ needs.version-check.outputs.release_tag }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/Tataru Assistant Setup ${{ needs.version-check.outputs.release_tag }}.exe
-          asset_name: Tataru_Assistant_Setup.exe
-          asset_content_type: application/octet-stream
+          name: windows-installer
+          path: build/Tataru Assistant Setup ${{ needs.version-check.outputs.release_tag }}.exe
+          if-no-files-found: error
 
   build-macos:
-    needs: [version-check, build-windows]
+    needs: [version-check, preflight]
     if: needs.version-check.outputs.status == 'ready'
     runs-on: macos-latest
-    permissions:
-      contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -111,11 +123,42 @@ jobs:
           echo "dmg_path=$DMG" >> "$GITHUB_OUTPUT"
           echo "Resolved dmg: $DMG"
 
-      - name: Upload macOS dmg to release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload macOS dmg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: ${{ steps.resolve_dmg.outputs.dmg_path }}
+          if-no-files-found: error
+
+  release:
+    needs: [version-check, build-windows, build-macos]
+    if: needs.version-check.outputs.status == 'ready'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: release-assets/windows
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: release-assets/macos
+
+      - name: Create or update release
         run: |
-          gh release upload "v${{ needs.version-check.outputs.release_tag }}" "${{ steps.resolve_dmg.outputs.dmg_path }}" --clobber
+          TAG="v${{ needs.version-check.outputs.release_tag }}"
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Release $TAG" --notes ""
+          for asset in release-assets/windows/* release-assets/macos/*; do
+            [ -e "$asset" ] || continue
+            gh release upload "$TAG" "$asset" --clobber
+          done
 
   del_runs:
     runs-on: ubuntu-latest

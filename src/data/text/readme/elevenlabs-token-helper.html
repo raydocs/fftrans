@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FFTrans ElevenLabs fallback guide</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <main class="container py-4">
+      <h1>FFTrans ElevenLabs fallback guide</h1>
+      <p>
+        <strong>Primary path:</strong> use Chrome / Chromium + the bundled ElevenReader extension in FFTrans.
+        Use the options below only when that primary path is unavailable.
+      </p>
+
+      <h2>1. Manual Refresh Token fallback</h2>
+      <ol>
+        <li>Open FFTrans → <strong>Settings → Speech → ElevenLabs Reader</strong>.</li>
+        <li>Expand <strong>Fallbacks: manual Refresh Token / legacy browser-assist</strong>.</li>
+        <li>Paste a valid ElevenLabs / ElevenReader <strong>Refresh Token</strong>.</li>
+        <li>Click <strong>Validate</strong>.</li>
+        <li>After validation succeeds, click <strong>Save and finish</strong>.</li>
+      </ol>
+      <p>
+        This is the recommended fallback for users on non-Chromium browsers or systems where the extension is not available.
+      </p>
+
+      <h2>2. Legacy browser-assist fallback</h2>
+      <ol>
+        <li>Use this only if the Chromium extension path is unavailable.</li>
+        <li>In FFTrans, click <strong>Open legacy browser-assist</strong>.</li>
+        <li>Log in to ElevenReader / ElevenLabs inside that legacy window.</li>
+        <li>Return to FFTrans and click <strong>Import from legacy window</strong>.</li>
+      </ol>
+      <p>
+        The legacy flow may import either a Refresh Token or only a bearer-backed session.
+        A bearer-only import can work immediately, but it may expire and need to be re-imported after restart.
+      </p>
+
+      <h2>3. What persists</h2>
+      <ul>
+        <li><strong>Refresh Token</strong>: best fallback; survives restarts better.</li>
+        <li><strong>App Check / Device ID</strong>: saved when available and useful.</li>
+        <li><strong>Bearer-only session</strong>: usable now, but treat it as temporary.</li>
+      </ul>
+
+      <h2>4. Practical rollout note</h2>
+      <p>
+        FFTrans keeps existing ElevenLabs configs intact. If you already have a working saved Refresh Token,
+        you do not need to reconnect the browser unless you want to re-authorize.
+      </p>
+    </main>
+  </body>
+</html>

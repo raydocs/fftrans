@@ -20,6 +20,12 @@ const sessionState = {
   refreshInFlight: null,
   generation: 0,
 };
+const extensionBridgeRuntimeState = {
+  refreshToken: '',
+  appCheckToken: '',
+  deviceId: '',
+  importedAt: '',
+};
 
 function abortRefreshInFlight(reason = 'refresh_cancelled') {
   const currentRefresh = sessionState.refreshInFlight;
@@ -137,6 +143,55 @@ function buildDefaultAuthState() {
   };
 }
 
+function getExtensionBridgeRuntimeOverride() {
+  const override = {};
+
+  if (extensionBridgeRuntimeState.refreshToken) {
+    override.refreshToken = extensionBridgeRuntimeState.refreshToken;
+  }
+
+  if (extensionBridgeRuntimeState.appCheckToken) {
+    override.appCheckToken = extensionBridgeRuntimeState.appCheckToken;
+  }
+
+  if (extensionBridgeRuntimeState.deviceId) {
+    override.deviceId = extensionBridgeRuntimeState.deviceId;
+  }
+
+  return override;
+}
+
+function getExtensionBridgeRuntimeStatus() {
+  return {
+    hasRefreshToken: Boolean(extensionBridgeRuntimeState.refreshToken),
+    hasAppCheckToken: Boolean(extensionBridgeRuntimeState.appCheckToken),
+    hasDeviceId: Boolean(extensionBridgeRuntimeState.deviceId),
+    importedAt: extensionBridgeRuntimeState.importedAt,
+  };
+}
+
+function setExtensionBridgeRuntimeAuth(authInput = {}) {
+  extensionBridgeRuntimeState.refreshToken = typeof authInput?.refreshToken === 'string' ? authInput.refreshToken.trim() : '';
+  extensionBridgeRuntimeState.appCheckToken = typeof authInput?.appCheckToken === 'string' ? authInput.appCheckToken.trim() : '';
+  extensionBridgeRuntimeState.deviceId = typeof authInput?.deviceId === 'string' ? authInput.deviceId.trim() : '';
+  extensionBridgeRuntimeState.importedAt = (
+    extensionBridgeRuntimeState.refreshToken ||
+    extensionBridgeRuntimeState.appCheckToken ||
+    extensionBridgeRuntimeState.deviceId
+  )
+    ? new Date().toISOString()
+    : '';
+
+  return getExtensionBridgeRuntimeStatus();
+}
+
+function clearExtensionBridgeRuntimeAuth() {
+  extensionBridgeRuntimeState.refreshToken = '';
+  extensionBridgeRuntimeState.appCheckToken = '';
+  extensionBridgeRuntimeState.deviceId = '';
+  extensionBridgeRuntimeState.importedAt = '';
+}
+
 function sanitizeAuthOverride(configOverride = {}) {
   return {
     bearerToken: typeof configOverride?.bearerToken === 'string' ? configOverride.bearerToken.trim() : '',
@@ -151,21 +206,25 @@ function getAuthContext(configOverride = {}) {
   const savedConfig = config?.api?.elevenlabs || {};
   const savedAuth = config?.auth?.elevenlabs || {};
   const override = sanitizeAuthOverride(configOverride);
+  const runtimeOverride = getExtensionBridgeRuntimeOverride();
+  const runtimeStatus = getExtensionBridgeRuntimeStatus();
   const hasActiveBearer = isSessionValid(sessionState.bearerToken, sessionState.expiresAtMs);
   const savedBearerToken = typeof savedConfig.bearerToken === 'string' ? savedConfig.bearerToken.trim() : '';
   const savedRefreshToken = typeof savedConfig.refreshToken === 'string' ? savedConfig.refreshToken.trim() : '';
   const savedAppCheckToken = typeof savedConfig.appCheckToken === 'string' ? savedConfig.appCheckToken.trim() : '';
   const savedDeviceId = typeof savedConfig.deviceId === 'string' ? savedConfig.deviceId.trim() : '';
   const mergedBearerToken = override.bearerToken || savedBearerToken;
-  const mergedRefreshToken = override.refreshToken || savedRefreshToken;
-  const mergedAppCheckToken = override.appCheckToken || savedAppCheckToken;
-  const mergedDeviceId = override.deviceId || savedDeviceId;
+  const mergedRefreshToken = override.refreshToken || runtimeOverride.refreshToken || savedRefreshToken;
+  const mergedAppCheckToken = override.appCheckToken || runtimeOverride.appCheckToken || savedAppCheckToken;
+  const mergedDeviceId = override.deviceId || runtimeOverride.deviceId || savedDeviceId;
 
   return {
     config,
     savedConfig,
     savedAuth,
     override,
+    runtimeOverride,
+    runtimeStatus,
     hasActiveBearer,
     savedBearerToken,
     savedRefreshToken,
@@ -201,6 +260,22 @@ function clearSession() {
   abortRefreshInFlight('refresh_cancelled');
   resetSessionState();
   sessionState.refreshInFlight = null;
+}
+
+function getSessionOnlySession(source = ELEVENLABS_AUTH_SOURCES.NONE) {
+  if (sessionState.source !== source || sessionState.refreshTokenKey) {
+    return null;
+  }
+
+  if (!isSessionValid(sessionState.bearerToken, sessionState.expiresAtMs)) {
+    clearSession();
+    return null;
+  }
+
+  return {
+    bearerToken: sessionState.bearerToken,
+    expiresAt: sessionState.expiresAtMs,
+  };
 }
 
 function setSession({ bearerToken = '', expiresAt = 0, source = ELEVENLABS_AUTH_SOURCES.NONE, refreshTokenKey = '' } = {}) {
@@ -262,19 +337,11 @@ function getRefreshBackedSession(refreshToken = '', options = {}) {
 }
 
 function getLegacySession() {
-  if (sessionState.source !== ELEVENLABS_AUTH_SOURCES.LEGACY_BEARER_MIGRATION || sessionState.refreshTokenKey) {
-    return null;
-  }
+  return getSessionOnlySession(ELEVENLABS_AUTH_SOURCES.LEGACY_BEARER_MIGRATION);
+}
 
-  if (!isSessionValid(sessionState.bearerToken, sessionState.expiresAtMs)) {
-    clearSession();
-    return null;
-  }
-
-  return {
-    bearerToken: sessionState.bearerToken,
-    expiresAt: sessionState.expiresAtMs,
-  };
+function getExtensionBridgeSession() {
+  return getSessionOnlySession(ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE);
 }
 
 function persistAuthState(patch = {}, enabled = true) {
@@ -414,6 +481,7 @@ function getMergedConfig(configOverride = {}) {
   const config = configModule.getConfig();
   return {
     ...config.api.elevenlabs,
+    ...getExtensionBridgeRuntimeOverride(),
     ...configOverride,
   };
 }
@@ -534,10 +602,16 @@ function getAuthStatus(configOverride = {}) {
       hasSavedBearerToken: Boolean(context.savedBearerToken),
       hasRefreshToken: Boolean(context.mergedRefreshToken),
       hasSavedRefreshToken: Boolean(context.savedRefreshToken),
+      hasImportedRefreshToken: Boolean(context.runtimeStatus?.hasRefreshToken),
       hasAppCheckToken: Boolean(context.mergedAppCheckToken),
       hasSavedAppCheckToken: Boolean(context.savedAppCheckToken),
+      hasImportedAppCheckToken: Boolean(context.runtimeStatus?.hasAppCheckToken),
       hasDeviceId: Boolean(context.mergedDeviceId),
       hasSavedDeviceId: Boolean(context.savedDeviceId),
+      hasImportedDeviceId: Boolean(context.runtimeStatus?.hasDeviceId),
+    },
+    runtime: {
+      extensionBridge: context.runtimeStatus,
     },
   };
 }
@@ -611,6 +685,7 @@ async function validateRefreshToken(configOverride = {}, options = {}) {
 function clearAuthSession(configOverride = {}, options = {}) {
   const { persistAuthState: shouldPersistAuthState = true } = options;
 
+  clearExtensionBridgeRuntimeAuth();
   clearSession();
   persistAuthState(buildDefaultAuthState(), shouldPersistAuthState);
 
@@ -723,6 +798,21 @@ async function resolveAuthConfig(configOverride = {}, options = {}) {
     }
   }
 
+  const extensionBridgeSession = getExtensionBridgeSession();
+  if (extensionBridgeSession) {
+    persistReadyState(ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE, shouldPersistAuthState);
+    return buildResolvedConfig(mergedConfig, {
+      bearerToken: extensionBridgeSession.bearerToken,
+      refreshToken,
+      deviceId,
+      didGenerateDeviceId,
+      didRefreshBearer: false,
+      authSource: ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE,
+      appCheckToken,
+      expiresAt: extensionBridgeSession.expiresAt,
+    });
+  }
+
   const legacySession = getLegacySession();
   if (legacySession) {
     persistLegacySessionState(shouldPersistAuthState);
@@ -756,6 +846,10 @@ function handlePersistedConfigChange(previousConfig = {}, nextConfig = {}) {
   if (previousRefreshToken !== nextRefreshToken) {
     clearRefreshBackedSession();
 
+    if (!nextRefreshToken || nextRefreshToken !== extensionBridgeRuntimeState.refreshToken) {
+      clearExtensionBridgeRuntimeAuth();
+    }
+
     if (!nextRefreshToken) {
       persistAuthState(buildDefaultAuthState(), true);
     }
@@ -773,4 +867,7 @@ module.exports = {
   getAuthStatus,
   validateRefreshToken,
   clearAuthSession,
+  setExtensionBridgeRuntimeAuth,
+  clearExtensionBridgeRuntimeAuth,
+  getExtensionBridgeRuntimeStatus,
 };

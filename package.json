@@ -5,9 +5,10 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "lint": "eslint src/main.js src/module/ipc/translate-ipc.js src/module/ipc/tts-ipc.js src/module/system/request-module.js src/module/system/config-module.js src/module/system/tts-request-queue.js src/module/system/tts-audio-cache.js src/module/translator/speechify-tts.js src/module/translator/elevenlabs-auth.js src/module/translator/elevenlabs-tts.js src/utils/crypto-helper.js src/utils/config-validator.js src/utils/ipc-response.js src/html/config.js src/html/edit.js src/html/js/language.js",
+    "lint": "eslint src/main.js src/module/ipc/translate-ipc.js src/module/ipc/tts-ipc.js src/module/system/request-module.js src/module/system/config-module.js src/module/system/elevenlabs-extension-bridge.js src/module/system/elevenlabs-browser-assist.js src/module/system/tts-request-queue.js src/module/system/tts-audio-cache.js src/module/translator/speechify-tts.js src/module/translator/elevenlabs-auth.js src/module/translator/elevenlabs-tts.js src/utils/crypto-helper.js src/utils/config-validator.js src/utils/ipc-response.js src/html/config.js src/html/edit.js src/html/js/language.js extension/elevenreader-bearer/background.js extension/elevenreader-bearer/popup.js scripts/verify-elevenlabs-release.js",
     "typecheck": "node --check src/main.js",
-    "test": "for f in src/main.js src/module/ipc/translate-ipc.js src/module/ipc/tts-ipc.js src/module/system/request-module.js src/module/system/config-module.js src/module/system/tts-request-queue.js src/module/system/tts-audio-cache.js src/module/translator/speechify-tts.js src/module/translator/elevenlabs-auth.js src/module/translator/elevenlabs-tts.js src/utils/crypto-helper.js src/utils/config-validator.js src/utils/ipc-response.js src/html/config.js src/html/edit.js src/html/js/language.js; do node --check \"$f\" || exit 1; done",
+    "verify:elevenlabs-release": "node scripts/verify-elevenlabs-release.js",
+    "test": "for f in src/main.js src/module/ipc/translate-ipc.js src/module/ipc/tts-ipc.js src/module/system/request-module.js src/module/system/config-module.js src/module/system/elevenlabs-extension-bridge.js src/module/system/elevenlabs-browser-assist.js src/module/system/tts-request-queue.js src/module/system/tts-audio-cache.js src/module/translator/speechify-tts.js src/module/translator/elevenlabs-auth.js src/module/translator/elevenlabs-tts.js src/utils/crypto-helper.js src/utils/config-validator.js src/utils/ipc-response.js src/html/config.js src/html/edit.js src/html/js/language.js extension/elevenreader-bearer/background.js extension/elevenreader-bearer/popup.js scripts/verify-elevenlabs-release.js; do node --check \"$f\" || exit 1; done && npm run verify:elevenlabs-release",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
@@ -51,8 +52,8 @@
     },
     "extraFiles": [
       "src/data",
+      "extension/elevenreader-bearer",
       "!src/data/img/*.png",
-      "!src/data/text/readme",
       "!src/data/text/non-ai",
       "!src/data/text/hidden",
       "!src/data/text/**/hidden",

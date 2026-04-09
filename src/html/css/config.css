@@ -497,6 +497,122 @@ main::-webkit-scrollbar-thumb:hover {
   gap: 0.5rem;
 }
 
+/* ElevenLabs onboarding flow */
+.elevenlabs-step-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 520px;
+}
+
+.elevenlabs-step {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.elevenlabs-flow-buttons {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.elevenlabs-status-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-width: 360px;
+  max-width: 560px;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.elevenlabs-status-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.elevenlabs-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.elevenlabs-status-pill.tone-success {
+  background: rgba(40, 167, 69, 0.2);
+  color: #8be39f;
+}
+
+.elevenlabs-status-pill.tone-warning {
+  background: rgba(255, 193, 7, 0.18);
+  color: #ffd76a;
+}
+
+.elevenlabs-status-pill.tone-danger {
+  background: rgba(220, 53, 69, 0.18);
+  color: #ff9aa6;
+}
+
+.elevenlabs-status-pill.tone-info {
+  background: rgba(13, 110, 253, 0.18);
+  color: #8cb9ff;
+}
+
+.elevenlabs-status-pill.tone-muted {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.elevenlabs-status-title {
+  font-weight: 600;
+}
+
+.elevenlabs-status-body,
+.elevenlabs-status-meta,
+.elevenlabs-action-hint {
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.elevenlabs-status-meta {
+  opacity: 0.82;
+}
+
+.elevenlabs-action-hint {
+  opacity: 0.78;
+}
+
+.elevenlabs-advanced-details {
+  margin: 0 1.25rem 1rem;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.elevenlabs-advanced-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+}
+
+.elevenlabs-advanced-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 /* ========== 折叠区域样式 ========== */
 .settings-section.collapsible {
   cursor: pointer;

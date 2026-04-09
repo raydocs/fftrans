@@ -70,7 +70,7 @@ function buildAssistError(message, code = 'browser_assist_error') {
   const error = new Error(message);
   error.authCode = code;
   error.retryable = false;
-  error.suggestion = '请先打开 ElevenReader 浏览器辅助窗口并完成登录';
+  error.suggestion = '请先打开 ElevenReader 旧版浏览器辅助窗口并完成登录';
   return error;
 }
 
@@ -125,7 +125,7 @@ function ensureAssistWindow() {
     minHeight: 720,
     show: false,
     autoHideMenuBar: true,
-    title: 'ElevenReader Browser Assist',
+    title: 'ElevenReader Legacy Browser Assist',
     backgroundColor: '#101114',
     webPreferences: {
       partition: ASSIST_PARTITION,
@@ -204,7 +204,7 @@ function getBrowserAssistStatus() {
   return {
     isOpen: true,
     currentUrl,
-    title: window.getTitle() || 'ElevenReader Browser Assist',
+    title: window.getTitle() || 'ElevenReader Legacy Browser Assist',
     onElevenLabsOrigin: isAllowedAssistUrl(currentUrl),
     isLoading: window.webContents.isLoading(),
     lastInspection: cloneInspectionData(),
@@ -224,7 +224,7 @@ function focusBrowserAssistWindow() {
   return {
     opened: true,
     url: window.webContents.getURL() || DEFAULT_ASSIST_URL,
-    title: window.getTitle() || 'ElevenReader Browser Assist',
+    title: window.getTitle() || 'ElevenReader Legacy Browser Assist',
     browserAssist: getBrowserAssistStatus(),
   };
 }
@@ -319,7 +319,8 @@ function buildInspectionScript() {
           return [];
         }
 
-        return value.match(/(?:Bearer\s+)?eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g) || [];
+        return value.match(/(?:Bearer[ 	
+]+)?eyJ[A-Za-z0-9_-]+[.][A-Za-z0-9_-]+[.][A-Za-z0-9_-]+/g) || [];
       }
 
       function recordString(value, source) {
@@ -337,7 +338,7 @@ function buildInspectionScript() {
         const isAppCheckSource = /app.?check/.test(lowerSource);
         const isRefreshSource = /refresh[_-]?token/.test(lowerSource);
         const isDeviceSource = /device[_-]?id/.test(lowerSource);
-        const isHighConfidenceBearerSource = /(firebase:authuser|ststokenmanager\.accesstoken|authorization|bearer|(^|[^a-z])(access|id)[_-]?token([^a-z]|$))/.test(lowerSource);
+        const isHighConfidenceBearerSource = /(firebase:authuser|ststokenmanager[.]accesstoken|authorization|bearer|(^|[^a-z])(access|id)[_-]?token([^a-z]|$))/.test(lowerSource);
 
         if (isRefreshSource && trimmed.length > 20) {
           add('refresh', trimmed, source);
@@ -570,7 +571,7 @@ function isHighConfidenceBearerCandidate(candidate = {}) {
   }
 
   const source = String(candidate?.source || '');
-  return /(firebase:authUser|stsTokenManager\.accessToken|(^|[.\[])(accessToken|idToken)(?:$|[.\]])|authorization|bearer)/i.test(source);
+  return /(firebase:authUser|stsTokenManager\.accessToken|(^|[.[])(accessToken|idToken)(?:$|[.\]])|authorization|bearer)/i.test(source);
 }
 
 function compareBearerCandidates(a = {}, b = {}) {
@@ -745,7 +746,7 @@ function updateBearerValidationResult(bearerToken = '', {
 async function inspectBrowserAssistLogin() {
   const window = getAssistWindow();
   if (!window) {
-    throw buildAssistError('请先点击“连接浏览器”打开 ElevenReader 登录窗口', 'browser_assist_not_open');
+    throw buildAssistError('请先点击“打开旧版浏览器辅助窗口”打开 ElevenReader 登录窗口', 'browser_assist_not_open');
   }
 
   const currentUrl = window.webContents.getURL() || '';
@@ -762,7 +763,7 @@ async function inspectBrowserAssistLogin() {
   lastInspection = {
     detectedAt: new Date().toISOString(),
     currentUrl: inspection?.currentUrl || currentUrl,
-    title: inspection?.title || window.getTitle() || 'ElevenReader Browser Assist',
+    title: inspection?.title || window.getTitle() || 'ElevenReader Legacy Browser Assist',
     bearerToken: bearerCandidate.bearerToken || '',
     refreshToken: refreshTokenCandidate?.value || '',
     appCheckToken: appCheckCandidate?.value || '',

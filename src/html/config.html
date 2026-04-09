@@ -496,19 +496,99 @@
               <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
             <span id="p-elevenlabs-tts">ElevenLabs Reader</span>
-            <a href="#" id="a-open-elevenlabs-token-helper" class="header-link">Token Helper</a>
           </div>
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-label">Refresh Token</div>
-              <div class="setting-description">用于自动换取短期 Bearer Token</div>
+              <div class="setting-label">Recommended setup</div>
+              <div class="setting-description">Primary path: use Chrome / Chromium + the bundled ElevenReader extension to import login automatically. Manual token entry and legacy browser-assist remain available only as fallbacks.</div>
             </div>
-            <div class="setting-control api-key-control">
-              <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
-              <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="长效 Refresh Token" />
-              <button type="button" class="btn btn-primary btn-sm" id="btn-validate-refresh-token-direct">验证</button>
+            <div class="setting-control elevenlabs-step-list">
+              <span class="elevenlabs-step">1. Install bundled extension</span>
+              <span class="elevenlabs-step">2. Connect ElevenReader</span>
+              <span class="elevenlabs-step">3. Open / login in Chromium</span>
+              <span class="elevenlabs-step">4. Check again, then save</span>
             </div>
           </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Extension files</div>
+              <div class="setting-description">Open the bundled Chromium extension folder if you still need to load it in chrome://extensions.</div>
+            </div>
+            <div class="setting-control setting-control-group elevenlabs-flow-buttons">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-open-extension-folder">Open extension folder</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Browser connection</div>
+              <div class="setting-description">Start pairing, finish login in ElevenReader, then check again here.</div>
+            </div>
+            <div class="setting-control setting-control-group elevenlabs-flow-buttons">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-elevenlabs-begin-pairing">Connect ElevenReader</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-copy-pairing-link">Copy pairing link</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-check-auth">Check again</button>
+              <button type="button" class="btn btn-success btn-sm" id="btn-elevenlabs-save-finish">Save and finish</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">Connection status</div>
+              <div class="setting-description">Preview, refresh voices, and ElevenLabs test actions stay disabled until auth is ready.</div>
+            </div>
+            <div class="setting-control">
+              <div class="elevenlabs-status-panel">
+                <div class="elevenlabs-status-pills">
+                  <span class="elevenlabs-status-pill tone-muted" id="pill-elevenlabs-bridge">Browser: idle</span>
+                  <span class="elevenlabs-status-pill tone-muted" id="pill-elevenlabs-auth">Auth: not ready</span>
+                </div>
+                <div class="elevenlabs-status-title" id="text-elevenlabs-status-title">Connect ElevenReader to begin.</div>
+                <div class="elevenlabs-status-body" id="text-elevenlabs-status-body">FFTrans will open the pairing/login page in your browser. After you log in, come back and click “Check again”.</div>
+                <div class="elevenlabs-status-meta" id="text-elevenlabs-status-meta"></div>
+                <div class="elevenlabs-action-hint" id="text-elevenlabs-action-hint">Complete the browser connection flow before previewing voices or testing ElevenLabs.</div>
+              </div>
+            </div>
+          </div>
+          <details class="elevenlabs-advanced-details" id="details-elevenlabs-advanced">
+            <summary>Fallbacks: manual Refresh Token / legacy browser-assist</summary>
+            <div class="elevenlabs-advanced-body">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Manual fallback</div>
+                  <div class="setting-description">Use this when Chrome / Chromium or the extension is unavailable. FFTrans will validate the Refresh Token before you save.</div>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Refresh Token</div>
+                  <div class="setting-description">Recommended fallback for non-Chromium or no-extension setups.</div>
+                </div>
+                <div class="setting-control api-key-control">
+                  <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
+                  <input type="password" class="form-control token-input" id="input-elevenlabs-refresh-token" placeholder="Long-lived Refresh Token" />
+                  <button type="button" class="btn btn-primary btn-sm" id="btn-validate-refresh-token-direct">Validate</button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Legacy browser-assist</div>
+                  <div class="setting-description">Not recommended unless the primary extension flow is unavailable. This older in-app browser window can still import a usable session or tokens.</div>
+                </div>
+                <div class="setting-control setting-control-group elevenlabs-flow-buttons">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-open-browser-assist">Open legacy browser-assist</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-import-browser-assist">Import from legacy window</button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Fallback guide</div>
+                  <div class="setting-description">Open the guide for manual Refresh Token entry, bearer/session caveats, and the legacy browser-assist flow.</div>
+                </div>
+                <div class="setting-control">
+                  <a href="#" id="a-open-elevenlabs-token-helper" class="header-link">Open fallback guide</a>
+                </div>
+              </div>
+            </div>
+          </details>
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-label">语音</div>

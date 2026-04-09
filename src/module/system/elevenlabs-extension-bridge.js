@@ -2,13 +2,17 @@
 
 const http = require('http');
 const crypto = require('crypto');
+const { shell } = require('electron');
 const { WebSocketServer } = require('ws');
 const Logger = require('../../utils/logger');
+const configModule = require('./config-module');
 const elevenLabsAuth = require('../translator/elevenlabs-auth');
-const { ELEVENLABS_AUTH_SOURCES } = require('../../constants');
+const { ELEVENLABS_AUTH_STATES, ELEVENLABS_AUTH_SOURCES } = require('../../constants');
 
 const DEFAULT_PORT = 39393;
 const WS_PATH = '/ext';
+const PAIRING_URL_BASE = 'https://elevenreader.io/#fftrans_pair=';
+const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
 function createEmptyCandidate() {
   return {
@@ -17,18 +21,24 @@ function createEmptyCandidate() {
     state: 'unavailable',
     receivedAtMs: 0,
     validatedAtMs: 0,
+    importedAtMs: 0,
+    persistedAtMs: 0,
     expiresAtMs: 0,
     source: '',
     requestUrl: '',
     tabUrl: '',
     extensionVersion: '',
     extensionId: '',
+    validationMode: 'none',
+    importedAuthSource: '',
     sources: {
+      refreshToken: '',
       bearerToken: '',
       appCheckToken: '',
       deviceId: '',
     },
     values: {
+      refreshToken: '',
       bearerToken: '',
       appCheckToken: '',
       deviceId: '',
@@ -55,11 +65,56 @@ const bridgeState = {
     extensionId: '',
     ws: null,
   },
+  pairing: {
+    loginOpenedAtMs: 0,
+  },
   candidate: createEmptyCandidate(),
 };
 
+let autoValidateInFlight = false;
+let autoValidatePromise = null;
+let queuedValidationGeneration = 0;
+let refreshTimer = null;
+let commandIdCounter = 0;
+const pendingCommands = new Map();
+
+function normalizeString(value = '') {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeSourceLabel(value = '') {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function cloneCandidate(candidate = createEmptyCandidate()) {
+  return {
+    ...candidate,
+    sources: {
+      ...(candidate.sources || {}),
+    },
+    values: {
+      ...(candidate.values || {}),
+    },
+  };
+}
+
 function isJwtLikeToken(token = '') {
   return /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token);
+}
+
+function secureTokenEquals(left = '', right = '') {
+  const leftBuffer = Buffer.from(String(left || ''), 'utf8');
+  const rightBuffer = Buffer.from(String(right || ''), 'utf8');
+
+  if (!leftBuffer.length || leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+
+  try {
+    return crypto.timingSafeEqual(leftBuffer, rightBuffer);
+  } catch {
+    return false;
+  }
 }
 
 function setServerError(code = 'bridge_error', message = '') {
@@ -80,40 +135,84 @@ function buildCandidateFingerprint(candidate = {}) {
   return crypto
     .createHash('sha256')
     .update([
+      candidate.values?.refreshToken || '',
       candidate.values?.bearerToken || '',
       candidate.values?.appCheckToken || '',
       candidate.values?.deviceId || '',
       candidate.tabUrl || '',
       candidate.requestUrl || '',
+      candidate.extensionId || '',
     ].join('|'))
     .digest('hex');
 }
 
 function normalizeCandidatePayload(payload = {}) {
+  const refreshToken = normalizeString(payload?.refreshToken || '');
   const bearerToken = elevenLabsAuth.normalizeBearerToken(payload?.bearerToken || '');
-  const rawToken = bearerToken.replace(/^Bearer\s+/i, '').trim();
-  if (!bearerToken || !isJwtLikeToken(rawToken)) {
+  const rawBearerToken = bearerToken.replace(/^Bearer\s+/i, '').trim();
+  const normalizedBearerToken = rawBearerToken && isJwtLikeToken(rawBearerToken) ? bearerToken : '';
+
+  if (!refreshToken && !normalizedBearerToken) {
     return null;
   }
 
+  const incomingSources = payload?.sources && typeof payload.sources === 'object' ? payload.sources : {};
+
   return {
-    source: 'chrome-webrequest-ws',
-    requestUrl: typeof payload?.requestUrl === 'string' ? payload.requestUrl.trim() : '',
-    tabUrl: typeof payload?.tabUrl === 'string' ? payload.tabUrl.trim() : '',
-    extensionVersion: typeof payload?.extensionVersion === 'string' ? payload.extensionVersion.trim() : '',
-    extensionId: typeof payload?.extensionId === 'string' ? payload.extensionId.trim() : '',
+    source: normalizeString(payload?.source || '') || 'chrome-extension',
+    requestUrl: normalizeString(payload?.requestUrl || ''),
+    tabUrl: normalizeString(payload?.tabUrl || ''),
+    extensionVersion: normalizeString(payload?.extensionVersion || ''),
+    extensionId: normalizeString(payload?.extensionId || ''),
     sources: {
-      bearerToken: 'chrome.webRequest.Authorization',
-      appCheckToken: payload?.appCheckToken ? 'chrome.webRequest.xi-app-check-token' : '',
-      deviceId: payload?.deviceId ? 'chrome.webRequest.Device-ID' : '',
+      refreshToken: refreshToken
+        ? normalizeSourceLabel(incomingSources.refreshToken) || 'browser.storage'
+        : '',
+      bearerToken: normalizedBearerToken
+        ? normalizeSourceLabel(incomingSources.bearerToken) || 'chrome.webRequest.Authorization'
+        : '',
+      appCheckToken: payload?.appCheckToken
+        ? normalizeSourceLabel(incomingSources.appCheckToken) || 'browser.storage_or_header'
+        : '',
+      deviceId: payload?.deviceId
+        ? normalizeSourceLabel(incomingSources.deviceId) || 'browser.storage_or_header'
+        : '',
     },
     values: {
-      bearerToken,
-      appCheckToken: typeof payload?.appCheckToken === 'string' ? payload.appCheckToken.trim() : '',
-      deviceId: typeof payload?.deviceId === 'string' ? payload.deviceId.trim() : '',
+      refreshToken,
+      bearerToken: normalizedBearerToken,
+      appCheckToken: normalizeString(payload?.appCheckToken || ''),
+      deviceId: normalizeString(payload?.deviceId || ''),
     },
-    expiresAtMs: elevenLabsAuth.decodeTokenExpiry(rawToken) || 0,
+    expiresAtMs: normalizedBearerToken ? elevenLabsAuth.decodeTokenExpiry(rawBearerToken) || 0 : 0,
   };
+}
+
+function getInstallToken() {
+  const config = configModule.getConfig();
+  return normalizeString(config?.auth?.elevenlabs?.extensionBridge?.installToken || '');
+}
+
+function ensureInstallToken({ rotate = false } = {}) {
+  const currentInstallToken = getInstallToken();
+  if (currentInstallToken && !rotate) {
+    return currentInstallToken;
+  }
+
+  const installToken = crypto.randomBytes(24).toString('hex');
+  const nowIso = new Date().toISOString();
+  configModule.updateElevenLabsExtensionBridgeState({
+    installToken,
+    createdAt: nowIso,
+    lastUsedAt: rotate ? '' : (configModule.getConfig()?.auth?.elevenlabs?.extensionBridge?.lastUsedAt || ''),
+  });
+  return installToken;
+}
+
+function markInstallTokenUsed() {
+  configModule.updateElevenLabsExtensionBridgeState({
+    lastUsedAt: new Date().toISOString(),
+  });
 }
 
 function clearCandidateState() {
@@ -136,20 +235,44 @@ function setCandidateState(nextCandidate = {}) {
 }
 
 function getCandidate() {
-  const candidate = bridgeState.candidate || createEmptyCandidate();
+  return cloneCandidate(bridgeState.candidate || createEmptyCandidate());
+}
+
+function buildPublicCandidate(candidate = createEmptyCandidate()) {
   return {
-    ...candidate,
+    state: candidate.state,
+    receivedAt: candidate.receivedAtMs ? new Date(candidate.receivedAtMs).toISOString() : '',
+    validatedAt: candidate.validatedAtMs ? new Date(candidate.validatedAtMs).toISOString() : '',
+    importedAt: candidate.importedAtMs ? new Date(candidate.importedAtMs).toISOString() : '',
+    persistedAt: candidate.persistedAtMs ? new Date(candidate.persistedAtMs).toISOString() : '',
+    expiresAt: candidate.expiresAtMs ? new Date(candidate.expiresAtMs).toISOString() : '',
+    source: candidate.source,
+    requestUrl: candidate.requestUrl,
+    tabUrl: candidate.tabUrl,
+    extensionVersion: candidate.extensionVersion,
+    extensionId: candidate.extensionId || '',
+    validationMode: candidate.validationMode || 'none',
+    importedAuthSource: candidate.importedAuthSource || '',
+    hasRefreshToken: Boolean(candidate.values?.refreshToken),
+    hasBearerToken: Boolean(candidate.values?.bearerToken),
+    hasAppCheckToken: Boolean(candidate.values?.appCheckToken),
+    hasDeviceId: Boolean(candidate.values?.deviceId),
     sources: {
       ...(candidate.sources || {}),
     },
-    values: {
-      ...(candidate.values || {}),
-    },
+    validationCode: candidate.validationCode || '',
+    validationMessage: candidate.validationMessage || '',
   };
 }
 
 function getStatus() {
   const candidate = bridgeState.candidate || createEmptyCandidate();
+  const config = configModule.getConfig();
+  const extensionBridgeConfig = config?.auth?.elevenlabs?.extensionBridge || {};
+  const installToken = normalizeString(extensionBridgeConfig.installToken || '');
+  const hasInstallToken = Boolean(installToken);
+  const pairingUrl = hasInstallToken ? `${PAIRING_URL_BASE}${encodeURIComponent(installToken)}` : '';
+
   return {
     server: {
       state: bridgeState.server.state,
@@ -158,12 +281,18 @@ function getStatus() {
       lastErrorMessage: bridgeState.server.lastErrorMessage,
     },
     pairing: {
+      state: bridgeState.extension.connected
+        ? 'paired'
+        : hasInstallToken
+          ? 'waiting'
+          : 'unpaired',
       active: bridgeState.extension.connected,
-      mode: 'websocket',
-      token: '',
-      issuedAt: '',
-      expiresAt: '',
-      lastUsedAt: bridgeState.extension.connectedAtMs ? new Date(bridgeState.extension.connectedAtMs).toISOString() : '',
+      mode: 'install-token',
+      tokenReady: hasInstallToken,
+      pairingUrl,
+      createdAt: normalizeString(extensionBridgeConfig.createdAt || ''),
+      lastUsedAt: normalizeString(extensionBridgeConfig.lastUsedAt || ''),
+      loginOpenedAt: bridgeState.pairing.loginOpenedAtMs ? new Date(bridgeState.pairing.loginOpenedAtMs).toISOString() : '',
     },
     extension: {
       connected: bridgeState.extension.connected,
@@ -171,31 +300,17 @@ function getStatus() {
       extensionVersion: bridgeState.extension.extensionVersion,
       extensionId: bridgeState.extension.extensionId,
     },
-    candidate: {
-      state: candidate.state,
-      receivedAt: candidate.receivedAtMs ? new Date(candidate.receivedAtMs).toISOString() : '',
-      validatedAt: candidate.validatedAtMs ? new Date(candidate.validatedAtMs).toISOString() : '',
-      expiresAt: candidate.expiresAtMs ? new Date(candidate.expiresAtMs).toISOString() : '',
-      source: candidate.source,
-      requestUrl: candidate.requestUrl,
-      tabUrl: candidate.tabUrl,
-      extensionVersion: candidate.extensionVersion,
-      extensionId: candidate.extensionId || '',
-      hasBearerToken: Boolean(candidate.values?.bearerToken),
-      hasAppCheckToken: Boolean(candidate.values?.appCheckToken),
-      hasDeviceId: Boolean(candidate.values?.deviceId),
-      sources: {
-        ...(candidate.sources || {}),
-      },
-      validationCode: candidate.validationCode || '',
-      validationMessage: candidate.validationMessage || '',
+    candidate: buildPublicCandidate(candidate),
+    validation: {
+      inFlight: autoValidateInFlight,
+      queued: Boolean(queuedValidationGeneration),
     },
   };
 }
 
 function sendToExtension(message) {
   const ws = bridgeState.extension.ws;
-  if (ws && ws.readyState === 1) {
+  if (ws && ws.readyState === 1 && bridgeState.extension.connected) {
     try {
       ws.send(JSON.stringify(message));
     } catch (error) {
@@ -204,11 +319,193 @@ function sendToExtension(message) {
   }
 }
 
-function handleBearerImport(payload = {}) {
+function queueCandidateValidation(expectedGeneration) {
+  queuedValidationGeneration = Math.max(queuedValidationGeneration, Number(expectedGeneration) || 0);
+
+  if (!autoValidatePromise) {
+    autoValidatePromise = drainCandidateValidationQueue()
+      .catch((error) => {
+        Logger.warn('elevenlabs-extension-bridge', 'Candidate validation loop failed', error.message);
+      })
+      .finally(() => {
+        autoValidatePromise = null;
+        if (queuedValidationGeneration) {
+          queueCandidateValidation(queuedValidationGeneration);
+        }
+      });
+  }
+
+  return autoValidatePromise;
+}
+
+async function waitForValidation(timeoutMs = 15000) {
+  if (!autoValidatePromise) {
+    return;
+  }
+
+  await Promise.race([
+    autoValidatePromise,
+    new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+}
+
+function buildPersistedConfigPatch(candidate = {}, validationMode = 'none') {
+  const patch = {};
+
+  if (validationMode === 'refresh' && candidate.values?.refreshToken) {
+    patch.refreshToken = candidate.values.refreshToken;
+  }
+
+  if (candidate.values?.appCheckToken) {
+    patch.appCheckToken = candidate.values.appCheckToken;
+  }
+
+  if (candidate.values?.deviceId) {
+    patch.deviceId = candidate.values.deviceId;
+  }
+
+  return patch;
+}
+
+function persistImportedCandidate(candidate = {}, validationMode = 'none') {
+  const patch = buildPersistedConfigPatch(candidate, validationMode);
+  if (!Object.keys(patch).length) {
+    return 0;
+  }
+
+  configModule.updateElevenLabsConfig(patch);
+  return Date.now();
+}
+
+function persistImportedReadyState() {
+  configModule.updateElevenLabsAuthState({
+    state: ELEVENLABS_AUTH_STATES.READY,
+    lastValidatedAt: new Date().toISOString(),
+    lastErrorCode: '',
+    lastErrorMessage: '',
+    lastAuthSource: ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE,
+  });
+}
+
+async function validateCandidateGeneration(expectedGeneration) {
+  const candidate = getCandidate();
+  if (candidate.generation !== expectedGeneration) {
+    return;
+  }
+
+  if (!candidate.values?.refreshToken && !candidate.values?.bearerToken) {
+    return;
+  }
+
+  setCandidateState({
+    ...candidate,
+    state: 'validating',
+    validationCode: '',
+    validationMessage: '',
+  });
+
+  try {
+    let validationMode = 'none';
+
+    if (candidate.values.refreshToken) {
+      validationMode = 'refresh';
+
+      await elevenLabsAuth.validateRefreshToken({
+        refreshToken: candidate.values.refreshToken,
+        appCheckToken: candidate.values.appCheckToken || '',
+        deviceId: candidate.values.deviceId || '',
+      }, {
+        persistAuthState: true,
+        cacheResolvedSession: true,
+      });
+
+      elevenLabsAuth.setExtensionBridgeRuntimeAuth({
+        refreshToken: candidate.values.refreshToken,
+        appCheckToken: candidate.values.appCheckToken || '',
+        deviceId: candidate.values.deviceId || '',
+      });
+    } else {
+      validationMode = 'bearer';
+
+      const elevenLabsTTS = require('../translator/elevenlabs-tts');
+      const ttsRequestQueue = require('./tts-request-queue');
+      await ttsRequestQueue.enqueue(() => elevenLabsTTS.validateConfiguration({
+        bearerToken: candidate.values.bearerToken,
+        refreshToken: '',
+        appCheckToken: candidate.values.appCheckToken || '',
+        deviceId: candidate.values.deviceId || '',
+      }));
+
+      elevenLabsAuth.setExtensionBridgeRuntimeAuth({
+        appCheckToken: candidate.values.appCheckToken || '',
+        deviceId: candidate.values.deviceId || '',
+      });
+      elevenLabsAuth.hydrateSession({
+        bearerToken: candidate.values.bearerToken,
+        expiresAtMs: candidate.expiresAtMs || 0,
+        source: ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE,
+      });
+    }
+
+    if (bridgeState.candidate?.generation !== expectedGeneration) {
+      return;
+    }
+
+    const persistedAtMs = persistImportedCandidate(candidate, validationMode);
+    persistImportedReadyState();
+    markCandidateValidated(
+      validationMode === 'refresh'
+        ? '扩展导入的 Refresh Token 已验证并保存。'
+        : '扩展导入的 Bearer Token 已验证并注入当前会话。',
+      {
+        validationMode,
+        importedAuthSource: ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE,
+        persistedAtMs,
+      }
+    );
+
+    Logger.info('elevenlabs-extension-bridge', `Extension auth imported via ${validationMode} flow (gen ${expectedGeneration})`);
+  } catch (error) {
+    if (bridgeState.candidate?.generation === expectedGeneration) {
+      markCandidateRejected(
+        error?.authCode || 'auto_validation_failed',
+        error?.message || '自动验证失败',
+        {
+          validationMode: candidate.values.refreshToken ? 'refresh' : 'bearer',
+        }
+      );
+    }
+    Logger.warn('elevenlabs-extension-bridge', 'Auto-validation failed', error.message);
+  }
+}
+
+async function drainCandidateValidationQueue() {
+  if (autoValidateInFlight) {
+    return;
+  }
+
+  autoValidateInFlight = true;
+
+  try {
+    while (queuedValidationGeneration) {
+      const nextGeneration = queuedValidationGeneration;
+      queuedValidationGeneration = 0;
+      await validateCandidateGeneration(nextGeneration);
+
+      if (bridgeState.candidate?.generation > nextGeneration) {
+        queuedValidationGeneration = Math.max(queuedValidationGeneration, bridgeState.candidate.generation);
+      }
+    }
+  } finally {
+    autoValidateInFlight = false;
+  }
+}
+
+function handleAuthImport(payload = {}) {
   const candidatePayload = normalizeCandidatePayload(payload);
   if (!candidatePayload) {
-    Logger.warn('elevenlabs-extension-bridge', 'Received invalid bearer from extension');
-    return { ok: false, error: 'bearer_missing_or_invalid' };
+    Logger.warn('elevenlabs-extension-bridge', 'Received invalid auth candidate from extension');
+    return { ok: false, error: 'auth_candidate_missing_or_invalid' };
   }
 
   const nextGeneration = (bridgeState.candidate?.generation || 0) + 1;
@@ -217,6 +514,10 @@ function handleBearerImport(payload = {}) {
     state: 'pending',
     receivedAtMs: Date.now(),
     validatedAtMs: 0,
+    importedAtMs: 0,
+    persistedAtMs: 0,
+    validationMode: 'none',
+    importedAuthSource: '',
     validationCode: '',
     validationMessage: '',
     ...candidatePayload,
@@ -224,65 +525,21 @@ function handleBearerImport(payload = {}) {
   nextCandidate.fingerprint = buildCandidateFingerprint(nextCandidate);
   setCandidateState(nextCandidate);
 
-  Logger.info('elevenlabs-extension-bridge', `Bearer token received via WebSocket (gen ${nextGeneration})`);
+  Logger.info('elevenlabs-extension-bridge', 'Auth candidate received via WebSocket', {
+    generation: nextGeneration,
+    hasRefreshToken: Boolean(nextCandidate.values.refreshToken),
+    hasBearerToken: Boolean(nextCandidate.values.bearerToken),
+  });
 
-  void autoValidateAndHydrate(nextGeneration);
+  void queueCandidateValidation(nextGeneration);
 
-  return { ok: true, state: 'pending' };
-}
-
-let autoValidateInFlight = false;
-
-async function autoValidateAndHydrate(expectedGeneration) {
-  if (autoValidateInFlight) {
-    return;
-  }
-
-  autoValidateInFlight = true;
-
-  try {
-    const candidate = bridgeState.candidate;
-    if (!candidate?.values?.bearerToken || candidate.generation !== expectedGeneration) {
-      return;
-    }
-
-    const elevenLabsTTS = require('../translator/elevenlabs-tts');
-    const ttsRequestQueue = require('../system/tts-request-queue');
-
-    const mergedConfig = {
-      bearerToken: candidate.values.bearerToken,
-      appCheckToken: candidate.values.appCheckToken || '',
-      deviceId: candidate.values.deviceId || '',
-    };
-
-    await ttsRequestQueue.enqueue(() => elevenLabsTTS.validateConfiguration(mergedConfig));
-
-    if (bridgeState.candidate?.generation !== expectedGeneration) {
-      return;
-    }
-
-    markCandidateValidated('扩展导入的 Bearer Token 已自动验证通过。');
-
-    const rawToken = candidate.values.bearerToken.replace(/^Bearer\s+/i, '').trim();
-    elevenLabsAuth.hydrateSession({
-      bearerToken: candidate.values.bearerToken,
-      expiresAtMs: elevenLabsAuth.decodeTokenExpiry(rawToken) || 0,
-      source: ELEVENLABS_AUTH_SOURCES.EXTENSION_BRIDGE,
-    });
-
-    Logger.info('elevenlabs-extension-bridge', 'Bearer auto-validated and injected into auth session');
-  } catch (error) {
-    const candidate = bridgeState.candidate;
-    if (candidate?.generation === expectedGeneration) {
-      markCandidateRejected(
-        error?.authCode || 'auto_validation_failed',
-        error?.message || '自动验证失败',
-      );
-    }
-    Logger.warn('elevenlabs-extension-bridge', 'Auto-validation failed:', error.message);
-  } finally {
-    autoValidateInFlight = false;
-  }
+  return {
+    ok: true,
+    state: 'pending',
+    generation: nextGeneration,
+    hasRefreshToken: Boolean(nextCandidate.values.refreshToken),
+    hasBearerToken: Boolean(nextCandidate.values.bearerToken),
+  };
 }
 
 function handleWsMessage(data) {
@@ -295,15 +552,9 @@ function handleWsMessage(data) {
     }
 
     switch (message.type) {
+      case 'auth':
       case 'bearer':
-        return handleBearerImport(message);
-
-      case 'hello': {
-        bridgeState.extension.extensionVersion = message.extensionVersion || '';
-        bridgeState.extension.extensionId = message.extensionId || '';
-        Logger.info('elevenlabs-extension-bridge', `Extension identified: v${message.extensionVersion || '?'} id=${message.extensionId || '?'}`);
-        return { ok: true, type: 'welcome', serverVersion: '0.3.0' };
-      }
+        return handleAuthImport(message);
 
       case 'ping':
         return { ok: true, type: 'pong' };
@@ -317,10 +568,31 @@ function handleWsMessage(data) {
   }
 }
 
+function rejectNewConnection(ws, reason = 'Bridge already connected') {
+  try {
+    ws.close(4008, reason);
+  } catch {
+    // ignore close failures
+  }
+}
+
 function handleWsConnection(ws) {
-  if (bridgeState.extension.ws) {
+  if (bridgeState.extension.ws && bridgeState.extension.ws !== ws && bridgeState.extension.connected) {
+    Logger.warn('elevenlabs-extension-bridge', 'Rejected replacement WebSocket client while a trusted extension is active');
+    rejectNewConnection(ws, 'Extension already connected');
+    return;
+  }
+
+  const installToken = getInstallToken();
+  if (!installToken) {
+    Logger.warn('elevenlabs-extension-bridge', 'Rejected extension connection before pairing completed');
+    rejectNewConnection(ws, 'Pairing required');
+    return;
+  }
+
+  if (bridgeState.extension.ws && bridgeState.extension.ws !== ws && !bridgeState.extension.connected) {
     try {
-      bridgeState.extension.ws.close(1000, 'Replaced by new connection');
+      bridgeState.extension.ws.close(4000, 'Superseded during pairing');
     } catch {
       // ignore close failures
     }
@@ -335,7 +607,7 @@ function handleWsConnection(ws) {
   Logger.info('elevenlabs-extension-bridge', 'New WebSocket connection, sending challenge');
 
   try {
-    ws.send(JSON.stringify({ type: 'challenge', nonce }));
+    ws.send(JSON.stringify({ type: 'challenge', nonce, serverVersion: '0.4.0' }));
   } catch {
     // ignore send failures
   }
@@ -349,7 +621,11 @@ function handleWsConnection(ws) {
 
   ws.on('message', (data) => {
     const message = (() => {
-      try { return JSON.parse(String(data)); } catch { return null; }
+      try {
+        return JSON.parse(String(data));
+      } catch {
+        return null;
+      }
     })();
 
     if (!message) {
@@ -357,16 +633,21 @@ function handleWsConnection(ws) {
     }
 
     if (!authenticated) {
-      if (message.type === 'hello' && message.nonce === nonce) {
+      if (
+        message.type === 'hello' &&
+        message.nonce === nonce &&
+        secureTokenEquals(normalizeString(message.installToken || ''), installToken)
+      ) {
         authenticated = true;
         clearTimeout(authTimeout);
         bridgeState.extension.connected = true;
         bridgeState.extension.connectedAtMs = Date.now();
         bridgeState.extension.extensionVersion = message.extensionVersion || '';
         bridgeState.extension.extensionId = message.extensionId || '';
+        markInstallTokenUsed();
         Logger.info('elevenlabs-extension-bridge', `Extension authenticated: v${message.extensionVersion || '?'} id=${message.extensionId || '?'}`);
         try {
-          ws.send(JSON.stringify({ ok: true, type: 'welcome', serverVersion: '0.3.0' }));
+          ws.send(JSON.stringify({ ok: true, type: 'welcome', serverVersion: '0.4.0' }));
         } catch {
           // ignore send failures
         }
@@ -389,9 +670,12 @@ function handleWsConnection(ws) {
   });
 
   ws.on('close', () => {
+    clearTimeout(authTimeout);
+
     if (bridgeState.extension.ws === ws) {
       bridgeState.extension.ws = null;
       bridgeState.extension.connected = false;
+      bridgeState.extension.connectedAtMs = 0;
       Logger.info('elevenlabs-extension-bridge', 'Extension disconnected');
     }
   });
@@ -402,7 +686,6 @@ function handleWsConnection(ws) {
 }
 
 function writeJson(response, statusCode, payload) {
-  response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Cache-Control', 'no-store');
   response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
   response.end(JSON.stringify(payload));
@@ -465,6 +748,7 @@ async function initialize() {
 async function shutdown() {
   clearCandidateState();
   clearRefreshTimer();
+  queuedValidationGeneration = 0;
 
   for (const [id, pending] of pendingCommands) {
     clearTimeout(pending.timer);
@@ -505,11 +789,22 @@ async function shutdown() {
 async function beginPairingSession() {
   await ensureServer();
   clearCandidateState();
+
+  const installToken = ensureInstallToken({ rotate: true });
+  const pairingUrl = `${PAIRING_URL_BASE}${encodeURIComponent(installToken)}`;
+  bridgeState.pairing.loginOpenedAtMs = Date.now();
+
+  try {
+    await shell.openExternal(pairingUrl);
+  } catch (error) {
+    Logger.warn('elevenlabs-extension-bridge', 'Failed to open pairing URL in default browser', error.message);
+  }
+
   return getStatus();
 }
 
-function markCandidateValidated(validationMessage = 'Extension bearer validated successfully.') {
-  if (!bridgeState.candidate?.values?.bearerToken) {
+function markCandidateValidated(validationMessage = 'Extension auth validated successfully.', options = {}) {
+  if (!bridgeState.candidate?.values?.refreshToken && !bridgeState.candidate?.values?.bearerToken) {
     return getStatus();
   }
 
@@ -517,17 +812,25 @@ function markCandidateValidated(validationMessage = 'Extension bearer validated 
     ...bridgeState.candidate,
     state: 'validated',
     validatedAtMs: Date.now(),
+    importedAtMs: Date.now(),
+    persistedAtMs: options.persistedAtMs || bridgeState.candidate.persistedAtMs || 0,
+    validationMode: options.validationMode || bridgeState.candidate.validationMode || 'none',
+    importedAuthSource: options.importedAuthSource || bridgeState.candidate.importedAuthSource || '',
     validationCode: '',
     validationMessage,
   });
 
-  sendToExtension({ type: 'status', state: 'validated' });
+  sendToExtension({
+    type: 'status',
+    state: 'validated',
+    validationMode: bridgeState.candidate.validationMode,
+  });
   scheduleRefreshReminder();
   return getStatus();
 }
 
-function markCandidateRejected(code = '', message = 'Extension bearer validation failed.') {
-  if (!bridgeState.candidate?.values?.bearerToken) {
+function markCandidateRejected(code = '', message = 'Extension auth validation failed.', options = {}) {
+  if (!bridgeState.candidate?.values?.refreshToken && !bridgeState.candidate?.values?.bearerToken) {
     return getStatus();
   }
 
@@ -535,18 +838,20 @@ function markCandidateRejected(code = '', message = 'Extension bearer validation
     ...bridgeState.candidate,
     state: 'rejected',
     validatedAtMs: Date.now(),
+    validationMode: options.validationMode || bridgeState.candidate.validationMode || 'none',
     validationCode: code,
     validationMessage: message,
   });
 
-  sendToExtension({ type: 'status', state: 'rejected', code, message });
+  sendToExtension({
+    type: 'status',
+    state: 'rejected',
+    validationMode: bridgeState.candidate.validationMode,
+    code,
+    message,
+  });
   return getStatus();
 }
-
-// --- Token expiry-aware refresh (#2) ---
-
-const REFRESH_BUFFER_MS = 5 * 60 * 1000;
-let refreshTimer = null;
 
 function clearRefreshTimer() {
   if (refreshTimer) {
@@ -588,14 +893,9 @@ function requestTokenRefresh() {
   sendToExtension({ type: 'request-refresh' });
 }
 
-// --- Bidirectional command (#4) ---
-
-let commandIdCounter = 0;
-const pendingCommands = new Map();
-
 function sendCommand(action, params = {}, timeoutMs = 15000) {
   return new Promise((resolve, reject) => {
-    if (!bridgeState.extension.ws || bridgeState.extension.ws.readyState !== 1) {
+    if (!bridgeState.extension.ws || bridgeState.extension.ws.readyState !== 1 || !bridgeState.extension.connected) {
       reject(new Error('Extension not connected'));
       return;
     }
@@ -638,4 +938,5 @@ module.exports = {
   markCandidateRejected,
   sendCommand,
   requestTokenRefresh,
+  waitForValidation,
 };

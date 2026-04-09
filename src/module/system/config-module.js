@@ -567,6 +567,16 @@ function updateElevenLabsAuthState(patch = {}) {
   return mergeConfigPatch(['auth', 'elevenlabs'], patch);
 }
 
+function updateElevenLabsExtensionBridgeState(patch = {}) {
+  const currentBridgeState = getConfig()?.auth?.elevenlabs?.extensionBridge || {};
+  return updateElevenLabsAuthState({
+    extensionBridge: {
+      ...currentBridgeState,
+      ...patch,
+    },
+  });
+}
+
 function consumeLegacyElevenLabsSession() {
   const session = legacyElevenLabsSession ? deepClone(legacyElevenLabsSession) : null;
   legacyElevenLabsSession = null;
@@ -583,5 +593,6 @@ module.exports = {
   setAppLanguage,
   updateElevenLabsConfig,
   updateElevenLabsAuthState,
+  updateElevenLabsExtensionBridgeState,
   consumeLegacyElevenLabsSession,
 };
