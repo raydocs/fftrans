@@ -139,14 +139,17 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
       - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: windows-installer
           path: release-assets/windows
 
       - name: Download macOS artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: macos-dmg
           path: release-assets/macos
@@ -154,10 +157,11 @@ jobs:
       - name: Create or update release
         run: |
           TAG="v${{ needs.version-check.outputs.release_tag }}"
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Release $TAG" --notes ""
+          REPO="${{ github.repository }}"
+          gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1 || gh release create "$TAG" --repo "$REPO" --title "Release $TAG" --notes ""
           for asset in release-assets/windows/* release-assets/macos/*; do
             [ -e "$asset" ] || continue
-            gh release upload "$TAG" "$asset" --clobber
+            gh release upload "$TAG" --repo "$REPO" "$asset" --clobber
           done
 
   del_runs:
