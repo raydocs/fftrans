@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FFTrans NVIDIA Benchmark Lab</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar panel">
+      <div class="brand-block">
+        <p class="eyebrow">Cloudflare Pages + Workers</p>
+        <h1>FFTrans Benchmark Lab</h1>
+        <p class="subcopy">面向游戏字幕实时翻译的 NVIDIA 模型实验台。现在可以在 FF14 与 HSR 之间切换，保留浏览器本地历史排行，并直接试听 HSR 原声台词。</p>
+      </div>
+
+      <section class="control-section">
+        <div class="section-topline">
+          <h2>Game</h2>
+          <span id="current-game-tag" class="badge favorite">-</span>
+        </div>
+        <label class="input-label">
+          Dataset
+          <select id="game-select"></select>
+        </label>
+        <p id="game-summary" class="subcopy">Loading game dataset...</p>
+        <div id="notes-list" class="note-list"></div>
+      </section>
+
+      <section class="control-section">
+        <div class="section-topline">
+          <h2>Models</h2>
+          <button id="refresh-models" class="btn secondary">Fetch Models</button>
+        </div>
+        <label class="input-label">
+          Search
+          <input id="model-search" type="search" placeholder="比如 qwen / kimi / llama / minimax" />
+        </label>
+        <div class="chip-row" id="quick-actions">
+          <button id="select-favorites" class="chip">Favorites</button>
+          <button id="select-visible" class="chip">Select Visible</button>
+          <button id="select-all-benchmarkable" class="chip">All Benchmarkable</button>
+          <button id="clear-selection" class="chip">Clear</button>
+        </div>
+        <div class="model-summary" id="model-summary">Loading models...</div>
+        <div id="model-list" class="model-list"></div>
+      </section>
+
+      <section class="control-section">
+        <h2>Run Settings</h2>
+        <div class="field-grid">
+          <label class="input-label">
+            Temperature
+            <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.1" />
+          </label>
+          <label class="input-label">
+            Max Tokens
+            <input id="max-tokens" type="number" min="32" max="512" step="1" value="160" />
+          </label>
+          <label class="input-label">
+            Timeout (ms)
+            <input id="timeout-ms" type="number" min="3000" max="60000" step="1000" value="25000" />
+          </label>
+          <label class="input-label">
+            Concurrency
+            <input id="concurrency" type="number" min="1" max="8" step="1" value="3" />
+          </label>
+        </div>
+        <label class="toggle-row">
+          <input id="use-no-think" type="checkbox" checked />
+          <span>Use model-specific no-think heuristics when known</span>
+        </label>
+        <div class="run-actions">
+          <button id="run-benchmark" class="btn primary">Run Benchmark</button>
+          <button id="stop-benchmark" class="btn danger" disabled>Stop</button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Dataset</h2>
+        <div id="dataset-list" class="dataset-list"></div>
+      </section>
+    </aside>
+
+    <main class="main-content">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">Live proxy benchmark</p>
+          <h2>Subtitle-first translation stress test</h2>
+          <p id="source-link" class="subcopy"></p>
+        </div>
+        <div class="hero-stats" id="hero-stats">
+          <div class="stat-card">
+            <span>Selected Models</span>
+            <strong id="stat-selected-models">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Dialogue Lines</span>
+            <strong id="stat-lines">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Completed Calls</span>
+            <strong id="stat-completed-calls">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel progress-panel">
+        <div class="section-topline">
+          <h2>Run Progress</h2>
+          <span id="run-state" class="status-pill idle">Idle</span>
+        </div>
+        <div class="progress-bar-shell">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <p id="progress-text" class="subcopy">还没开始。</p>
+      </section>
+
+      <section class="panel" id="summary-panel">
+        <div class="section-topline">
+          <h2>Summary</h2>
+          <button id="download-report" class="btn secondary" disabled>Download JSON</button>
+        </div>
+        <div id="summary-cards" class="summary-cards empty-state">跑完 benchmark 后，这里会给出最快、最准、最适合实时字幕的模型。</div>
+      </section>
+
+      <section class="panel">
+        <div class="section-topline">
+          <div>
+            <h2>History Ranking</h2>
+            <p id="history-summary" class="subcopy">Completed runs saved in this browser will accumulate here.</p>
+          </div>
+          <button id="clear-history" class="btn secondary" disabled>Clear History</button>
+        </div>
+        <div id="history-leaderboard" class="table-shell empty-state">No saved benchmark history yet.</div>
+      </section>
+
+      <section class="panel">
+        <div class="section-topline">
+          <h2>Leaderboard</h2>
+          <span class="subcopy">综合分 = 准确度 45% + 可用性 35% + 延迟 20%</span>
+        </div>
+        <div id="leaderboard" class="table-shell empty-state">请先选择模型并运行 benchmark。</div>
+      </section>
+
+      <section class="panel">
+        <div class="section-topline">
+          <h2>Model Details</h2>
+          <span class="subcopy">每条台词的原文、译文、延迟、thinking 泄漏、finish reason 都会列出来。</span>
+        </div>
+        <div id="model-details" class="detail-stack empty-state">暂无结果。</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

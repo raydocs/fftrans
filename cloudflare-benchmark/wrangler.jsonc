@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "ff14-nvidia-benchmark",
+  "compatibility_date": "2026-04-15",
+  "pages_build_output_dir": "./public",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "fftrans-benchmark-history",
+      "database_id": "4cb1189e-7bcf-4d18-a7b5-09e51de64d31"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "fftrans-cloudflare-benchmark",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx wrangler pages dev public",
+    "deploy": "npx wrangler pages deploy public",
+    "d1:create": "npx wrangler d1 create fftrans-benchmark-history",
+    "d1:migrate:local": "npx wrangler d1 execute fftrans-benchmark-history --local --file=./migrations/0001_benchmark_history.sql",
+    "d1:migrate:remote": "npx wrangler d1 execute fftrans-benchmark-history --remote --file=./migrations/0001_benchmark_history.sql",
+    "typegen": "npx wrangler types"
+  }
+}

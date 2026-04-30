@@ -117,15 +117,12 @@ function getElementTextList() {
         'button-save-default-config': ['預設', '预设', 'Default'],
         
         // 新标签导航栏
-        'tab-window': ['視窗', '视窗', 'Window'],
-        'tab-font': ['字體', '字体', 'Font'],
-        'tab-channel': ['頻道', '频道', 'Channel'],
+        'tab-appearance': ['外觀', '外观', 'Appearance'],
         'tab-translation': ['翻譯', '翻译', 'Translation'],
         'tab-speech': ['語音', '语音', 'Speech'],
         'tab-api': ['API', 'API', 'API'],
         'tab-ai': ['AI', 'AI', 'AI'],
         'tab-system': ['系統', '系统', 'System'],
-        'tab-proxy': ['代理', '代理', 'Proxy'],
         'tab-about': ['關於', '关于', 'About'],
         
         // 保存按钮文本
@@ -178,6 +175,13 @@ function getElementTextList() {
         'btn-test-speechify': ['測試', '测试', 'Test'],
         'btn-preview-voice': ['試聽', '试听', 'Preview'],
         'btn-preview-elevenlabs-voice': ['試聽', '试听', 'Preview'],
+        'btn-elevenlabs-open-extension-folder': ['開啟擴充套件資料夾', '打开扩展文件夹', 'Open extension folder'],
+        'btn-elevenlabs-begin-pairing': ['連接 ElevenReader', '连接 ElevenReader', 'Connect ElevenReader'],
+        'btn-elevenlabs-copy-pairing-link': ['複製配對連結', '复制配对链接', 'Copy pairing link'],
+        'btn-elevenlabs-check-auth': ['再次檢查', '再次检查', 'Check again'],
+        'btn-validate-refresh-token-direct': ['驗證', '验证', 'Validate'],
+        'btn-elevenlabs-open-browser-assist': ['開啟舊版 browser-assist', '打开旧版 browser-assist', 'Open legacy browser-assist'],
+        'btn-elevenlabs-import-browser-assist': ['從舊版視窗導入', '从旧版窗口导入', 'Import from legacy window'],
       },
       label: {
         // config
@@ -367,6 +371,67 @@ function getElementTextList() {
         // read log
         none: ['無', '无', 'None'],
       },
+      div: {
+        'section-interface-preferences': ['介面偏好', '界面偏好', 'Interface Preferences'],
+        'label-app-language': ['介面語言', '界面语言', 'Language'],
+        'desc-app-language': ['應用介面顯示的語言', '应用界面显示的语言', 'App interface language'],
+        'label-theme': ['主題', '主题', 'Theme'],
+        'desc-theme': ['選擇深色或淺色主題', '选择深色或浅色主题', 'Choose dark or light theme'],
+        'label-google-tts-ready': ['無需額外設定', '无需额外配置', 'No extra setup required'],
+        'desc-google-tts-ready': [
+          'Google TTS 目前無需單獨填寫參數，可直接測試連線，確認後再儲存設定。',
+          'Google TTS 当前无需单独填写参数，可直接测试连接，确认后再保存设置。',
+          'Google TTS does not require extra parameters here. You can test the connection directly, then save settings once it looks good.',
+        ],
+        'label-elevenlabs-recommended-setup': ['推薦流程', '推荐流程', 'Recommended setup'],
+        'desc-elevenlabs-recommended-setup': [
+          '首選方式：使用 Chrome / Chromium 搭配內建 ElevenReader 擴充套件自動導入登入；手動 Token 與舊版 browser-assist 僅作備援。',
+          '首选方式：使用 Chrome / Chromium 搭配内置 ElevenReader 扩展自动导入登录；手动 Token 与旧版 browser-assist 仅作备选。',
+          'Primary path: use Chrome / Chromium + the bundled ElevenReader extension to import login automatically. Manual token entry and legacy browser-assist remain fallbacks only.',
+        ],
+        'label-elevenlabs-extension-files': ['擴充套件檔案', '扩展文件', 'Extension files'],
+        'desc-elevenlabs-extension-files': [
+          '若仍需在 chrome://extensions 手動載入，可直接開啟內建 Chromium 擴充套件資料夾。',
+          '如果仍需在 chrome://extensions 手动加载，可直接打开内置 Chromium 扩展文件夹。',
+          'Open the bundled Chromium extension folder if you still need to load it in chrome://extensions.',
+        ],
+        'label-elevenlabs-browser-connection': ['瀏覽器連接', '浏览器连接', 'Browser connection'],
+        'desc-elevenlabs-browser-connection': [
+          '先開始配對，在 ElevenReader 中完成登入，再回來這裡檢查。',
+          '先开始配对，在 ElevenReader 中完成登录，再回来这里检查。',
+          'Start pairing, finish login in ElevenReader, then check again here.',
+        ],
+        'label-elevenlabs-connection-status': ['連接狀態', '连接状态', 'Connection status'],
+        'desc-elevenlabs-connection-status': [
+          '在驗證就緒前，試聽、刷新語音與 ElevenLabs 測試都會維持停用。',
+          '在验证就绪前，试听、刷新语音与 ElevenLabs 测试都会保持禁用。',
+          'Preview, refresh voices, and ElevenLabs test actions stay disabled until auth is ready.',
+        ],
+        'label-elevenlabs-manual-fallback': ['手動備援', '手动备选', 'Manual fallback'],
+        'desc-elevenlabs-manual-fallback': [
+          '當 Chrome / Chromium 或擴充套件不可用時使用；FFTrans 會在儲存前先驗證 Refresh Token。',
+          '当 Chrome / Chromium 或扩展不可用时使用；FFTrans 会在保存前先验证 Refresh Token。',
+          'Use this when Chrome / Chromium or the extension is unavailable. FFTrans will validate the Refresh Token before you save.',
+        ],
+        'label-elevenlabs-refresh-token': ['Refresh Token', 'Refresh Token', 'Refresh Token'],
+        'desc-elevenlabs-refresh-token': [
+          '適合非 Chromium 或無法安裝擴充套件的備援方案。',
+          '适合非 Chromium 或无法安装扩展的备选方案。',
+          'Recommended fallback for non-Chromium or no-extension setups.',
+        ],
+        'label-elevenlabs-legacy-browser-assist': ['舊版 browser-assist', '旧版 browser-assist', 'Legacy browser-assist'],
+        'desc-elevenlabs-legacy-browser-assist': [
+          '除非主流程不可用，否則不建議使用；這個舊版內建瀏覽器仍可導入可用會話或 Token。',
+          '除非主流程不可用，否则不建议使用；这个旧版内置浏览器仍可导入可用会话或 Token。',
+          'Not recommended unless the primary extension flow is unavailable. This older in-app browser window can still import a usable session or tokens.',
+        ],
+        'label-elevenlabs-fallback-guide': ['備援說明', '备选说明', 'Fallback guide'],
+        'desc-elevenlabs-fallback-guide': [
+          '打開手動 Refresh Token、bearer / 會話注意事項，以及舊版 browser-assist 流程說明。',
+          '打开手动 Refresh Token、bearer / 会话注意事项，以及旧版 browser-assist 流程说明。',
+          'Open the guide for manual Refresh Token entry, bearer/session caveats, and the legacy browser-assist flow.',
+        ],
+      },
       p: {
         'p-ai-warning': [
           '* 注意：AI翻譯需事先設定API才能使用',
@@ -401,6 +466,12 @@ function getElementTextList() {
 
         // config
         'span-channel-comment': ['滾動滑鼠中鍵可以捲動頻道清單', '滚动鼠标中键可以捲动频道清单', 'Use middle mouse button to sroll the page'],
+        'section-google-tts-ready': ['Google TTS', 'Google TTS', 'Google TTS'],
+        'section-more-engines': ['更多翻譯引擎', '更多翻译引擎', 'More translation engines'],
+        'step-elevenlabs-install': ['1. 安裝內建擴充套件', '1. 安装内置扩展', '1. Install bundled extension'],
+        'step-elevenlabs-connect': ['2. 連接 ElevenReader', '2. 连接 ElevenReader', '2. Connect ElevenReader'],
+        'step-elevenlabs-login': ['3. 在 Chromium 中開啟並登入', '3. 在 Chromium 中打开并登录', '3. Open / login in Chromium'],
+        'step-elevenlabs-save': ['4. 再次檢查後儲存', '4. 再次检查后保存', '4. Check again, then save'],
         
         // Window 页面分组标题
         'section-window-behavior': ['視窗行為', '窗口行为', 'Window Behavior'],
@@ -411,12 +482,12 @@ function getElementTextList() {
         
         // Window 页面设置标签
         'label-checkbox-top': ['置頂顯示', '置顶显示', 'Always on Top'],
-        'label-checkbox-focusable': ['可聚焦', '可聚焦', 'Focusable'],
-        'label-checkbox-min-size': ['最小尺寸', '最小尺寸', 'Minimum Size'],
+        'label-checkbox-focusable': ['允許視窗獲取焦點', '允许窗口获取焦点', 'Focusable'],
+        'label-checkbox-min-size': ['限制視窗最小大小', '限制窗口最小大小', 'Limit minimum window size'],
         'label-checkbox-compact-mode': ['緊湊模式', '紧凑模式', 'Compact Mode'],
         'label-compact-width': ['寬度', '宽度', 'Width'],
         'label-compact-height': ['高度', '高度', 'Height'],
-        'label-checkbox-hide-button': ['隱藏按鈕', '隐藏按钮', 'Hide Buttons'],
+        'label-checkbox-hide-button': ['隱藏視窗控制按鈕', '隐藏窗口控制按钮', 'Hide window control buttons'],
         'label-checkbox-hide-dialog': ['自動隱藏對話', '自动隐藏对话', 'Auto Hide Dialog'],
         'label-hide-dialog-timeout': ['隱藏超時', '隐藏超时', 'Hide Timeout'],
         'label-background-color': ['背景顏色', '背景颜色', 'Background Color'],
@@ -463,6 +534,13 @@ function getElementTextList() {
           '作者: raydocs',
           '作者: raydocs',
           'Author: raydocs',
+        ],
+      },
+      summary: {
+        'summary-elevenlabs-advanced': [
+          '備援流程：手動 Refresh Token / 舊版 browser-assist',
+          '备选流程：手动 Refresh Token / 旧版 browser-assist',
+          'Fallbacks: manual Refresh Token / legacy browser-assist',
         ],
       },
       title: {

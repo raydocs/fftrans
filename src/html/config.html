@@ -54,30 +54,54 @@
     </header>
 
     <!-- 水平标签导航栏 -->
-    <nav class="settings-tabs">
-      <button class="tab-item active" data-target="div-appearance" id="tab-appearance">外观</button>
-      <button class="tab-item" data-target="div-translation" id="tab-translation">翻译</button>
-      <button class="tab-item" data-target="div-speech" id="tab-speech">语音</button>
-      <button class="tab-item" data-target="div-api" id="tab-api">API</button>
-      <button class="tab-item" data-target="div-ai" id="tab-ai">AI</button>
-      <button class="tab-item" data-target="div-system" id="tab-system">系统</button>
-      <button class="tab-item" data-target="div-about" id="tab-about">关于</button>
+    <nav class="settings-tabs" role="tablist" aria-label="Settings sections">
+      <button class="tab-item active" type="button" role="tab" aria-selected="true" aria-controls="div-appearance" data-target="div-appearance" id="tab-appearance">外观</button>
+      <button class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="div-translation" data-target="div-translation" id="tab-translation">翻译</button>
+      <button class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="div-speech" data-target="div-speech" id="tab-speech">语音</button>
+      <button class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="div-api" data-target="div-api" id="tab-api">API</button>
+      <button class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="div-ai" data-target="div-ai" id="tab-ai">AI</button>
+      <button class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="div-system" data-target="div-system" id="tab-system">系统</button>
+      <button class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="div-about" data-target="div-about" id="tab-about">关于</button>
     </nav>
-
-    <!-- 兼容旧代码的隐藏 select -->
-    <select class="form-select" name="" id="select-option" hidden>
-      <option value="div-appearance" selected></option>
-      <option value="div-translation"></option>
-      <option value="div-speech"></option>
-      <option value="div-api"></option>
-      <option value="div-ai"></option>
-      <option value="div-system"></option>
-      <option value="div-about"></option>
-    </select>
 
     <main class="container-fluid">
       <!-- appearance page (原 window + font) -->
-      <div id="div-appearance" class="config-page">
+      <div id="div-appearance" class="config-page" role="tabpanel" aria-labelledby="tab-appearance">
+        <!-- 界面偏好分组 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span id="section-interface-preferences">界面偏好</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-app-language">界面语言</div>
+              <div class="setting-description" id="desc-app-language">应用界面显示的语言</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select control-w-140" id="select-app-language">
+                <option value="app-zht" selected>繁體中文</option>
+                <option value="app-zhs">简体中文</option>
+                <option value="app-en">English</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-theme">主题</div>
+              <div class="setting-description" id="desc-theme">选择深色或浅色主题</div>
+            </div>
+            <div class="setting-control">
+              <select class="form-select control-w-140" id="select-theme">
+                <option value="dark" selected>深色主題 (Dark)</option>
+                <option value="light">淺色主題 (Light)</option>
+              </select>
+            </div>
+          </div>
+        </div>
         <!-- 窗口行为分组 -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -188,7 +212,7 @@
               <div class="setting-description" id="desc-hide-dialog-timeout">对话框自动隐藏的等待秒数</div>
             </div>
             <div class="setting-control">
-              <input class="form-control" type="number" id="input-hide-dialog-timeout" min="1" step="1" value="15" style="width: 80px" />
+              <input class="form-control control-w-80" type="number" id="input-hide-dialog-timeout" min="1" step="1" value="15" />
             </div>
           </div>
         </div>
@@ -222,7 +246,7 @@
             </div>
             <div class="setting-control">
               <span id="span-background-transparency" class="setting-value"></span>
-              <input type="range" class="form-range" min="0" max="255" id="input-background-transparency" style="width: 120px" />
+              <input type="range" class="form-range control-w-120" min="0" max="255" id="input-background-transparency" />
             </div>
           </div>
         </div>
@@ -243,7 +267,7 @@
               <div class="setting-description" id="desc-font-weight">设置文字的粗细程度</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-font-weight" style="width: 120px">
+              <select class="form-select control-w-120" id="select-font-weight">
                 <option value="normal" selected></option>
                 <option value="bold"></option>
               </select>
@@ -255,7 +279,7 @@
               <div class="setting-description" id="desc-font-size">设置文字的显示大小</div>
             </div>
             <div class="setting-control">
-              <input type="number" class="form-control" min="0" value="1" step="0.1" id="input-font-size" style="width: 80px" />
+              <input type="number" class="form-control control-w-80" min="0" value="1" step="0.1" id="input-font-size" />
             </div>
           </div>
         </div>
@@ -274,7 +298,7 @@
               <div class="setting-description" id="desc-dialog-spacing">对话框之间的间隔距离</div>
             </div>
             <div class="setting-control">
-              <input type="number" class="form-control" min="0" value="1" step="0.1" id="input-dialog-spacing" style="width: 80px" />
+              <input type="number" class="form-control control-w-80" min="0" value="1" step="0.1" id="input-dialog-spacing" />
             </div>
           </div>
           <div class="setting-item">
@@ -283,7 +307,7 @@
               <div class="setting-description" id="desc-dialog-radius">对话框的圆角半径</div>
             </div>
             <div class="setting-control">
-              <input type="number" class="form-control" min="0" value="0" step="0.1" id="input-dialog-radius" style="width: 80px" />
+              <input type="number" class="form-control control-w-80" min="0" value="0" step="0.1" id="input-dialog-radius" />
             </div>
           </div>
           <div class="setting-item">
@@ -303,14 +327,14 @@
             </div>
             <div class="setting-control">
               <span id="span-dialog-transparency" class="setting-value"></span>
-              <input type="range" class="form-range" min="0" max="255" id="input-dialog-transparency" style="width: 120px" />
+              <input type="range" class="form-range control-w-120" min="0" max="255" id="input-dialog-transparency" />
             </div>
           </div>
         </div>
       </div>
 
       <!-- translation page -->
-      <div id="div-translation" class="config-page" hidden>
+      <div id="div-translation" class="config-page" hidden role="tabpanel" aria-labelledby="tab-translation">
         <!-- 自动化设置分组 -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -367,14 +391,14 @@
             </svg>
             <span id="section-translation-engine">翻译引擎</span>
           </div>
-          <p class="text-warning" style="padding: 0.5rem 1.25rem; margin: 0; font-size: 0.85rem;" id="p-ai-warning"></p>
+          <p class="text-warning settings-inline-warning" id="p-ai-warning"></p>
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-label" id="label-engine">主翻译引擎</div>
               <div class="setting-description" id="desc-engine">选择主要使用的翻译服务</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-engine" style="width: 180px"></select>
+              <select class="form-select control-w-180" id="select-engine"></select>
             </div>
           </div>
           <div class="setting-item">
@@ -383,7 +407,7 @@
               <div class="setting-description" id="desc-engine-alternate">主引擎失败时使用的备用服务</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-engine-alternate" style="width: 180px"></select>
+              <select class="form-select control-w-180" id="select-engine-alternate"></select>
             </div>
           </div>
         </div>
@@ -407,7 +431,7 @@
               <div class="setting-description" id="desc-from">NPC 对话的语言</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-from" style="width: 160px"></select>
+              <select class="form-select control-w-160" id="select-from"></select>
             </div>
           </div>
           <div class="setting-item">
@@ -416,7 +440,7 @@
               <div class="setting-description" id="desc-from-player">玩家发送消息的语言</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-from-player" style="width: 160px"></select>
+              <select class="form-select control-w-160" id="select-from-player"></select>
             </div>
           </div>
           <div class="setting-item">
@@ -425,7 +449,7 @@
               <div class="setting-description" id="desc-to">翻译后显示的语言</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-to" style="width: 160px"></select>
+              <select class="form-select control-w-160" id="select-to"></select>
             </div>
           </div>
         </div>
@@ -440,8 +464,8 @@
             </svg>
             <span id="section-channel-list">频道列表</span>
           </div>
-          <div style="padding: 1rem 1.25rem;">
-            <p class="text-warning" style="margin-bottom: 0.75rem; font-size: 0.85rem;" id="span-channel-comment"></p>
+          <div class="settings-body">
+            <p class="text-warning settings-helper-text" id="span-channel-comment"></p>
             <div id="div-channel-list"></div>
           </div>
         </div>
@@ -449,7 +473,7 @@
       </div>
 
       <!-- speech page -->
-      <div id="div-speech" class="config-page" hidden>
+      <div id="div-speech" class="config-page" hidden role="tabpanel" aria-labelledby="tab-speech">
         <!-- TTS Engine & Speed -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -465,7 +489,7 @@
               <div class="setting-description" id="desc-tts-engine">选择 TTS 语音合成引擎</div>
             </div>
             <div class="setting-control setting-control-group">
-              <select class="form-select" id="select-tts-engine" style="width: 160px">
+              <select class="form-select control-w-160" id="select-tts-engine">
                 <option value="google">Google TTS</option>
                 <option value="elevenlabs">ElevenLabs</option>
                 <option value="speechify">Speechify</option>
@@ -481,13 +505,29 @@
             </div>
             <div class="setting-control">
               <span id="span-speech-speed" class="setting-value"></span>
-              <input type="range" class="form-range" min="0.1" max="3" step="0.1" id="input-speech-speed" style="width: 120px" />
+              <input type="range" class="form-range control-w-120" min="0.1" max="3" step="0.1" id="input-speech-speed" />
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section tts-engine-config tts-engine-empty-state" id="section-tts-google" data-engine="google" hidden>
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span id="section-google-tts-ready">Google TTS</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label" id="label-google-tts-ready">无需额外配置</div>
+              <div class="setting-description" id="desc-google-tts-ready">Google TTS 当前无需单独填写参数。你可以直接测试连接，确认无误后保存设置。</div>
             </div>
           </div>
         </div>
 
         <!-- ElevenLabs TTS (Simplified) -->
-        <div class="settings-section">
+        <div class="settings-section tts-engine-config" id="section-tts-elevenlabs" data-engine="elevenlabs" hidden>
           <div class="settings-section-header">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -499,20 +539,20 @@
           </div>
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-label">Recommended setup</div>
-              <div class="setting-description">Primary path: use Chrome / Chromium + the bundled ElevenReader extension to import login automatically. Manual token entry and legacy browser-assist remain available only as fallbacks.</div>
+              <div class="setting-label" id="label-elevenlabs-recommended-setup">Recommended setup</div>
+              <div class="setting-description" id="desc-elevenlabs-recommended-setup">Primary path: use Chrome / Chromium + the bundled ElevenReader extension to import login automatically. Manual token entry and legacy browser-assist remain available only as fallbacks.</div>
             </div>
             <div class="setting-control elevenlabs-step-list">
-              <span class="elevenlabs-step">1. Install bundled extension</span>
-              <span class="elevenlabs-step">2. Connect ElevenReader</span>
-              <span class="elevenlabs-step">3. Open / login in Chromium</span>
-              <span class="elevenlabs-step">4. Check again, then save</span>
+              <span class="elevenlabs-step" id="step-elevenlabs-install">1. Install bundled extension</span>
+              <span class="elevenlabs-step" id="step-elevenlabs-connect">2. Connect ElevenReader</span>
+              <span class="elevenlabs-step" id="step-elevenlabs-login">3. Open / login in Chromium</span>
+              <span class="elevenlabs-step" id="step-elevenlabs-save">4. Check again, then save</span>
             </div>
           </div>
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-label">Extension files</div>
-              <div class="setting-description">Open the bundled Chromium extension folder if you still need to load it in chrome://extensions.</div>
+              <div class="setting-label" id="label-elevenlabs-extension-files">Extension files</div>
+              <div class="setting-description" id="desc-elevenlabs-extension-files">Open the bundled Chromium extension folder if you still need to load it in chrome://extensions.</div>
             </div>
             <div class="setting-control setting-control-group elevenlabs-flow-buttons">
               <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-open-extension-folder">Open extension folder</button>
@@ -520,20 +560,19 @@
           </div>
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-label">Browser connection</div>
-              <div class="setting-description">Start pairing, finish login in ElevenReader, then check again here.</div>
+              <div class="setting-label" id="label-elevenlabs-browser-connection">Browser connection</div>
+              <div class="setting-description" id="desc-elevenlabs-browser-connection">Start pairing, finish login in ElevenReader, then check again here.</div>
             </div>
             <div class="setting-control setting-control-group elevenlabs-flow-buttons">
               <button type="button" class="btn btn-primary btn-sm" id="btn-elevenlabs-begin-pairing">Connect ElevenReader</button>
               <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-copy-pairing-link">Copy pairing link</button>
               <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-check-auth">Check again</button>
-              <button type="button" class="btn btn-success btn-sm" id="btn-elevenlabs-save-finish">Save and finish</button>
             </div>
           </div>
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-label">Connection status</div>
-              <div class="setting-description">Preview, refresh voices, and ElevenLabs test actions stay disabled until auth is ready.</div>
+              <div class="setting-label" id="label-elevenlabs-connection-status">Connection status</div>
+              <div class="setting-description" id="desc-elevenlabs-connection-status">Preview, refresh voices, and ElevenLabs test actions stay disabled until auth is ready.</div>
             </div>
             <div class="setting-control">
               <div class="elevenlabs-status-panel">
@@ -549,18 +588,18 @@
             </div>
           </div>
           <details class="elevenlabs-advanced-details" id="details-elevenlabs-advanced">
-            <summary>Fallbacks: manual Refresh Token / legacy browser-assist</summary>
+            <summary id="summary-elevenlabs-advanced">Fallbacks: manual Refresh Token / legacy browser-assist</summary>
             <div class="elevenlabs-advanced-body">
               <div class="setting-item">
                 <div class="setting-info">
-                  <div class="setting-label">Manual fallback</div>
-                  <div class="setting-description">Use this when Chrome / Chromium or the extension is unavailable. FFTrans will validate the Refresh Token before you save.</div>
+                  <div class="setting-label" id="label-elevenlabs-manual-fallback">Manual fallback</div>
+                  <div class="setting-description" id="desc-elevenlabs-manual-fallback">Use this when Chrome / Chromium or the extension is unavailable. FFTrans will validate the Refresh Token before you save.</div>
                 </div>
               </div>
               <div class="setting-item">
                 <div class="setting-info">
-                  <div class="setting-label">Refresh Token</div>
-                  <div class="setting-description">Recommended fallback for non-Chromium or no-extension setups.</div>
+                  <div class="setting-label" id="label-elevenlabs-refresh-token">Refresh Token</div>
+                  <div class="setting-description" id="desc-elevenlabs-refresh-token">Recommended fallback for non-Chromium or no-extension setups.</div>
                 </div>
                 <div class="setting-control api-key-control">
                   <img class="btn-visibility" src="./img/ui/visibility_off_white_48dp.svg" id="img-visibility-elevenlabs-refresh-token" />
@@ -570,8 +609,8 @@
               </div>
               <div class="setting-item">
                 <div class="setting-info">
-                  <div class="setting-label">Legacy browser-assist</div>
-                  <div class="setting-description">Not recommended unless the primary extension flow is unavailable. This older in-app browser window can still import a usable session or tokens.</div>
+                  <div class="setting-label" id="label-elevenlabs-legacy-browser-assist">Legacy browser-assist</div>
+                  <div class="setting-description" id="desc-elevenlabs-legacy-browser-assist">Not recommended unless the primary extension flow is unavailable. This older in-app browser window can still import a usable session or tokens.</div>
                 </div>
                 <div class="setting-control setting-control-group elevenlabs-flow-buttons">
                   <button type="button" class="btn btn-secondary btn-sm" id="btn-elevenlabs-open-browser-assist">Open legacy browser-assist</button>
@@ -580,8 +619,8 @@
               </div>
               <div class="setting-item">
                 <div class="setting-info">
-                  <div class="setting-label">Fallback guide</div>
-                  <div class="setting-description">Open the guide for manual Refresh Token entry, bearer/session caveats, and the legacy browser-assist flow.</div>
+                  <div class="setting-label" id="label-elevenlabs-fallback-guide">Fallback guide</div>
+                  <div class="setting-description" id="desc-elevenlabs-fallback-guide">Open the guide for manual Refresh Token entry, bearer/session caveats, and the legacy browser-assist flow.</div>
                 </div>
                 <div class="setting-control">
                   <a href="#" id="a-open-elevenlabs-token-helper" class="header-link">Open fallback guide</a>
@@ -642,7 +681,7 @@
                   <option value="pqHfZKP75CvOlQylNhV4">Bill - 睿智沉稳 (美式，年长友善)</option>
                   <option value="wAGzRVkxKEs8La0lmdrE">Sully - 低沉成熟 (美式，深邃厚重)</option>
                   <option value="wyWA56cQNU2KqUW4eCsI">Clyde - 圆润外交 (英式，深沉幽默)</option>
-                  <option value="QngvLQR8bsLR5bzoa6Vv">Michael - 感染力强 (英式，纪录片)</option>
+                  <option value="QngvLQR8bsLR5bzoa6Vv">Michael - 感染力强 (英式，暗黑强硬)</option>
                   <option value="m2eiQmRlw2jKNs6qW86Z">Drew C - 深沉表现 (英式，自信叙事)</option>
                   <option value="ktrGUw7rURIQyMrQZqCu">Cassius - 天鹅绒低音 (英式RP，从容指挥)</option>
                   <option value="OvO0rJbpandgx1bK263a">Teddy - 温暖稳重 (英式，精致可靠)</option>
@@ -683,7 +722,7 @@
               <div class="setting-description">TTS 模型版本</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-elevenlabs-model" style="width: 220px">
+              <select class="form-select control-w-220" id="select-elevenlabs-model">
                 <option value="eleven_v3" selected>Eleven v3 (推荐)</option>
                 <option value="eleven_flash_v2_5">Flash v2.5 (低延迟)</option>
                 <option value="eleven_turbo_v2_5">Turbo v2.5</option>
@@ -736,7 +775,7 @@
         </div>
 
         <!-- Speechify TTS -->
-        <div class="settings-section">
+        <div class="settings-section tts-engine-config" id="section-tts-speechify" data-engine="speechify" hidden>
           <div class="settings-section-header">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -801,7 +840,7 @@
               <div class="setting-description">输出音频的格式</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-speechify-audio-format" style="width: 120px">
+              <select class="form-select control-w-120" id="select-speechify-audio-format">
                 <option value="mp3" selected>MP3</option>
                 <option value="ogg">OGG</option>
                 <option value="wav">WAV</option>
@@ -822,7 +861,7 @@
         </div>
 
         <!-- MiMo TTS -->
-        <div class="settings-section">
+        <div class="settings-section tts-engine-config" id="section-tts-mimo" data-engine="mimo" hidden>
           <div class="settings-section-header">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -848,7 +887,7 @@
               <div class="setting-description" id="desc-mimo-model">TTS 模型名称</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-model" style="width: 200px" placeholder="MiMo-V2-TTS" />
+              <input type="text" class="form-control control-w-200" id="input-mimo-model" placeholder="MiMo-V2-TTS" />
             </div>
           </div>
           <div class="setting-item">
@@ -883,13 +922,13 @@
               <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-mimo-voices">刷新</button>
             </div>
           </div>
-          <div class="setting-item" id="mimo-custom-voice-row" style="display: none;">
+          <div class="setting-item" id="mimo-custom-voice-row" hidden>
             <div class="setting-info">
               <div class="setting-label" id="label-mimo-voice-custom">自定义语音 ID</div>
               <div class="setting-description" id="desc-mimo-voice-custom">手动输入 MiMo 语音 ID</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-voice-custom" style="width: 200px" placeholder="输入语音 ID" />
+              <input type="text" class="form-control control-w-200" id="input-mimo-voice-custom" placeholder="输入语音 ID" />
             </div>
           </div>
           <input type="hidden" id="input-mimo-voice" />
@@ -899,7 +938,7 @@
               <div class="setting-description" id="desc-mimo-response-format">输出音频的格式</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-mimo-response-format" style="width: 120px">
+              <select class="form-select control-w-120" id="select-mimo-response-format">
                 <option value="mp3" selected>MP3</option>
                 <option value="ogg">OGG</option>
                 <option value="wav">WAV</option>
@@ -912,7 +951,7 @@
               <div class="setting-description" id="desc-mimo-speed">语音播放速度 (0.25 - 4)</div>
             </div>
             <div class="setting-control">
-              <input type="number" class="form-control" id="input-mimo-speed" min="0.25" max="4" step="0.05" style="width: 100px" />
+              <input type="number" class="form-control control-w-100" id="input-mimo-speed" min="0.25" max="4" step="0.05" />
             </div>
           </div>
           <div class="setting-item">
@@ -921,7 +960,7 @@
               <div class="setting-description" id="desc-mimo-style">语音风格 (可选)</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-style" style="width: 200px" placeholder="可选" />
+              <input type="text" class="form-control control-w-200" id="input-mimo-style" placeholder="可选" />
             </div>
           </div>
           <div class="setting-item">
@@ -930,7 +969,7 @@
               <div class="setting-description" id="desc-mimo-emotion">语音情感 (可选)</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-emotion" style="width: 200px" placeholder="可选" />
+              <input type="text" class="form-control control-w-200" id="input-mimo-emotion" placeholder="可选" />
             </div>
           </div>
           <div class="setting-item">
@@ -939,14 +978,14 @@
               <div class="setting-description" id="desc-mimo-language">目标语言 (可选)</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control" id="input-mimo-language" style="width: 200px" placeholder="可选" />
+              <input type="text" class="form-control control-w-200" id="input-mimo-language" placeholder="可选" />
             </div>
           </div>
         </div>
       </div>
 
       <!-- api page -->
-      <div id="div-api" class="config-page" hidden>
+      <div id="div-api" class="config-page" hidden role="tabpanel" aria-labelledby="tab-api">
         <!-- Gemini -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -972,7 +1011,7 @@
               <div class="setting-description" id="desc-gemini-model">如 gemini-3.1-flash-lite-preview</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control" id="input-gemini-model" style="width: 200px" />
+              <input type="text" class="form-control control-w-200" id="input-gemini-model" />
             </div>
           </div>
         </div>
@@ -1004,23 +1043,24 @@
               <div class="setting-description" id="desc-openrouter-model">如 openai/gpt-5.4-nano</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control" id="input-openrouter-model" style="width: 220px" />
+              <input type="text" class="form-control control-w-220" id="input-openrouter-model" />
             </div>
           </div>
         </div>
 
         <!-- 更多引擎折叠区域 -->
-        <div class="settings-section collapsible" onclick="toggleMoreEnginesClick()" style="cursor: pointer;">
-          <div class="settings-section-header collapsible-header" id="toggle-more-engines">
+        <div class="settings-section collapsible">
+          <button type="button" class="settings-section-header collapsible-header collapsible-trigger" id="toggle-more-engines" aria-expanded="false" aria-controls="div-more-engines">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
             <span id="section-more-engines">更多翻译引擎</span>
+            <span class="section-count" id="text-more-engines-count">0 已配置</span>
             <svg class="collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
-          </div>
+          </button>
         </div>
 
         <!-- 折叠内容 -->
@@ -1053,7 +1093,7 @@
                 <div class="setting-description" id="desc-gpt-model">如 gpt-5.4-nano</div>
               </div>
               <div class="setting-control">
-                <input type="text" class="form-control" id="input-gpt-model" style="width: 200px" />
+                <input type="text" class="form-control control-w-200" id="input-gpt-model" />
               </div>
             </div>
           </div>
@@ -1083,7 +1123,7 @@
                 <div class="setting-description" id="desc-kimi-model">如 kimi-k2.5</div>
               </div>
               <div class="setting-control">
-                <input type="text" class="form-control" id="input-kimi-model" style="width: 200px" />
+                <input type="text" class="form-control control-w-200" id="input-kimi-model" />
               </div>
             </div>
           </div>
@@ -1096,8 +1136,8 @@
                 <rect x="9" y="9" width="6" height="6"></rect>
                 <line x1="9" y1="1" x2="9" y2="4"></line>
                 <line x1="15" y1="1" x2="15" y2="4"></line>
-                <line x1="9" y1="20" x2="9" y2="23"></line>
-                <line x1="15" y1="20" x2="15" y2="23"></line>
+                <line x1="1" y1="9" x2="4" y2="9"></line>
+                <line x1="1" y1="14" x2="4" y2="14"></line>
                 <line x1="20" y1="9" x2="23" y2="9"></line>
                 <line x1="20" y1="14" x2="23" y2="14"></line>
                 <line x1="1" y1="9" x2="4" y2="9"></line>
@@ -1106,14 +1146,14 @@
               <span id="p-llm-api">自定义 LLM API</span>
               <a href="#" id="a-test-llm-api" class="header-link">测试链接</a>
             </div>
-            <p id="p-ssl-warning" class="text-warning" style="padding: 0.5rem 1.25rem; margin: 0; font-size: 0.8rem;"></p>
+            <p id="p-ssl-warning" class="text-warning settings-inline-warning settings-inline-warning--compact"></p>
             <div class="setting-item">
               <div class="setting-info">
                 <div class="setting-label" id="label-llm-api-url">API URL</div>
                 <div class="setting-description" id="desc-llm-api-url">OpenAI 兼容的 API 端点</div>
               </div>
               <div class="setting-control">
-                <input type="text" class="form-control" id="input-llm-api-url" style="width: 280px" placeholder="https://api.example.com/v1" />
+                <input type="text" class="form-control control-w-280" id="input-llm-api-url" placeholder="https://api.example.com/v1" />
               </div>
             </div>
             <div class="setting-item">
@@ -1132,7 +1172,7 @@
                 <div class="setting-description" id="desc-llm-model">要使用的模型名称</div>
               </div>
               <div class="setting-control">
-                <input type="text" class="form-control" id="input-llm-model" style="width: 200px" />
+                <input type="text" class="form-control control-w-200" id="input-llm-model" />
               </div>
             </div>
           </div>
@@ -1164,7 +1204,7 @@
                 <div class="setting-description" id="desc-nvidia-model">所有模型均免费使用</div>
               </div>
               <div class="setting-control">
-                <select class="form-select" id="input-nvidia-model" style="width: 400px">
+                <select class="form-select control-w-400" id="input-nvidia-model">
                   <option value="meta/llama-4-maverick-17b-128e-instruct" selected>Llama 4 Maverick — 速度最快 ~500ms，翻译精准 (推荐)</option>
                   <option value="qwen/qwen3-next-80b-a3b-instruct">Qwen 3 Next 80B — 中文最自然 ~590ms，游戏术语准确</option>
                   <option value="mistralai/mistral-small-4-119b-2603">Mistral Small 4 — 稳定可靠 ~650ms，多语言均衡</option>
@@ -1190,7 +1230,7 @@
                 <div class="setting-description" id="desc-google-vision-type">选择 API Key 或 JSON 凭证</div>
               </div>
               <div class="setting-control">
-                <select class="form-select" id="select-google-vision-type" style="width: 160px">
+                <select class="form-select control-w-160" id="select-google-vision-type">
                   <option value="google-api-key">API Key</option>
                   <option value="google-json">JSON 凭证</option>
                 </select>
@@ -1218,11 +1258,10 @@
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- AI -->
-      <div id="div-ai" class="config-page" hidden>
+      <div id="div-ai" class="config-page" hidden role="tabpanel" aria-labelledby="tab-ai">
         <!-- 对话设置分组 -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -1246,7 +1285,7 @@
               <div class="setting-description" id="desc-ai-chat-length">保留的历史对话条数</div>
             </div>
             <div class="setting-control">
-              <input class="form-control" type="number" min="0" step="1" id="input-ai-chat-length" style="width: 80px" />
+              <input class="form-control control-w-80" type="number" min="0" step="1" id="input-ai-chat-length" />
             </div>
           </div>
         </div>
@@ -1270,7 +1309,7 @@
               <div class="setting-description" id="desc-ai-temperature">控制输出的随机性 (0-2)</div>
             </div>
             <div class="setting-control">
-              <input class="form-control" type="number" min="0" step="0.1" id="input-ai-temperature" style="width: 80px" />
+              <input class="form-control control-w-80" type="number" min="0" step="0.1" id="input-ai-temperature" />
             </div>
           </div>
           <div class="setting-item">
@@ -1301,7 +1340,7 @@
               <div class="setting-description" id="desc-prompt-preset">选择翻译提示词模板</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-prompt-preset" style="width: 140px">
+              <select class="form-select control-w-140" id="select-prompt-preset">
                 <option value="default" id="option-prompt-default"></option>
                 <option value="game" id="option-prompt-game"></option>
                 <option value="story" id="option-prompt-story"></option>
@@ -1310,52 +1349,17 @@
               </select>
             </div>
           </div>
-          <div style="padding: 0.875rem 1.25rem;">
-            <textarea class="form-control" id="textarea-ai-custom-translation-prompt" rows="4" style="font-size: 0.85rem;"></textarea>
-            <p class="text-warning" style="margin: 0.5rem 0 0 0; font-size: 0.8rem;">${source} = 来源语言, ${target} = 目标语言</p>
-            <p class="text-warning" style="margin: 0.25rem 0 0 0; font-size: 0.8rem;" id="p-prompt-tip"></p>
+          <div class="settings-block">
+            <textarea class="form-control textarea-compact" id="textarea-ai-custom-translation-prompt" rows="4"></textarea>
+            <p class="text-warning settings-helper-line">${source} = 来源语言, ${target} = 目标语言</p>
+            <p class="text-warning settings-helper-line settings-helper-line--tight" id="p-prompt-tip"></p>
           </div>
         </div>
 
       </div>
 
       <!-- system page -->
-      <div id="div-system" class="config-page" hidden>
-        <!-- 外观设置分组 -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            <span id="section-system-appearance">外观设置</span>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-app-language">界面语言</div>
-              <div class="setting-description" id="desc-app-language">应用界面显示的语言</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-app-language" style="width: 140px">
-                <option value="app-zht" selected>繁體中文</option>
-                <option value="app-zhs">简体中文</option>
-                <option value="app-en">English</option>
-              </select>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-theme">主题</div>
-              <div class="setting-description" id="desc-theme">选择深色或浅色主题</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select" id="select-theme" style="width: 140px">
-                <option value="dark" selected>深色主題 (Dark)</option>
-                <option value="light">淺色主題 (Light)</option>
-              </select>
-            </div>
-          </div>
-        </div>
+      <div id="div-system" class="config-page" hidden role="tabpanel" aria-labelledby="tab-system">
 
         <!-- 功能设置分组 -->
         <div class="settings-section">
@@ -1399,7 +1403,8 @@
         <div class="settings-section">
           <div class="settings-section-header">
             <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 1 0 2.83 1 1 0 0 1-2.83 0l-1.72-1.71"></path>
+              <path d="M18 11a1 1 0 0 0-1-1l-1.6-1.6a1 1 0 0 1 0-2.83 1 1 0 0 1 2.83 0l1.72 1.71"></path>
             </svg>
             <span id="section-system-tools">维护工具</span>
           </div>
@@ -1409,16 +1414,7 @@
               <div class="setting-description" id="desc-download-json">手动更新游戏翻译对照表</div>
             </div>
             <div class="setting-control">
-              <button class="btn btn-primary btn-sm" id="button-download-json" style="min-width: 80px">下载</button>
-            </div>
-          </div>
-          <div class="setting-item" hidden>
-            <div class="setting-info">
-              <div class="setting-label">清除临时文件</div>
-              <div class="setting-description">删除应用产生的临时文件</div>
-            </div>
-            <div class="setting-control">
-              <button class="btn btn-primary btn-sm" id="button-delete-temp" style="min-width: 80px">清除</button>
+              <button class="btn btn-primary btn-sm btn-min-width" id="button-download-json">下载</button>
             </div>
           </div>
           <div class="setting-item">
@@ -1427,7 +1423,7 @@
               <div class="setting-description" id="desc-restart-sharlayan">重新启动游戏数据读取器</div>
             </div>
             <div class="setting-control">
-              <button id="button-restart-sharlayan-reader" class="btn btn-primary btn-sm" style="min-width: 80px">重启</button>
+              <button id="button-restart-sharlayan-reader" class="btn btn-primary btn-sm btn-min-width">重启</button>
             </div>
           </div>
           <div class="setting-item">
@@ -1436,16 +1432,7 @@
               <div class="setting-description" id="desc-fix-reader">重置并修复数据读取组件</div>
             </div>
             <div class="setting-control">
-              <button id="button-fix-reader" class="btn btn-danger btn-sm" style="min-width: 80px">修复</button>
-            </div>
-          </div>
-          <div class="setting-item" hidden>
-            <div class="setting-info">
-              <div class="setting-label">检查更新</div>
-              <div class="setting-description">检查应用新版本</div>
-            </div>
-            <div class="setting-control">
-              <button id="button-version-check" class="btn btn-primary btn-sm" style="min-width: 80px">检查</button>
+              <button id="button-fix-reader" class="btn btn-danger btn-sm btn-min-width">修复</button>
             </div>
           </div>
         </div>
@@ -1475,7 +1462,7 @@
               <div class="setting-description" id="desc-proxy-protocol">代理服务器使用的协议</div>
             </div>
             <div class="setting-control">
-              <select class="form-select" id="select-proxy-protocol" style="width: 100px">
+              <select class="form-select control-w-100" id="select-proxy-protocol">
                 <option value="http:" selected>http:</option>
                 <option value="https:">https:</option>
               </select>
@@ -1487,7 +1474,7 @@
               <div class="setting-description" id="desc-proxy-hostname">代理服务器的 IP 或域名</div>
             </div>
             <div class="setting-control">
-              <input class="form-control" type="text" id="input-proxy-hostname" style="width: 160px" placeholder="127.0.0.1" />
+              <input class="form-control control-w-160" type="text" id="input-proxy-hostname" placeholder="127.0.0.1" />
             </div>
           </div>
           <div class="setting-item">
@@ -1496,7 +1483,7 @@
               <div class="setting-description" id="desc-proxy-port">代理服务器的端口号</div>
             </div>
             <div class="setting-control">
-              <input class="form-control" type="number" id="input-proxy-port" style="width: 100px" placeholder="7890" />
+              <input class="form-control control-w-100" type="number" id="input-proxy-port" placeholder="7890" />
             </div>
           </div>
           <div class="setting-item">
@@ -1505,7 +1492,7 @@
               <div class="setting-description" id="desc-proxy-username">代理服务器的用户名（可选）</div>
             </div>
             <div class="setting-control">
-              <input class="form-control" type="text" id="input-proxy-username" style="width: 160px" />
+              <input class="form-control control-w-160" type="text" id="input-proxy-username" />
             </div>
           </div>
           <div class="setting-item">
@@ -1514,14 +1501,14 @@
               <div class="setting-description" id="desc-proxy-password">代理服务器的密码（可选）</div>
             </div>
             <div class="setting-control">
-              <input class="form-control" type="password" id="input-proxy-password" style="width: 160px" />
+              <input class="form-control control-w-160" type="password" id="input-proxy-password" />
             </div>
           </div>
         </div>
       </div>
 
       <!-- about page -->
-      <div id="div-about" class="config-page" hidden>
+      <div id="div-about" class="config-page" hidden role="tabpanel" aria-labelledby="tab-about">
         <!-- 应用信息分组 -->
         <div class="settings-section">
           <div class="settings-section-header">
@@ -1538,7 +1525,7 @@
               <div class="setting-description">当前应用版本</div>
             </div>
             <div class="setting-control">
-              <span style="color: var(--text-secondary); font-size: 0.9rem;">Ver. <span id="span-version"></span></span>
+              <span class="setting-meta-text">Ver. <span id="span-version"></span></span>
             </div>
           </div>
           <div class="setting-item">
@@ -1547,7 +1534,7 @@
               <div class="setting-description">应用开发与维护</div>
             </div>
             <div class="setting-control">
-              <span id="span-author" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
+              <span id="span-author" class="setting-meta-text"></span>
             </div>
           </div>
         </div>
@@ -1561,13 +1548,13 @@
             </svg>
             <span id="section-about-links">相关链接</span>
           </div>
-          <div class="setting-item" style="cursor: pointer;" onclick="document.getElementById('a-readme').click()">
+          <div class="setting-item setting-item-link" data-click-target="a-readme">
             <div class="setting-info">
               <div class="setting-label" id="label-readme">使用说明</div>
               <div class="setting-description" id="desc-readme">查看应用使用文档</div>
             </div>
             <div class="setting-control">
-              <a class="nav-link" href="#" id="a-readme" style="color: var(--accent-color); font-size: 0.85rem;">
+              <a class="nav-link setting-link" href="#" id="a-readme">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                   <polyline points="15 3 21 3 21 9"></polyline>
@@ -1576,13 +1563,13 @@
               </a>
             </div>
           </div>
-          <div class="setting-item" style="cursor: pointer;" onclick="document.getElementById('a-github').click()">
+          <div class="setting-item setting-item-link" data-click-target="a-github">
             <div class="setting-info">
               <div class="setting-label" id="label-github">GitHub</div>
               <div class="setting-description" id="desc-github">查看源代码和提交问题</div>
             </div>
             <div class="setting-control">
-              <a class="nav-link" href="#" id="a-github" style="color: var(--accent-color); font-size: 0.85rem;">
+              <a class="nav-link setting-link" href="#" id="a-github">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                   <polyline points="15 3 21 3 21 9"></polyline>
@@ -1594,6 +1581,8 @@
         </div>
       </div>
     </main>
+
+    <div class="settings-toast-region" id="settings-toast-region" aria-live="polite" aria-atomic="true"></div>
 
     <!-- renderer -->
     <script src="./js/theme.js"></script>

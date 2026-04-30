@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FF14 NVIDIA Hosted Subtitle Benchmark</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f4ef;
+      --panel: #fffdf7;
+      --ink: #1d1a17;
+      --muted: #6d655b;
+      --line: #ddd3c3;
+      --accent: #8b2f2f;
+      --accent-soft: #efe2d1;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Iowan Old Style", "Noto Serif SC", serif;
+      background: radial-gradient(circle at top, #fff9ef 0%, var(--bg) 55%, #ece6db 100%);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(1400px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 72px;
+    }
+
+    .hero,
+    .panel,
+    .model-section {
+      background: color-mix(in srgb, var(--panel) 94%, white 6%);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 16px 48px rgba(50, 33, 20, 0.08);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 24px;
+      background: linear-gradient(145deg, rgba(139, 47, 47, 0.08), rgba(255, 250, 240, 0.95));
+    }
+
+    .panel,
+    .model-section {
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 3vw, 3.2rem);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+
+    .subtle,
+    .strategy,
+    li {
+      color: var(--muted);
+    }
+
+    .meta-grid,
+    .stats-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 20px;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .meta-card,
+    .stat-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 250, 242, 0.9);
+      border: 1px solid var(--line);
+    }
+
+    .meta-card span,
+    .stat-card span {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .meta-card strong,
+    .stat-card strong {
+      font-size: 1.1rem;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.9em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+      font-size: 0.94rem;
+    }
+
+    thead {
+      background: #f3ebdf;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(250, 245, 237, 0.5);
+    }
+
+    .source-cell,
+    .output-cell {
+      min-width: 260px;
+    }
+
+    ul {
+      padding-left: 18px;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        width: min(100% - 20px, 100%);
+      }
+
+      .panel,
+      .model-section,
+      .hero {
+        padding: 18px;
+      }
+
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      td {
+        border-bottom: 0;
+        padding: 8px 0;
+      }
+
+      tbody tr {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <p class="subtle">Final Fantasy XIV subtitle benchmark on NVIDIA hosted OpenAI-compatible API</p>
+      <h1>FF14 英译中实时字幕对比</h1>
+      <p>
+        语料来自 <a href="https://ffxiv.consolegameswiki.com/wiki/Purple_Flame,_Purple_Flame">Purple Flame, Purple Flame</a>。
+        本测试重点看三件事：字幕能不能直接用、响应够不够快、在尽量关闭 thinking 后是否还能稳定翻译。
+      </p>
+      <div class="meta-grid">
+        <div class="meta-card"><span>API Base</span><strong>https://integrate.api.nvidia.com/v1</strong></div>
+        <div class="meta-card"><span>Models</span><strong>9</strong></div>
+        <div class="meta-card"><span>Dialogue Lines</span><strong>6</strong></div>
+        <div class="meta-card"><span>Timeout Per Call</span><strong>25000 ms</strong></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Methodology</h2>
+      <ul>
+        <li>Use six FF14 quest dialogue lines from Purple Flame, Purple Flame as subtitle-style English input.</li><li>Send one request per subtitle line with a subtitle-only localization prompt.</li><li>Apply per-model no-think switches where NVIDIA documentation or live tests showed them to work.</li><li>Measure end-to-end latency, usable subtitle rate, finish reason, visible thinking leakage, and heuristic translation accuracy.</li><li>Accuracy score is heuristic: concept coverage plus reference-string similarity. It is good for side-by-side comparison, not a human localization replacement.</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Overall Ranking</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Model</th>
+            <th>Model ID</th>
+            <th>Verdict</th>
+            <th>Usable Rate</th>
+            <th>Think Leak</th>
+            <th>Avg Latency</th>
+            <th>P95</th>
+            <th>Accuracy</th>
+            <th>Overall</th>
+          </tr>
+        </thead>
+        <tbody>
+    <tr>
+      <td>1</td>
+      <td>Llama 4 Maverick</td>
+      <td><code>meta/llama-4-maverick-17b-128e-instruct</code></td>
+      <td>Recommended for realtime subtitles</td>
+      <td>100%</td>
+      <td>0%</td>
+      <td>731.7 ms</td>
+      <td>956 ms</td>
+      <td>70.8</td>
+      <td>86.8</td>
+    </tr>
+  
+    <tr>
+      <td>2</td>
+      <td>Kimi K2.5</td>
+      <td><code>moonshotai/kimi-k2.5</code></td>
+      <td>Usable with caveats</td>
+      <td>100%</td>
+      <td>0%</td>
+      <td>4586.5 ms</td>
+      <td>13525 ms</td>
+      <td>75.4</td>
+      <td>84.4</td>
+    </tr>
+  
+    <tr>
+      <td>3</td>
+      <td>GLM-5</td>
+      <td><code>z-ai/glm5</code></td>
+      <td>Borderline for live subtitles</td>
+      <td>100%</td>
+      <td>0%</td>
+      <td>8376 ms</td>
+      <td>17981 ms</td>
+      <td>82.2</td>
+      <td>83.5</td>
+    </tr>
+  
+    <tr>
+      <td>4</td>
+      <td>Mistral Large 3</td>
+      <td><code>mistralai/mistral-large-3-675b-instruct-2512</code></td>
+      <td>Usable with caveats</td>
+      <td>100%</td>
+      <td>0%</td>
+      <td>4376.7 ms</td>
+      <td>9402 ms</td>
+      <td>73.8</td>
+      <td>82.7</td>
+    </tr>
+  
+    <tr>
+      <td>5</td>
+      <td>Gemma 4 31B</td>
+      <td><code>google/gemma-4-31b-it</code></td>
+      <td>Borderline for live subtitles</td>
+      <td>50%</td>
+      <td>0%</td>
+      <td>4674.7 ms</td>
+      <td>5148 ms</td>
+      <td>74.9</td>
+      <td>81.7</td>
+    </tr>
+  
+    <tr>
+      <td>6</td>
+      <td>Qwen 3.5 122B</td>
+      <td><code>qwen/qwen3.5-122b-a10b</code></td>
+      <td>Usable with caveats</td>
+      <td>83.3%</td>
+      <td>0%</td>
+      <td>807.7 ms</td>
+      <td>1227 ms</td>
+      <td>64.3</td>
+      <td>78.7</td>
+    </tr>
+  
+    <tr>
+      <td>7</td>
+      <td>MiniMax M2.5</td>
+      <td><code>minimaxai/minimax-m2.5</code></td>
+      <td>Not suitable for low-latency subtitles</td>
+      <td>0%</td>
+      <td>83.3%</td>
+      <td>4309.8 ms</td>
+      <td>9021 ms</td>
+      <td>47.8</td>
+      <td>43.7</td>
+    </tr>
+  
+    <tr>
+      <td>8</td>
+      <td>Step 3.5 Flash</td>
+      <td><code>stepfun-ai/step-3.5-flash</code></td>
+      <td>Not suitable for low-latency subtitles</td>
+      <td>0%</td>
+      <td>100%</td>
+      <td>10905.2 ms</td>
+      <td>22169 ms</td>
+      <td>0</td>
+      <td>12.3</td>
+    </tr>
+  
+    <tr>
+      <td>9</td>
+      <td>MiniMax M2.7</td>
+      <td><code>minimaxai/minimax-m2.7</code></td>
+      <td>Not suitable for low-latency subtitles</td>
+      <td>0%</td>
+      <td>0%</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+      </table>
+    </section>
+
+    
+      <section class="model-section">
+        <h2>Llama 4 Maverick</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> No extra switch needed in practice; returns direct subtitle text.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Recommended for realtime subtitles</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>100%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>731.7 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>70.8</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>86.8</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>956 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>75</td>
+        <td>88.8</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">艾斯蒂尼安：要把敌人引到我们这边，就必须发出紫色的信号。</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>599 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>76.7</td>
+        <td>89.5</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">冰心：你以为谈话就能阻止龙族的进攻？真是天真。</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>734 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>77.4</td>
+        <td>89.8</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">冰心：如果你了解事情的真相，了解点燃这仇恨烈火的火花，你就会明白你的任务是徒劳的。</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>733 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>66</td>
+        <td>84.7</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">艾斯蒂尼安：我认为理性已经从他身上消失了。通过龙眼，我能感受到尼德霍格的许多情绪，这条龙对复仇的渴望唯有鲜血才能浇灭。</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>621 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>82.1</td>
+        <td>91.9</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell">冰心：你仍然相信能找到和平的解决方法？好吧，我会带你去见他。</td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>747 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>47.4</td>
+        <td>76.3</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">冰心：我们的道路将通向龙族的故乡德拉万尼亚。在那里，我们将一路登上白龙哈斯维格尔栖息的云端……</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>Kimi K2.5</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> Use chat_template_kwargs.thinking=false; optionally hide reasoning with include_reasoning=false.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Usable with caveats</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>100%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>4586.5 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>75.4</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>84.4</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>559 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>82</td>
+        <td>91.9</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">埃斯蒂尼安：若要引敌至此，需设法发出紫色信号。</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>8168 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>57</td>
+        <td>68.7</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">冰之心：所以，你想靠嘴皮子阻挡龙族的攻势？真是浪漫的想法。</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>13525 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>83.4</td>
+        <td>80.5</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">冰之心：若你知晓真相——点燃这仇恨之火的源头——便会明白，你的征途不过是徒劳。</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>983 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>85.3</td>
+        <td>93.4</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">埃斯蒂尼安：他怕是已经失去理智了。通过龙眼，我能感受到尼德霍格的怒火——那复仇的渴望，唯有血海方能平息。</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>771 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>80</td>
+        <td>91</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell">冰之心：你仍相信有和平解决的余地？也罢。我带你去见他。</td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>3513 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>64.7</td>
+        <td>81.1</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">冰之心：我们的道路将通往龙族故乡——龙堡。在那里，我们将升入云端，前往赫拉斯瓦尔格所在之处……</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>GLM-5</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> Use chat_template_kwargs.enable_thinking=false and clear_thinking=false.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Borderline for live subtitles</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>100%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>8376 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>82.2</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>83.5</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>5710 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>80.8</td>
+        <td>84.4</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">若要将敌人引至此处，我们就得想办法发出紫色的信号。</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>1297 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>89</td>
+        <td>95.1</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">你想靠言语阻挡龙族的洪流？真是天真的想法。</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>3447 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>83.1</td>
+        <td>89.4</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">若你知晓真相——那点燃仇恨之火的火种——便会明白你的任务是多么徒劳。</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>10134 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>69.9</td>
+        <td>74.5</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">我看他早已丧失了理智。透过龙眼，我能感受到尼德霍格的一切——那巨龙的复仇烈焰，唯有血海方能平息。</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>11687 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>88.3</td>
+        <td>82.7</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell">你还相信能找到和平的解决办法吗？好吧，我带你去见他。</td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>17981 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>82.3</td>
+        <td>75</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">我们的征途将通往龙族故土德拉瓦尼亚。我们将由此升入云端，去往赫拉斯瓦尔格的栖身之所……</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>Mistral Large 3</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> No extra switch needed in practice; returns direct subtitle text.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Usable with caveats</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>100%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>4376.7 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>73.8</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>82.7</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>5213 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>71.4</td>
+        <td>80.1</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">艾斯蒂尼安：若要将敌人引至此地，我们需要制造一道紫色的信号。</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>4290 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>73</td>
+        <td>80.8</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">冰心：你想用谈话来遏制龙堡的浪潮？真是天真。</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>5670 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>80.8</td>
+        <td>84.4</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">若你知道真相——这仇恨的火种——便会明白你的执着有多徒劳。&quot;</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>9402 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>67</td>
+        <td>73.2</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">艾斯蒂尼安：我几乎感觉不到他的理智了。通过「眼」，我能感受到尼德霍格的情绪——那条龙的复仇渴望，唯有血海方能平息。</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>539 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>86.3</td>
+        <td>93.8</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell">艾斯哈特：你依然相信能找到和平的解决之道？也罢，我带你去见他。</td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>1146 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>64.4</td>
+        <td>84</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">冰心：我们的路通往龙族故土——德拉瓦尼亚。在那里，我们将登上云端，前往哈拉薇尔的居所……</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>Gemma 4 31B</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> No reliable NVIDIA-hosted no-think switch confirmed; prompt-only suppression.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Borderline for live subtitles</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>50%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>4674.7 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>74.9</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>81.7</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>25004 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>25005 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>25002 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>4142 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>74.9</td>
+        <td>81.7</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">艾斯蒂南：我想他已完全丧失理智。通过“眼”，我能感受到尼德霍格的内心——除非饮尽血海，否则那头巨龙的复仇之渴绝不会平息。</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>5148 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>85.7</td>
+        <td>86.6</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell">冰心：你依然相信能找到和平的解决办法？好吧，我带你去见他。</td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>4734 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>64.2</td>
+        <td>76.9</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">冰心：我们将前往龙族的故乡——德拉瓦尼亚。在那里，我们将直抵云端，寻找赫拉斯维格的踪迹……</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>Qwen 3.5 122B</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> Use chat_template_kwargs.enable_thinking=false.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Usable with caveats</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>83.3%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>807.7 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>64.3</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>78.7</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>640 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>79.3</td>
+        <td>90.7</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">艾斯蒂恩：若要诱敌前来，我们须寻得一种能发出紫色光芒的信号。</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>888 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>78.3</td>
+        <td>90.2</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">冰霜之心：所以，你想靠言语来阻挡龙族的洪流？真是浪漫的想法。</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>840 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>81.4</td>
+        <td>91.6</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">冰霜之心：若你知晓真相——那点燃仇恨之火的火花——便会明白你的 quest 徒劳无功。</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>973 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>81</td>
+        <td>91.5</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">埃斯蒂尼安：我想他已彻底丧失理智。透过龙眼，我能感受到尼德霍格的痛楚，而这条恶龙的复仇之渴，唯有以血海方能平息。</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>278 ms</td>
+        <td>-</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>23.5</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell"></td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>1227 ms</td>
+        <td>stop</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>65.6</td>
+        <td>84.5</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">冰霜之心：我们的道路将通往龙族的故乡——伊修加德。在那里，我们将登临云端，前往赫拉斯瓦尔格尔的居所……</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>MiniMax M2.5</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> Prompt-only no-think instruction; NVIDIA hosted endpoint still tends to leak &lt;think&gt; blocks.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Not suitable for low-latency subtitles</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>83.3%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>4309.8 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>47.8</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>43.7</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>2814 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>66.1</td>
+        <td>53.7</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">The user wants me to translate this Final Fantasy XIV quest dialogue into Simplified Chinese for subtitles. Let me break down what needs to be translated: - &quot;Estinien:&quot; - This is the character name, should remain as 埃斯蒂尼安 in Chinese - &quot;If we are to lure our foes to our position&quot; - 如果我们要诱敌深入 / 如果我们要将敌人引到我们的位置 - &quot;then we must find a means of producing a signal of purple hue&quot; - 那么我们必须找到一种发出紫色信号的方法 For Chinese RPG subtitles, I should: 1. Keep it concise and natural 2. Use proper Chinese grammar and flow 3. Make it sound like dialogue, not a literal translation 4. Keep lore names consistent (Estinien = 埃斯蒂尼安</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>3461 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>22</td>
+        <td>33.9</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">The user wants me to localize a line of dialogue from Final Fantasy XIV into Simplified Chinese for subtitles. Let me analyze this line: - Speaker: Iceheart (a character in FFXIV) - Context: She&#39;s responding to someone who wants to stop the Dravanian tide &quot;with talk&quot; - meaning through diplomacy or negotiation - Tone: Sarcastic, dismissive - &quot;A romantic notion&quot; Key terms to consider: - &quot;Iceheart&quot; - This is the character&#39;s name, should be kept as 艾斯哈特 or similar - &quot;Dravanian tide&quot; - Refers to the Dravanians (dragon tribe) - should be 龙族 or 德拉维族 - &quot;stem the tide&quot; - to stop or hold back - 阻止/遏制 - &quot;</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>2417 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>66.6</td>
+        <td>54</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">This is a line of dialogue from Final Fantasy XIV, spoken by the character Iceheart. I need to translate this into Simplified Chinese for subtitles. Let me break down the key elements: - &quot;If you but knew the truth&quot; - 如果你只知道真相 - &quot;the spark which lit the flames of this animosity&quot; - 点燃这仇恨之火的火花/根源 - &quot;you would understand the futility of your quest&quot; - 你就会明白你 quest 的徒劳 For &quot;quest&quot; in FFXIV context, it&#39;s typically translated as &quot;旅途&quot; (journey) or &quot;使命&quot; (mission), or sometimes kept as &quot;任务&quot; though that&#39;s more generic. Given the context, &quot;旅途&quot; or &quot;使命&quot; would work well. &quot;the spark which lit the flames</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>3836 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>67.6</td>
+        <td>54.4</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">The user wants me to translate this Final Fantasy XIV dialogue into Simplified Chinese for subtitles. Let me break down the key elements: 1. &quot;Estinien:&quot; - This is the speaker name, I&#39;ll just provide the subtitle text without the name 2. &quot;I believe reason has all but left him.&quot; - 我相信理性已经离他而去/我确信他已丧失理智 3. &quot;Through the Eye, I feel much of what Nidhogg feels,&quot; - 通过龙眼，我能感受到尼德霍格的大部分感受 4. &quot;and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.&quot; - 龙的复仇之渴非血海不能平息 Let me think about the lore names: - Estinien - 埃斯蒂尼安</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>25003 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>9021 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>16.8</td>
+        <td>22.6</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">This is a line of dialogue from Final Fantasy XIV that needs to be localized into Simplified Chinese for subtitles. Let me analyze the key elements: 1. &quot;Iceheart&quot; - This is a character name, likely a translation of a name. In FFXIV, there&#39;s a character called 冰雪之心 (Bingxue zhi Xin) in Chinese, which literally means &quot;Ice Heart.&quot; However, the original English text says &quot;Iceheart&quot; so I should keep it as is or use the established Chinese name. 2. &quot;Our road will lead us to Dravania&quot; - Dravania is a location in the game. In Chinese, it&#39;s usually translated as 德拉诺亚 or 德拉瓦尼亚. Looking at FFXIV Chinese translations, the region is known as 德拉</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>Step 3.5 Flash</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> No reliable no-think switch found on NVIDIA hosted endpoint; prompt-only suppression.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Not suitable for low-latency subtitles</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>100%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>10905.2 ms</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>0</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>12.3</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>8130 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>0</td>
+        <td>11.5</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell"></td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>22169 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>0</td>
+        <td>6.5</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell"></td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>4764 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>0</td>
+        <td>16.5</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell"></td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>11808 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>0</td>
+        <td>11.5</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell"></td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>4302 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>0</td>
+        <td>16.5</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell"></td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>14258 ms</td>
+        <td>length</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>0</td>
+        <td>11.5</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell"></td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+      <section class="model-section">
+        <h2>MiniMax M2.7</h2>
+        <p class="strategy"><strong>No-think strategy:</strong> Prompt-only no-think instruction; NVIDIA hosted endpoint still tends to leak &lt;think&gt; blocks.</p>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Verdict</span><strong>Not suitable for low-latency subtitles</strong></div>
+          <div class="stat-card"><span>Usable rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Thinking leak rate</span><strong>0%</strong></div>
+          <div class="stat-card"><span>Avg latency</span><strong>-</strong></div>
+          <div class="stat-card"><span>Accuracy</span><strong>0</strong></div>
+          <div class="stat-card"><span>Overall</span><strong>0</strong></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>Speaker</th>
+              <th>Latency</th>
+              <th>Finish</th>
+              <th>Think leak</th>
+              <th>Usable</th>
+              <th>Accuracy</th>
+              <th>Overall</th>
+              <th>Source</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+      <tr>
+        <td>line-1</td>
+        <td>Estinien</td>
+        <td>25027 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">If we are to lure our foes to our position, then we must find a means of producing a signal of purple hue.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-2</td>
+        <td>Iceheart</td>
+        <td>25004 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">So, you seek to stem the Dravanian tide with talk? A romantic notion.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-3</td>
+        <td>Iceheart</td>
+        <td>25003 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">If you but knew the truth─the spark which lit the flames of this animosity─you would understand the futility of your quest.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-4</td>
+        <td>Estinien</td>
+        <td>25003 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">I believe reason has all but left him. Through the Eye, I feel much of what Nidhogg feels, and the dragon&#39;s thirst for vengeance will not be quenched by aught less than a sea of blood.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-5</td>
+        <td>Iceheart</td>
+        <td>25003 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">You still believe that a peaceable solution can be found? Very well. I will take you to him.</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    
+      <tr>
+        <td>line-6</td>
+        <td>Iceheart</td>
+        <td>25005 ms</td>
+        <td>timeout after 25000ms</td>
+        <td>No</td>
+        <td>No</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="source-cell">Our road will lead us to Dravania, the homeland of dragonkind. There we shall ascend unto the clouds, where Hraesvelgr resides...</td>
+        <td class="output-cell">timeout after 25000ms</td>
+      </tr>
+    </tbody>
+        </table>
+      </section>
+    
+  </main>
+</body>
+</html>
