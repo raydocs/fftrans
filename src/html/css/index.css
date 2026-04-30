@@ -52,7 +52,7 @@
 
   /* Sizes */
   --icon-size: 16px;
-  --button-size: 1.8rem;
+  --button-size: 2rem;
   --scrollbar-width: 6px;
 }
 
@@ -84,9 +84,7 @@ body {
   box-shadow: none;
   position: relative;
   overflow: hidden;
-  transition: transform var(--transition-smooth),
-    box-shadow var(--transition-smooth),
-    border-color var(--transition-smooth);
+  transition: background-color 0.18s ease, border-color 0.18s ease;
   animation: slideInUp var(--transition-slide);
 }
 
@@ -103,7 +101,6 @@ body {
 }
 
 #div-dialog div:hover {
-  transform: translateY(-2px);
   box-shadow: none;
   background: var(--color-bg-hover);
   border: 1px solid var(--color-border-medium);
@@ -111,7 +108,7 @@ body {
 
 #div-dialog p,
 #div-dialog span {
-  filter: drop-shadow(0 2px 8px var(--color-text-shadow));
+  text-shadow: 0 1px 3px var(--color-text-shadow);
   line-height: 1.8;
   font-weight: 400;
   letter-spacing: 0.3px;
@@ -152,7 +149,7 @@ body {
 
 /* Button Styles */
 .btn-icon {
-  background: var(--color-bg-transparent);
+  background: rgba(30, 30, 30, 0.52);
   backdrop-filter: blur(var(--blur-sm));
   border: 1px solid var(--color-border-light);
   color: var(--color-text-muted);
@@ -161,64 +158,39 @@ body {
   padding: 0;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: transform var(--transition-smooth),
-    border-color var(--transition-smooth),
-    box-shadow var(--transition-smooth);
+  transition: background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   position: relative;
-  overflow: hidden;
-}
-
-/* Gradient background on hover */
-.btn-icon::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: opacity var(--transition-ease);
-  z-index: 0;
 }
 
 .btn-icon svg {
   position: relative;
-  z-index: 1;
   width: var(--icon-size);
   height: var(--icon-size);
-  filter: drop-shadow(0 2px 4px var(--shadow-text));
-  transition: transform var(--transition-ease);
+  filter: none;
+  transition: none;
 }
 
 .btn-icon:hover {
+  background: rgba(255, 154, 118, 0.24);
   border-color: var(--color-border-hover);
   color: var(--color-text-primary);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: var(--shadow-md);
-  will-change: transform, box-shadow;
-}
-
-.btn-icon:hover::before {
-  opacity: 1;
 }
 
 .btn-icon:active {
-  transform: translateY(0) scale(0.95);
+  background: rgba(255, 154, 118, 0.36);
 }
 
 /* Danger buttons (Close, Clear, Backspace) */
 .btn-icon-danger:hover {
+  background: rgba(239, 68, 68, 0.28);
   border-color: var(--color-border-danger);
-  box-shadow: var(--shadow-danger);
-}
-
-.btn-icon-danger::before {
-  background: var(--gradient-danger);
+  box-shadow: none;
 }
 
 /* Header/Footer Layout */
@@ -241,8 +213,8 @@ footer {
 }
 
 /* Hide controls when not hovering window */
-body:not(:hover) header,
-body:not(:hover) footer {
+body:not(:hover) header:not(:focus-within),
+body:not(:hover) footer:not(:focus-within) {
   opacity: 0;
   pointer-events: none;
 }

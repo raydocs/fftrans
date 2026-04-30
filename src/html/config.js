@@ -364,9 +364,106 @@ function updateMoreEnginesConfiguredCount() {
   countElement.innerText = getUiText('moreEnginesConfigured', { count: String(configuredCount) });
 }
 
+function controlHasAccessibleName(control) {
+  const ariaLabel = control.getAttribute('aria-label')?.trim();
+  const ariaLabelledBy = control.getAttribute('aria-labelledby')?.trim();
+
+  return Boolean(
+    ariaLabel
+    || ariaLabelledBy
+    || (control.labels && control.labels.length > 0)
+  );
+}
+
+function resolveSettingsControlLabel(control) {
+  const directLabelMap = {
+    'textarea-ai-custom-translation-prompt': 'section-ai-prompt',
+  };
+  const directLabelId = directLabelMap[control.id];
+
+  if (directLabelId) {
+    const directLabel = document.getElementById(directLabelId);
+    if (directLabel) {
+      return directLabel;
+    }
+  }
+
+  const settingLabel = control
+    .closest('.setting-item')
+    ?.querySelector('.setting-info .setting-label');
+
+  if (settingLabel) {
+    return settingLabel;
+  }
+
+  const nestedLabel = control
+    .closest('.setting-nested-row')
+    ?.querySelector('.setting-nested-label');
+
+  if (nestedLabel) {
+    return nestedLabel;
+  }
+
+  return control
+    .closest('#div-channel-list .row')
+    ?.querySelector('.form-check-label');
+}
+
+function ensureLabelId(label, control) {
+  if (label.id) {
+    return label.id;
+  }
+
+  if (!control.id) {
+    return '';
+  }
+
+  const generatedId = `a11y-label-for-${control.id}`;
+  const existingElement = document.getElementById(generatedId);
+  if (existingElement && existingElement !== label) {
+    return '';
+  }
+
+  label.id = generatedId;
+  return generatedId;
+}
+
+function hydrateSettingsControlLabels() {
+  document.querySelectorAll('main input, main select, main textarea').forEach((control) => {
+    if (!(control instanceof HTMLElement) || control.type === 'hidden' || controlHasAccessibleName(control)) {
+      return;
+    }
+
+    const label = resolveSettingsControlLabel(control);
+    if (!label) {
+      return;
+    }
+
+    const labelId = ensureLabelId(label, control);
+    if (labelId) {
+      control.setAttribute('aria-labelledby', labelId);
+    }
+  });
+}
+
+function preventHashActionLinkNavigation() {
+  document.querySelectorAll('a[href="#"]').forEach((link) => {
+    if (link.dataset.preventHashNavigation === 'true') {
+      return;
+    }
+
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+    });
+    link.dataset.preventHashNavigation = 'true';
+  });
+}
+
 function hydrateInteractiveAccessibility() {
+  preventHashActionLinkNavigation();
+
   document.querySelectorAll('.btn-visibility').forEach((button) => {
-    const inputId = button.id.replace('img-visibility', 'input');
+    const inputId = button.id.replace('btn-visibility', 'input');
     const relatedInput = document.getElementById(inputId);
     const labelText = relatedInput
       ?.closest('.setting-control')
@@ -374,18 +471,9 @@ function hydrateInteractiveAccessibility() {
       ?.querySelector('.setting-label')
       ?.innerText;
 
-    button.setAttribute('role', 'button');
-    button.setAttribute('tabindex', '0');
     button.setAttribute('aria-label', `${getUiText('toggleVisibility')}${labelText ? `: ${labelText}` : ''}`);
-
-    if (!button.dataset.keyboardBound) {
-      button.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          button.click();
-        }
-      });
-      button.dataset.keyboardBound = 'true';
+    if (!button.hasAttribute('aria-pressed')) {
+      button.setAttribute('aria-pressed', relatedInput?.type === 'text' ? 'true' : 'false');
     }
   });
 
@@ -395,6 +483,8 @@ function hydrateInteractiveAccessibility() {
       control.setAttribute('aria-labelledby', label.id);
     }
   });
+
+  hydrateSettingsControlLabels();
 
   document.querySelectorAll('.setting-item-link[data-click-target]').forEach((item) => {
     item.setAttribute('role', 'button');
@@ -738,21 +828,26 @@ function setButton() {
   };
 
   // set token visibility
-  const imgVisibilityButtons = document.getElementsByClassName('btn-visibility');
-  for (let index = 0; index < imgVisibilityButtons.length; index++) {
-    let isVisible = false;
-    const element = imgVisibilityButtons[index];
+  const visibilityButtons = document.getElementsByClassName('btn-visibility');
+  for (let index = 0; index < visibilityButtons.length; index++) {
+    const element = visibilityButtons[index];
     element.onclick = () => {
-      const imgId = element.id;
-      const inputId = imgId.replace('img-visibility', 'input');
-      isVisible = !isVisible;
-      if (isVisible) {
-        document.getElementById(imgId).setAttribute('src', './img/ui/visibility_white_48dp.svg');
-        document.getElementById(inputId).setAttribute('type', 'text');
-      } else {
-        document.getElementById(imgId).setAttribute('src', './img/ui/visibility_off_white_48dp.svg');
-        document.getElementById(inputId).setAttribute('type', 'password');
+      const inputId = element.id.replace('btn-visibility', 'input');
+      const input = document.getElementById(inputId);
+      if (!input) {
+        return;
       }
+
+      const isVisible = input.type !== 'text';
+      const icon = element.querySelector('.btn-visibility-icon');
+      input.setAttribute('type', isVisible ? 'text' : 'password');
+      element.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+      icon?.setAttribute(
+        'src',
+        isVisible
+          ? './img/ui/visibility_white_48dp.svg'
+          : './img/ui/visibility_off_white_48dp.svg',
+      );
     };
   }
 

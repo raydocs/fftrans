@@ -50,13 +50,13 @@ footer:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #ff9a76, #ff6b6b);
+  background: var(--scrollbar-thumb, rgba(255, 255, 255, 0.18));
   border-radius: 10px;
-  transition: background 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #ff6b6b, #ff9a76);
+  background: var(--scrollbar-hover, rgba(255, 255, 255, 0.28));
 }
 
 .drop-shadow {
@@ -66,44 +66,25 @@ footer:hover {
 .img-button {
   cursor: pointer;
   padding: 0.4rem;
-  opacity: 0.7;
+  opacity: 0.72;
   width: 2.2rem;
   height: 2.2rem;
   border-radius: 8px;
   transition:
-    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+    opacity 0.15s ease,
+    background-color 0.15s ease,
+    filter 0.15s ease;
+  filter: none;
   position: relative;
-}
-
-.img-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(255, 154, 118, 0.4), rgba(255, 107, 107, 0.4));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
 }
 
 .img-button:hover {
   opacity: 1;
-  transform: translateY(-2px) scale(1.05);
-  filter: drop-shadow(0 6px 16px rgba(255, 107, 107, 0.5));
-}
-
-.img-button:hover::before {
-  opacity: 1;
+  background: rgba(255, 154, 118, 0.16);
 }
 
 .img-button:active {
-  transform: translateY(0) scale(0.98);
+  background: rgba(255, 154, 118, 0.24);
 }
 
 .hide-toggle {
@@ -112,14 +93,9 @@ footer:hover {
   height: 0;
 }
 
-#img-button-close:hover::before,
-#img-button-backspace:hover::before,
-#img-button-clear:hover::before {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.6), rgba(220, 38, 38, 0.6));
-}
-
 #img-button-close:hover,
 #img-button-backspace:hover,
 #img-button-clear:hover {
-  filter: drop-shadow(0 6px 16px rgba(239, 68, 68, 0.5));
+  background: rgba(239, 68, 68, 0.18);
+  filter: none;
 }
