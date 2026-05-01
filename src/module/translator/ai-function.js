@@ -27,8 +27,11 @@ function appendNamePreservationRules(prompt = '') {
   return `${prompt.trim()} ${rules.join(' ')}`.trim();
 }
 
-function createTranslationPrompt(source = 'English', target = 'Chinese', type = 'sentence') {
+function createTranslationPrompt(source = 'English', target = 'Chinese', type = 'sentence', withGlossary = false) {
   const customPrompt = configModule.getConfig().ai.customTranslationPrompt?.trim();
+  const glossaryRule = withGlossary
+    ? ' The user input is JSON; translate only the "text" field, use glossary entries when relevant, and return only the translated text.'
+    : '';
 
   if (customPrompt) {
     if (source === '') {
@@ -36,10 +39,10 @@ function createTranslationPrompt(source = 'English', target = 'Chinese', type = 
     }
 
     return appendNamePreservationRules(
-      customPrompt.replaceAll('${source}', source).replaceAll('${target}', target).replaceAll('${type}', type)
+      `${customPrompt.replaceAll('${source}', source).replaceAll('${target}', target).replaceAll('${type}', type)}${glossaryRule}`
     );
   } else {
-    return appendNamePreservationRules(`Translate ${source} text into ${target}, and don't provide any explanations.`);
+    return appendNamePreservationRules(`Translate ${source} text into ${target}, and don't provide any explanations.${glossaryRule}`);
   }
 }
 
@@ -61,8 +64,66 @@ function initializeChatHistory(chatHistoryList = {}, prompt = '', config = {}) {
   }
 }
 
+// create glossary
+const GLOSSARY_LANGUAGE_INDEXES = {
+  Japanese: [0],
+  English: [1],
+  Chinese: [3, 2],
+  'Traditional-Chinese': [2],
+  'Simplified-Chinese': [3],
+};
+
+function isValidGlossaryValue(value) {
+  return typeof value === 'string' && value.trim() !== '' && value !== 'N/A';
+}
+
+function isUsableGlossaryEntry(entry = []) {
+  return Array.isArray(entry)
+    && entry.length >= 2
+    && typeof entry[0] === 'string'
+    && !entry[0].trim().startsWith('//');
+}
+
+function pickGlossaryValue(entry = [], language = '', fallbackIndex = 0) {
+  if (entry.length >= 4 && GLOSSARY_LANGUAGE_INDEXES[language]) {
+    for (const index of GLOSSARY_LANGUAGE_INDEXES[language]) {
+      const value = entry[index];
+      if (isValidGlossaryValue(value)) {
+        return value;
+      }
+    }
+
+    return undefined;
+  }
+
+  const fallbackValue = entry[fallbackIndex];
+  return isValidGlossaryValue(fallbackValue) ? fallbackValue : undefined;
+}
+
+function createGlossary(source = 'English', target = 'Chinese', table = []) {
+  if (!Array.isArray(table) || table.length === 0) {
+    return [];
+  }
+
+  const sourceLabel = source || 'source';
+  const targetLabel = target || 'target';
+
+  return table
+    .filter(isUsableGlossaryEntry)
+    .map((entry) => ({
+      sourceValue: pickGlossaryValue(entry, sourceLabel, 0),
+      targetValue: pickGlossaryValue(entry, targetLabel, 1),
+    }))
+    .filter(({ sourceValue, targetValue }) => sourceValue && targetValue)
+    .map(({ sourceValue, targetValue }) => ({
+      [sourceLabel]: sourceValue,
+      [targetLabel]: targetValue,
+    }));
+}
+
 module.exports = {
   createTranslationPrompt,
   createImagePrompt,
   initializeChatHistory,
+  createGlossary,
 };

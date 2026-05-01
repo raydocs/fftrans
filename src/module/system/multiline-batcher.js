@@ -161,7 +161,8 @@ class MultilineBatcher {
       // Use getTranslation directly to avoid re-entering addLine
       const translateModule = require('./translate-module');
       const engineModule = require('../system/engine-module');
-      const option = engineModule.getTranslateOption(combinedText, items[0].translation.engine, items[0].translation);
+      const translateOption = engineModule.getTranslateOption(combinedText, items[0].translation.engine, items[0].translation);
+      const option = translateOption ? { ...translateOption, table: items[0].table } : null;
       const rawResult = await translateModule.getTranslation(
         items[0].translation.engine,
         option,
@@ -206,9 +207,12 @@ class MultilineBatcher {
   async _processSingleItem(item) {
     try {
       const translateModule = require('./translate-module');
+      const engineModule = require('../system/engine-module');
+      const translateOption = engineModule.getTranslateOption(item.text, item.translation.engine, item.translation);
+      const option = translateOption ? { ...translateOption, table: item.table } : null;
       const result = await translateModule.getTranslation(
         item.translation.engine,
-        require('../system/engine-module').getTranslateOption(item.text, item.translation.engine, item.translation),
+        option,
         item.type
       );
       if (result.isError) {
@@ -231,7 +235,8 @@ class MultilineBatcher {
 
     for (const item of items) {
       try {
-        const option = engineModule.getTranslateOption(item.text, item.translation.engine, item.translation);
+        const translateOption = engineModule.getTranslateOption(item.text, item.translation.engine, item.translation);
+        const option = translateOption ? { ...translateOption, table: item.table } : null;
         const result = await translateModule.getTranslation(
           item.translation.engine,
           option,

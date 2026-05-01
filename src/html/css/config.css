@@ -229,22 +229,86 @@ main {
   border-color: var(--border-color);
 }
 
-/* 修复下拉菜单选项文字颜色问题 */
-.form-select option {
-  background-color: var(--bg-elevated);
-  color: var(--text-primary);
-  padding: 8px;
+select.form-select {
+  min-height: 2.75rem;
+  padding: 0.62rem 2.65rem 0.62rem 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  background-color: var(--form-bg);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+    linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  background-position:
+    calc(100% - 1.05rem) 50%,
+    calc(100% - 0.76rem) 50%,
+    0 0;
+  background-size:
+    0.34rem 0.34rem,
+    0.34rem 0.34rem,
+    100% 100%;
+  background-repeat: no-repeat;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  color-scheme: light;
 }
 
-.form-select option:hover {
+select.form-select:hover {
   background-color: var(--form-hover);
+  border-color: var(--border-focus);
+  box-shadow:
+    0 0 0 3px rgba(255, 107, 107, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.form-select optgroup {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-weight: bold;
-  padding: 4px;
+select.form-select:focus {
+  background-color: var(--form-focus);
+  border-color: var(--border-focus);
+  box-shadow:
+    0 0 0 3px rgba(255, 107, 107, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 2px 10px rgba(0, 0, 0, 0.22);
+}
+
+select.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* Native dropdown menus often use an OS-controlled light popup surface.
+   Use explicit dark text here so unselected options remain readable. */
+select.form-select option,
+select.form-select optgroup {
+  background-color: #ffffff;
+  color: #111827;
+  font-family: inherit;
+}
+
+select.form-select option {
+  padding: 0.55rem 0.75rem;
+  font-weight: 500;
+}
+
+select.form-select option:checked {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+select.form-select option:disabled {
+  color: #9ca3af;
+}
+
+select.form-select optgroup {
+  color: #374151;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
 }
 
 /* 优化开关样式 */

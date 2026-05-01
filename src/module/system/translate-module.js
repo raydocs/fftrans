@@ -154,7 +154,7 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
 
     const promise = (async () => {
       // Cache miss - perform translation
-      const rawResult = await translate2(text, translation, type);
+      const rawResult = await translate2(text, translation, table, type);
 
       // Process and normalize the result
       const finalResult = clearCode(rawResult, table);
@@ -246,39 +246,39 @@ async function translateStream(text = '', translation = {}, table = [], type = '
         let lastLength = 0;
 
         // Call stream translation with chunk callback
-        result = await streamFunction(
-          option.text,
-          option.from,
-          option.to,
-          type,
-          (chunk) => {
-            if (typeof chunk !== 'string') {
-              return;
-            }
-
-            // Only process the newly received delta to avoid O(n^2) work
-            let delta = '';
-            if (chunk.length >= lastLength) {
-              delta = chunk.slice(lastLength);
-              lastLength = chunk.length;
-            } else {
-              // If upstream sends pure deltas, just consume as-is
-              delta = chunk;
-              lastLength += chunk.length;
-            }
-
-            if (!delta) {
-              return;
-            }
-
-            const processed = clearCode(delta, table);
-            processedText += processed;
-
-            if (onChunk) {
-              onChunk(processedText);
-            }
+        const streamChunkHandler = (chunk) => {
+          if (typeof chunk !== 'string') {
+            return;
           }
-        );
+
+          // Only process the newly received delta to avoid O(n^2) work
+          let delta = '';
+          if (chunk.length >= lastLength) {
+            delta = chunk.slice(lastLength);
+            lastLength = chunk.length;
+          } else {
+            // If upstream sends pure deltas, just consume as-is
+            delta = chunk;
+            lastLength += chunk.length;
+          }
+
+          if (!delta) {
+            return;
+          }
+
+          const processed = clearCode(delta, table);
+          processedText += processed;
+
+          if (onChunk) {
+            onChunk(processedText);
+          }
+        };
+
+        if (translation.engine === 'Gemini') {
+          result = await streamFunction(option.text, option.from, option.to, table, type, streamChunkHandler);
+        } else {
+          result = await streamFunction(option.text, option.from, option.to, type, streamChunkHandler);
+        }
 
         // Use processed stream buffer or process final result
         const finalResult = processedText || clearCode(result, table);
@@ -304,14 +304,15 @@ async function translateStream(text = '', translation = {}, table = [], type = '
 }
 
 // translate 2 (OPTIMIZED: uses batch processor for non-streaming engines)
-async function translate2(text = '', translation = {}, type = 'sentence') {
+async function translate2(text = '', translation = {}, table = [], type = 'sentence') {
   const autoChange = translation.autoChange;
   const engineList = engineModule.getEngineList(translation.engine, translation.engineAlternate);
   const result = { isError: false, text: '' };
 
   do {
     const engine = engineList.shift();
-    const option = engineModule.getTranslateOption(text, engine, translation);
+    const translateOption = engineModule.getTranslateOption(text, engine, translation);
+    const option = translateOption ? { ...translateOption, table } : null;
 
     console.log('\r\nEngine:', engine);
 
@@ -325,7 +326,8 @@ async function translate2(text = '', translation = {}, type = 'sentence') {
         try {
           // Create a translation function for the batcher
           const translateFn = async (batchText, batchTranslation) => {
-            const batchOption = engineModule.getTranslateOption(batchText, engine, batchTranslation);
+            const batchTranslateOption = engineModule.getTranslateOption(batchText, engine, batchTranslation);
+            const batchOption = batchTranslateOption ? { ...batchTranslateOption, table } : null;
             const batchResult = await getTranslation(engine, batchOption, type);
             if (batchResult.isError) {
               throw new Error(batchResult.text || 'Translation failed');

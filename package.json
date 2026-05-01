@@ -1,6 +1,6 @@
 {
   "name": "fftrans",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "FFTrans - Final Fantasy XIV Real-time Translation Assistant",
   "main": "src/main.js",
   "scripts": {
@@ -30,8 +30,8 @@
     "globals": "^15.15.0"
   },
   "dependencies": {
-    "@google-cloud/vision": "^5.3.3",
-    "axios": "^1.11.0",
+    "@google-cloud/vision": "^5.3.5",
+    "axios": "^1.14.0",
     "chokidar": "^3.5.3",
     "crypto-js": "^4.2.0",
     "csv-parser": "^3.2.0",

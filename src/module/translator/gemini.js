@@ -37,6 +37,19 @@ function buildProxyConfig(config) {
   return proxy;
 }
 
+function createGeminiUserText(text = '', source = 'English', target = 'Chinese', table = []) {
+  const glossary = aiFunction.createGlossary(source, target, table);
+
+  if (glossary.length === 0) {
+    return { userText: text, glossary };
+  }
+
+  return {
+    userText: JSON.stringify({ text, glossary }),
+    glossary,
+  };
+}
+
 const safetySettings = [
   {
     category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
@@ -58,12 +71,17 @@ const safetySettings = [
 
 // exec
 async function exec(option, type) {
-  const response = translate(option.text, option.from, option.to, type);
+  const response = translate(option.text, option.from, option.to, option.table, type);
   return response;
 }
 
 // translate (non-streaming)
-async function translate(text, source, target, type) {
+async function translate(text, source, target, table = [], type) {
+  if (!Array.isArray(table)) {
+    type = table;
+    table = [];
+  }
+
   const config = configModule.getConfig();
   const model = config.api.geminiModel;
   const apiKey = config.api.geminiApiKey;
@@ -72,20 +90,23 @@ async function translate(text, source, target, type) {
     'Content-Type': 'application/json',
   };
 
-  const prompt = aiFunction.createTranslationPrompt(source, target, type);
+  const prompt = aiFunction.createTranslationPrompt(source, target, type, Array.isArray(table) && table.length > 0);
+  const { userText, glossary } = createGeminiUserText(text, source, target, table);
+  const useGlossary = glossary.length > 0;
 
   // initialize chat history
   aiFunction.initializeChatHistory(chatHistoryList, prompt, config);
+  const history = useGlossary ? [] : chatHistoryList[prompt];
 
   const payload = {
     systemInstruction: {
       parts: [{ text: prompt }],
     },
     contents: [
-      ...chatHistoryList[prompt],
+      ...history,
       {
         role: 'user',
-        parts: [{ text: text }],
+        parts: [{ text: userText }],
       },
     ],
     generationConfig: {
@@ -103,11 +124,11 @@ async function translate(text, source, target, type) {
   const responseText = extractGeminiContent(response).replace(/\r|\n/g, '');
 
   // push history
-  if (config.ai.useChat && type !== 'name') {
+  if (config.ai.useChat && type !== 'name' && !useGlossary) {
     chatHistoryList[prompt].push(
       {
         role: 'user',
-        parts: [{ text: text }],
+        parts: [{ text: userText }],
       },
       {
         role: 'model',
@@ -117,31 +138,43 @@ async function translate(text, source, target, type) {
   }
 
   console.log('Prompt:', prompt);
+  if (glossary.length > 0) {
+    console.log('Glossary entries:', glossary.length);
+  }
 
   return responseText;
 }
 
 // translate with streaming
-async function translateStream(text, source, target, type, onChunk) {
+async function translateStream(text, source, target, table = [], type, onChunk) {
+  if (!Array.isArray(table)) {
+    onChunk = type;
+    type = table;
+    table = [];
+  }
+
   const config = configModule.getConfig();
   const model = config.api.geminiModel;
   const apiKey = config.api.geminiApiKey;
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`;
 
-  const prompt = aiFunction.createTranslationPrompt(source, target, type);
+  const prompt = aiFunction.createTranslationPrompt(source, target, type, Array.isArray(table) && table.length > 0);
+  const { userText, glossary } = createGeminiUserText(text, source, target, table);
+  const useGlossary = glossary.length > 0;
 
   // initialize chat history
   aiFunction.initializeChatHistory(chatHistoryList, prompt, config);
+  const history = useGlossary ? [] : chatHistoryList[prompt];
 
   const payload = {
     systemInstruction: {
       parts: [{ text: prompt }],
     },
     contents: [
-      ...chatHistoryList[prompt],
+      ...history,
       {
         role: 'user',
-        parts: [{ text: text }],
+        parts: [{ text: userText }],
       },
     ],
     generationConfig: {
@@ -200,11 +233,11 @@ async function translateStream(text, source, target, type, onChunk) {
         const cleanText = fullText.replace(/\r|\n/g, '');
 
         // push history
-        if (config.ai.useChat && type !== 'name') {
+        if (config.ai.useChat && type !== 'name' && !useGlossary) {
           chatHistoryList[prompt].push(
             {
               role: 'user',
-              parts: [{ text: text }],
+              parts: [{ text: userText }],
             },
             {
               role: 'model',
@@ -215,6 +248,9 @@ async function translateStream(text, source, target, type, onChunk) {
 
         console.log('Streaming completed. Total length:', cleanText.length);
         console.log('Prompt:', prompt);
+        if (glossary.length > 0) {
+          console.log('Glossary entries:', glossary.length);
+        }
         console.log('Model:', model);
 
         resolve(cleanText);
