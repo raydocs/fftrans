@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const TRANSLATION_CACHE_SCHEMA_VERSION = 'name-preserve-v1';
 
 // dialog module
 const dialogModule = require('./dialog-module');
@@ -93,7 +94,11 @@ function getCacheKey(text = '', translation = {}, table = [], type = 'sentence')
   const tableHash = getTableHash(table);
   const target = translation.to || '';
   const engine = translation.engine || 'unknown';
-  return `${engine}:${textHash}:${tableHash}:${target}:${type || 'sentence'}`;
+  return `${TRANSLATION_CACHE_SCHEMA_VERSION}:${engine}:${textHash}:${tableHash}:${target}:${type || 'sentence'}`;
+}
+
+function shouldPreserveOriginalText(type = 'sentence') {
+  return type === 'name';
 }
 
 // translate
@@ -107,6 +112,13 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
   try {
     // clear newline
     text = text.replace(/[\r\n]/g, '');
+
+    // Preserve speaker/NPC/player names exactly as the game provides them.
+    // Translating these creates repeated name changes and unwanted annotations.
+    if (shouldPreserveOriginalText(type)) {
+      globalMonitor.endTimer(timerId, { preservedOriginal: true });
+      return text;
+    }
 
     // check text
     if (text === '' || translation.from === translation.to) {
@@ -179,6 +191,14 @@ async function translateStream(text = '', translation = {}, table = [], type = '
   try {
     // clear newline
     text = text.replace(/[\r\n]/g, '');
+
+    // Preserve speaker/NPC/player names exactly as the game provides them.
+    if (shouldPreserveOriginalText(type)) {
+      if (onChunk) {
+        onChunk(text);
+      }
+      return text;
+    }
 
     // check text
     if (text === '' || translation.from === translation.to) {

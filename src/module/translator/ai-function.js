@@ -16,6 +16,17 @@ const role = source && target ? `${source}-${target} translator` : 'translator';
 
 const configModule = require('../system/config-module');
 
+function appendNamePreservationRules(prompt = '') {
+  const rules = [
+    'Preserve all character, player, NPC, place, and proper names exactly as written in the source text.',
+    'Do not translate, localize, romanize, transliterate, or annotate names.',
+    'Do not add Japanese readings, pronunciation notes, parentheses, explanations, or metadata.',
+    'Return only the translated line.'
+  ];
+
+  return `${prompt.trim()} ${rules.join(' ')}`.trim();
+}
+
 function createTranslationPrompt(source = 'English', target = 'Chinese', type = 'sentence') {
   const customPrompt = configModule.getConfig().ai.customTranslationPrompt?.trim();
 
@@ -24,9 +35,11 @@ function createTranslationPrompt(source = 'English', target = 'Chinese', type = 
       source = 'any languages';
     }
 
-    return customPrompt.replaceAll('${source}', source).replaceAll('${target}', target).replaceAll('${type}', type);
+    return appendNamePreservationRules(
+      customPrompt.replaceAll('${source}', source).replaceAll('${target}', target).replaceAll('${type}', type)
+    );
   } else {
-    return `Translate ${source} text into ${target}, and don't provide any explanations.`;
+    return appendNamePreservationRules(`Translate ${source} text into ${target}, and don't provide any explanations.`);
   }
 }
 

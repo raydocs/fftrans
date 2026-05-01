@@ -20,13 +20,9 @@ const { aiList } = require('../system/engine-module');
 const MIXED_CASE_REGEX = /(?<=[a-z])[A-Z](?=[a-z\b])/g;
 const STUTTER_REGEX = /(?<=\b)(\w{1,2})-\1/gi;
 
-// npc channel
-const npcChannel = ['003D', '0044', '2AB9'];
-
 // array
 const enArray = enJson.getEnArray();
 const chArray = enJson.getChArray();
-const userArray = enJson.getUserArray();
 
 /*
 fix start
@@ -47,16 +43,8 @@ async function start(dialogData = {}) {
   let translatedText = '';
 
   try {
-    // fix name
-    if (translation.skipChinese && enFunction.isChinese(name)) {
-      translatedName = fixFunction.replaceText(name, chArray.combine);
-    } else {
-      if (npcChannel.includes(dialogData.code)) {
-        translatedName = await fixName(dialogData);
-      } else {
-        translatedName = name;
-      }
-    }
+    // Preserve speaker names exactly as shown in game.
+    translatedName = name;
 
     // fix text
     if (translation.skipChinese && enFunction.isChinese(text)) {
@@ -80,72 +68,6 @@ async function start(dialogData = {}) {
   dialogData.translatedText = translatedText;
 
   return dialogData;
-}
-
-/*
-fix name
-*/
-
-// fix name
-async function fixName(dialogData = {}) {
-  const name = dialogData.name;
-  const translation = dialogData.translation;
-
-  let name2 = name;
-  let translatedName = '';
-
-  if (name2 === '') {
-    return '';
-  }
-
-  // same check
-  const target =
-    fixFunction.sameAsArrayItem(name2, chArray.combine) ||
-    fixFunction.sameAsArrayItem(name2 + '#', chArray.combine) ||
-    fixFunction.sameAsArrayItem(name2 + '##', chArray.combine);
-
-  if (target) {
-    return target[1];
-  }
-
-  // code result
-  const codeResult = enFunction.replaceTextByCode(name2, chArray.combine);
-  name2 = codeResult.text;
-
-  // skip check
-  if (enFunction.needTranslation(name2, codeResult.table)) {
-    // translate
-    translatedName = await translateModule.translate(name2, translation, codeResult.table, 'name');
-  } else {
-    translatedName = name2;
-  }
-
-  // table
-  translatedName = fixFunction.replaceWord(translatedName, codeResult.table);
-
-  // after translation
-  translatedName = fixFunction.replaceText(translatedName, chArray.afterTranslation);
-
-  // save to temp
-  saveName(name, translatedName);
-
-  return translatedName;
-}
-
-// save name
-function saveName(name = '', translatedName = '') {
-  if (name === translatedName) {
-    return;
-  }
-
-  if (name.length < 3) name += '#';
-
-  // add to combine
-  chArray.combine.push([name, translatedName]);
-  chArray.combine = jsonFunction.sortArray(chArray.combine);
-
-  // add to tempName
-  jsonFunction.updateTempName(userArray, name, translatedName);
 }
 
 /*
