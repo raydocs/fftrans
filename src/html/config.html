@@ -75,6 +75,24 @@
       <button class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="div-about" data-target="div-about" id="tab-about">关于</button>
     </nav>
 
+    <section class="settings-search-toolbar" role="search" aria-labelledby="label-settings-search">
+      <div class="settings-search-shell">
+        <label id="label-settings-search" class="settings-search-label" for="input-settings-search">快速查找</label>
+        <div class="settings-search-input-wrap">
+          <svg class="settings-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input id="input-settings-search" class="form-control settings-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="搜索设置、引擎、API 或语音" />
+          <button id="button-settings-search-clear" class="settings-search-clear" type="button" hidden>清除</button>
+        </div>
+      </div>
+      <div class="settings-search-meta">
+        <div id="settings-search-status" class="settings-search-status" aria-live="polite">输入关键词可快速跳转到相关设置</div>
+      </div>
+      <div id="settings-search-results" class="settings-search-results" hidden></div>
+    </section>
+
     <main class="container-fluid">
       <!-- appearance page (原 window + font) -->
       <div id="div-appearance" class="config-page" role="tabpanel" aria-labelledby="tab-appearance">
@@ -598,9 +616,9 @@
               </div>
             </div>
           </div>
-          <details class="elevenlabs-advanced-details" id="details-elevenlabs-advanced">
+          <details class="settings-advanced-details elevenlabs-advanced-details" id="details-elevenlabs-advanced">
             <summary id="summary-elevenlabs-advanced">Fallbacks: manual Refresh Token / legacy browser-assist</summary>
-            <div class="elevenlabs-advanced-body">
+            <div class="settings-advanced-body elevenlabs-advanced-body">
               <div class="setting-item">
                 <div class="setting-info">
                   <div class="setting-label" id="label-elevenlabs-manual-fallback">Manual fallback</div>
@@ -743,44 +761,49 @@
               </select>
             </div>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Stability</div>
-              <div class="setting-description">控制声音稳定度，值越高越平稳</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-stability" min="0" max="1" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Similarity Boost</div>
-              <div class="setting-description">提升与目标音色的相似度</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-similarity-boost" min="0" max="1" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Style</div>
-              <div class="setting-description">调节表达风格强度，过高可能更不稳定</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-style" min="0" max="1" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">Speaker Boost</div>
-              <div class="setting-description">增强说话人特征，通常建议开启</div>
-            </div>
-            <div class="setting-control">
-              <div class="form-check form-switch">
-                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-speaker-boost" />
+          <details class="settings-advanced-details" id="details-elevenlabs-voice-tuning">
+            <summary id="summary-elevenlabs-voice-tuning">Advanced voice tuning</summary>
+            <div class="settings-advanced-body">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Stability</div>
+                  <div class="setting-description">控制声音稳定度，值越高越平稳</div>
+                </div>
+                <div class="setting-control">
+                  <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-stability" min="0" max="1" step="0.05" />
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Similarity Boost</div>
+                  <div class="setting-description">提升与目标音色的相似度</div>
+                </div>
+                <div class="setting-control">
+                  <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-similarity-boost" min="0" max="1" step="0.05" />
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Style</div>
+                  <div class="setting-description">调节表达风格强度，过高可能更不稳定</div>
+                </div>
+                <div class="setting-control">
+                  <input type="number" class="form-control tts-tuning-input" id="input-elevenlabs-style" min="0" max="1" step="0.05" />
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">Speaker Boost</div>
+                  <div class="setting-description">增强说话人特征，通常建议开启</div>
+                </div>
+                <div class="setting-control">
+                  <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-speaker-boost" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </details>
           <!-- Hidden inputs for save/load -->
           <input type="hidden" id="input-elevenlabs-bearer-token" />
           <input type="hidden" id="input-elevenlabs-app-check-token" />
@@ -849,30 +872,35 @@
               <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-voice">试听</button>
             </div>
           </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">音频格式</div>
-              <div class="setting-description">输出音频的格式</div>
-            </div>
-            <div class="setting-control">
-              <select class="form-select control-w-120" id="select-speechify-audio-format">
-                <option value="mp3" selected>MP3</option>
-                <option value="ogg">OGG</option>
-                <option value="wav">WAV</option>
-              </select>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label">句子分段</div>
-              <div class="setting-description">允许 Speechify 在合成时自动做句子级分段</div>
-            </div>
-            <div class="setting-control">
-              <div class="form-check form-switch">
-                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-speechify-sentence-splitting" />
+          <details class="settings-advanced-details" id="details-speechify-output-options">
+            <summary id="summary-speechify-output-options">Advanced output options</summary>
+            <div class="settings-advanced-body">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">音频格式</div>
+                  <div class="setting-description">输出音频的格式</div>
+                </div>
+                <div class="setting-control">
+                  <select class="form-select control-w-120" id="select-speechify-audio-format">
+                    <option value="mp3" selected>MP3</option>
+                    <option value="ogg">OGG</option>
+                    <option value="wav">WAV</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">句子分段</div>
+                  <div class="setting-description">允许 Speechify 在合成时自动做句子级分段</div>
+                </div>
+                <div class="setting-control">
+                  <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" role="switch" id="checkbox-speechify-sentence-splitting" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </details>
         </div>
 
         <!-- MiMo TTS -->
@@ -949,55 +977,60 @@
             </div>
           </div>
           <input type="hidden" id="input-mimo-voice" />
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-response-format">音频格式</div>
-              <div class="setting-description" id="desc-mimo-response-format">输出音频的格式</div>
+          <details class="settings-advanced-details" id="details-mimo-voice-output-options">
+            <summary id="summary-mimo-voice-output-options">Advanced voice/output options</summary>
+            <div class="settings-advanced-body">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label" id="label-mimo-response-format">音频格式</div>
+                  <div class="setting-description" id="desc-mimo-response-format">输出音频的格式</div>
+                </div>
+                <div class="setting-control">
+                  <select class="form-select control-w-120" id="select-mimo-response-format">
+                    <option value="mp3" selected>MP3</option>
+                    <option value="ogg">OGG</option>
+                    <option value="wav">WAV</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label" id="label-mimo-speed">速度</div>
+                  <div class="setting-description" id="desc-mimo-speed">语音播放速度 (0.25 - 4)</div>
+                </div>
+                <div class="setting-control">
+                  <input type="number" class="form-control control-w-100" id="input-mimo-speed" min="0.25" max="4" step="0.05" />
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label" id="label-mimo-style">风格</div>
+                  <div class="setting-description" id="desc-mimo-style">语音风格 (可选)</div>
+                </div>
+                <div class="setting-control">
+                  <input type="text" class="form-control control-w-200" id="input-mimo-style" placeholder="可选" />
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label" id="label-mimo-emotion">情感</div>
+                  <div class="setting-description" id="desc-mimo-emotion">语音情感 (可选)</div>
+                </div>
+                <div class="setting-control">
+                  <input type="text" class="form-control control-w-200" id="input-mimo-emotion" placeholder="可选" />
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label" id="label-mimo-language">语言</div>
+                  <div class="setting-description" id="desc-mimo-language">目标语言 (可选)</div>
+                </div>
+                <div class="setting-control">
+                  <input type="text" class="form-control control-w-200" id="input-mimo-language" placeholder="可选" />
+                </div>
+              </div>
             </div>
-            <div class="setting-control">
-              <select class="form-select control-w-120" id="select-mimo-response-format">
-                <option value="mp3" selected>MP3</option>
-                <option value="ogg">OGG</option>
-                <option value="wav">WAV</option>
-              </select>
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-speed">速度</div>
-              <div class="setting-description" id="desc-mimo-speed">语音播放速度 (0.25 - 4)</div>
-            </div>
-            <div class="setting-control">
-              <input type="number" class="form-control control-w-100" id="input-mimo-speed" min="0.25" max="4" step="0.05" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-style">风格</div>
-              <div class="setting-description" id="desc-mimo-style">语音风格 (可选)</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control control-w-200" id="input-mimo-style" placeholder="可选" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-emotion">情感</div>
-              <div class="setting-description" id="desc-mimo-emotion">语音情感 (可选)</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control control-w-200" id="input-mimo-emotion" placeholder="可选" />
-            </div>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-label" id="label-mimo-language">语言</div>
-              <div class="setting-description" id="desc-mimo-language">目标语言 (可选)</div>
-            </div>
-            <div class="setting-control">
-              <input type="text" class="form-control control-w-200" id="input-mimo-language" placeholder="可选" />
-            </div>
-          </div>
+          </details>
         </div>
       </div>
 

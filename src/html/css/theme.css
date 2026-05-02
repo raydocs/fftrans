@@ -1,12 +1,16 @@
 /*
  * Theme Variables System
- * Supports dark and light themes via data-theme attribute
+ * Supports dark and light themes via data-theme attribute.
+ * Global tokens preserve the existing app palette; settings-specific tokens
+ * provide the Refero-inspired settings redesign without restyling other windows.
  */
 
 /* ================================================
    DEFAULT THEME (DARK)
    ================================================ */
 :root {
+  color-scheme: dark;
+
   /* Background Colors */
   --bg-primary: #1a1a1a;                    /* Main background */
   --bg-secondary: rgba(255, 255, 255, 0.03); /* Secondary surfaces */
@@ -24,11 +28,12 @@
   --border-subtle: rgba(255, 255, 255, 0.1);  /* Subtle borders */
   --border-focus: rgba(255, 107, 107, 0.5);   /* Focus state border */
 
-  /* Accent Colors (gradients - same for both themes) */
+  /* Accent Colors */
   --accent-gradient-start: #ff6b6b;           /* Primary gradient start */
   --accent-gradient-end: #ee5a6f;             /* Primary gradient end */
   --accent-secondary: #ff9a76;                /* Secondary accent (orange) */
   --accent-tertiary: #ffd93d;                 /* Tertiary accent (yellow) */
+  --accent-color: var(--accent-secondary);
 
   /* Shadow Colors */
   --shadow-color: rgba(0, 0, 0, 0.3);         /* Standard shadow */
@@ -41,6 +46,23 @@
   --form-hover: rgba(255, 255, 255, 0.1);     /* Form hover */
   --form-focus: rgba(255, 255, 255, 0.15);    /* Form focus */
   --form-border: rgba(255, 255, 255, 0.15);   /* Form border */
+
+  /* Settings-specific semantic tokens (Refero Linear-inspired dark mode) */
+  --settings-surface-page: #08090a;
+  --settings-surface-panel: #0f1011;
+  --settings-surface-panel-hover: #161718;
+  --settings-surface-raised: #161718;
+  --settings-border: #23252a;
+  --settings-border-strong: #323334;
+  --settings-accent: #f54e00;
+  --settings-accent-text: #ffb38a;
+  --settings-accent-soft: rgba(245, 78, 0, 0.16);
+  --settings-focus-ring: rgba(245, 78, 0, 0.22);
+  --settings-radius-card: 10px;
+  --settings-radius-control: 7px;
+  --settings-shadow-card: 0 14px 36px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  --settings-shadow-menu: 0 22px 60px rgba(0, 0, 0, 0.48);
+  --settings-control-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
 
   /* Scrollbar */
   --scrollbar-thumb: rgba(255, 255, 255, 0.2); /* Scrollbar thumb */
@@ -60,6 +82,8 @@
    LIGHT THEME OVERRIDE
    ================================================ */
 [data-theme="light"] {
+  color-scheme: light;
+
   /* Background Colors */
   --bg-primary: #f5f5f5;                      /* Light gray background */
   --bg-secondary: rgba(0, 0, 0, 0.03);        /* Subtle dark tint */
@@ -77,8 +101,8 @@
   --border-subtle: rgba(0, 0, 0, 0.08);       /* Subtle borders */
   --border-focus: rgba(255, 107, 107, 0.6);   /* Focus state (slightly stronger) */
 
-  /* Accent Colors - SAME as dark theme */
-  /* Gradient colors work well on both backgrounds */
+  /* Accent Colors - same brand accent, slightly warmer settings text below */
+  --accent-color: var(--accent-secondary);
 
   /* Shadow Colors */
   --shadow-color: rgba(0, 0, 0, 0.1);         /* Lighter shadow */
@@ -91,6 +115,23 @@
   --form-hover: rgba(0, 0, 0, 0.08);          /* Form hover */
   --form-focus: rgba(0, 0, 0, 0.12);          /* Form focus */
   --form-border: rgba(0, 0, 0, 0.15);         /* Form border */
+
+  /* Settings-specific semantic tokens (Refero Cursor-inspired light mode) */
+  --settings-surface-page: #f7f7f4;
+  --settings-surface-panel: #fffefa;
+  --settings-surface-panel-hover: #f0efea;
+  --settings-surface-raised: #ecebe5;
+  --settings-border: #e6e5e0;
+  --settings-border-strong: #cdcdc9;
+  --settings-accent: #f54e00;
+  --settings-accent-text: #b43b00;
+  --settings-accent-soft: rgba(245, 78, 0, 0.12);
+  --settings-focus-ring: rgba(245, 78, 0, 0.18);
+  --settings-radius-card: 10px;
+  --settings-radius-control: 7px;
+  --settings-shadow-card: 0 16px 36px rgba(38, 37, 16, 0.09), 0 1px 0 rgba(255, 255, 255, 0.78) inset;
+  --settings-shadow-menu: 0 22px 56px rgba(38, 37, 16, 0.18);
+  --settings-control-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.22));
 
   /* Scrollbar */
   --scrollbar-thumb: rgba(0, 0, 0, 0.3);      /* Darker thumb for visibility */

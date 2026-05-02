@@ -15,6 +15,10 @@ let elevenLabsAuthUiState = {
 let activeTabId = 'div-appearance';
 let isDirty = false;
 let suppressDirtyTracking = false;
+let settingsSearchState = {
+  lastMatches: [],
+  highlightTimer: null,
+};
 
 const UI_COPY = {
   toastSuccessTitle: ['成功', '成功', 'Success'],
@@ -22,6 +26,13 @@ const UI_COPY = {
   toastInfoTitle: ['提示', '提示', 'Info'],
   toastWarningTitle: ['提醒', '提醒', 'Warning'],
   unsavedChanges: ['有未儲存的變更', '有未保存的更改', 'Unsaved changes'],
+  settingsSearchLabel: ['快速查找', '快速查找', 'Quick find'],
+  settingsSearchPlaceholder: ['搜尋設定、引擎、API 或語音', '搜索设置、引擎、API 或语音', 'Search settings, engines, API, or voices'],
+  settingsSearchClear: ['清除', '清除', 'Clear'],
+  settingsSearchHelp: ['輸入關鍵字可快速跳轉到相關設定', '输入关键词可快速跳转到相关设置', 'Type to jump to related settings'],
+  settingsSearchEmpty: ['找不到相符設定', '找不到匹配设置', 'No matching settings found'],
+  settingsSearchCount: ['找到 {count} 個設定，Enter 可開啟第一個結果', '找到 {count} 个设置，Enter 可打开第一个结果', '{count} settings found. Press Enter to open the first result'],
+  settingsSearchCapped: ['顯示前 {shown} 個，共 {count} 個結果', '显示前 {shown} 个，共 {count} 个结果', 'Showing first {shown} of {count} results'],
   settingsSaved: ['設定已儲存', '设置已保存', 'Settings saved'],
   defaultsRestored: ['已還原預設設定', '已恢复默认设置', 'Defaults restored'],
   compactSizeApplied: ['緊湊尺寸已套用', '紧凑尺寸已应用', 'Compact size applied'],
@@ -128,6 +139,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   setEvent();
   setButton();
   await setView();
+  initializeSettingsSearch();
   hydrateInteractiveAccessibility();
   bindDirtyTracking();
   setDirtyState(false);
@@ -139,6 +151,10 @@ function setIPC() {
   ipcRenderer.on(IPC_CHANNELS.CHANGE_UI_TEXT, async () => {
     const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
+    requestAnimationFrame(() => {
+      updateSettingsSearchCopy();
+      refreshSettingsSearchResults();
+    });
   });
 
   // send data
@@ -174,6 +190,7 @@ async function setView() {
   const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
   document.dispatchEvent(new CustomEvent('change-ui-text', { detail: config }));
   switchTab(activeTabId);
+  updateSettingsSearchCopy();
   
   // 语言加载完成，移除 loading 类显示内容
   requestAnimationFrame(() => {
@@ -256,6 +273,299 @@ function switchTab(targetId, options = {}) {
     if (isActive && focusTab) {
       tab.focus();
     }
+  });
+}
+
+function initializeSettingsSearch() {
+  const input = document.getElementById('input-settings-search');
+  const clearButton = document.getElementById('button-settings-search-clear');
+  const results = document.getElementById('settings-search-results');
+
+  if (!input || !clearButton || !results) {
+    return;
+  }
+
+  updateSettingsSearchCopy();
+
+  input.addEventListener('input', refreshSettingsSearchResults);
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      clearSettingsSearch({ focusInput: true });
+      return;
+    }
+
+    if (event.key === 'Enter' && settingsSearchState.lastMatches.length > 0) {
+      event.preventDefault();
+      activateSettingsSearchResult(0);
+    }
+  });
+
+  clearButton.addEventListener('click', () => clearSettingsSearch({ focusInput: true }));
+
+  results.addEventListener('click', (event) => {
+    const button = event.target.closest('.settings-search-result');
+    if (!button) {
+      return;
+    }
+
+    activateSettingsSearchResult(Number(button.dataset.resultIndex));
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      input.focus();
+      input.select();
+    }
+  });
+}
+
+function updateSettingsSearchCopy() {
+  const label = document.getElementById('label-settings-search');
+  const input = document.getElementById('input-settings-search');
+  const clearButton = document.getElementById('button-settings-search-clear');
+  const status = document.getElementById('settings-search-status');
+
+  if (label) {
+    label.textContent = getUiText('settingsSearchLabel');
+  }
+
+  if (input) {
+    input.placeholder = getUiText('settingsSearchPlaceholder');
+    input.setAttribute('aria-label', getUiText('settingsSearchPlaceholder'));
+  }
+
+  if (clearButton) {
+    clearButton.textContent = getUiText('settingsSearchClear');
+  }
+
+  if (status && !normalizeSearchText(input?.value)) {
+    status.textContent = getUiText('settingsSearchHelp');
+  }
+}
+
+function normalizeSearchText(value = '') {
+  return String(value)
+    .toLowerCase()
+    .normalize('NFKC')
+    .replace(/[\s_-]+/g, ' ')
+    .trim();
+}
+
+function getElementSearchText(element) {
+  const textParts = [];
+  const section = element.closest('.settings-section');
+  const page = element.closest('.config-page');
+  const tab = page ? document.querySelector(`.tab-item[data-target="${page.id}"]`) : null;
+  const details = element.closest('details');
+
+  textParts.push(tab?.textContent || '');
+  textParts.push(section?.querySelector('.settings-section-header')?.textContent || '');
+  textParts.push(details?.querySelector('summary')?.textContent || '');
+  textParts.push(page?.getAttribute('aria-labelledby') || '');
+  textParts.push(element.querySelector('.setting-label, .setting-nested-label, .form-check-label')?.textContent || '');
+  textParts.push(element.querySelector('.setting-description')?.textContent || '');
+  textParts.push(element.id || '');
+
+  element.querySelectorAll('button, a, select, textarea, input').forEach((control) => {
+    textParts.push(control.id || '');
+    textParts.push(control.getAttribute('aria-label') || '');
+    textParts.push(control.getAttribute('placeholder') || '');
+
+    if (!['password', 'hidden'].includes(control.type)) {
+      textParts.push(control.textContent || '');
+    }
+  });
+
+  return textParts.join(' ');
+}
+
+function isSearchCandidateHiddenByState(element) {
+  let current = element;
+
+  while (current && current !== document.body) {
+    if (current.hidden) {
+      if (current.classList.contains('config-page') || current.id === 'div-more-engines') {
+        current = current.parentElement;
+        continue;
+      }
+
+      return true;
+    }
+
+    current = current.parentElement;
+  }
+
+  return false;
+}
+
+function getSettingsSearchCandidates() {
+  return Array.from(document.querySelectorAll('main .setting-item, main .setting-nested-row, #div-channel-list > .row'))
+    .filter((element) => !isSearchCandidateHiddenByState(element))
+    .map((element) => {
+      const page = element.closest('.config-page');
+      const section = element.closest('.settings-section');
+      const tab = page ? document.querySelector(`.tab-item[data-target="${page.id}"]`) : null;
+      const details = element.closest('details');
+      const detailsSummary = details?.querySelector('summary')?.textContent?.trim();
+      const label = element.querySelector('.setting-label, .setting-nested-label, .form-check-label')?.textContent?.trim()
+        || section?.querySelector('.settings-section-header')?.textContent?.trim()
+        || tab?.textContent?.trim()
+        || '';
+      const description = element.querySelector('.setting-description')?.textContent?.trim() || '';
+      const location = [tab?.textContent?.trim(), section?.querySelector('.settings-section-header')?.textContent?.trim(), detailsSummary]
+        .filter(Boolean)
+        .join(' / ');
+
+      return {
+        element,
+        pageId: page?.id || '',
+        label,
+        description,
+        location,
+        searchText: normalizeSearchText(getElementSearchText(element)),
+      };
+    })
+    .filter((candidate) => candidate.pageId && candidate.searchText);
+}
+
+function refreshSettingsSearchResults() {
+  const input = document.getElementById('input-settings-search');
+  const clearButton = document.getElementById('button-settings-search-clear');
+  const status = document.getElementById('settings-search-status');
+  const results = document.getElementById('settings-search-results');
+
+  if (!input || !clearButton || !status || !results) {
+    return;
+  }
+
+  const query = normalizeSearchText(input.value);
+  clearButton.hidden = !query;
+  results.replaceChildren();
+  results.hidden = !query;
+  settingsSearchState.lastMatches = [];
+
+  document.querySelectorAll('.tab-item').forEach((tab) => {
+    tab.classList.remove('has-search-results');
+    tab.removeAttribute('data-search-count');
+  });
+
+  if (!query) {
+    status.textContent = getUiText('settingsSearchHelp');
+    return;
+  }
+
+  const matches = getSettingsSearchCandidates().filter((candidate) => candidate.searchText.includes(query));
+  settingsSearchState.lastMatches = matches;
+  const shownMatches = matches.slice(0, 10);
+
+  if (matches.length === 0) {
+    status.textContent = getUiText('settingsSearchEmpty');
+    const empty = document.createElement('div');
+    empty.className = 'settings-search-empty';
+    empty.textContent = getUiText('settingsSearchEmpty');
+    results.append(empty);
+    return;
+  }
+
+  status.textContent = matches.length > shownMatches.length
+    ? getUiText('settingsSearchCapped', { shown: String(shownMatches.length), count: String(matches.length) })
+    : getUiText('settingsSearchCount', { count: String(matches.length) });
+
+  const countsByPage = matches.reduce((accumulator, match) => {
+    accumulator[match.pageId] = (accumulator[match.pageId] || 0) + 1;
+    return accumulator;
+  }, {});
+
+  Object.entries(countsByPage).forEach(([pageId, count]) => {
+    const tab = document.querySelector(`.tab-item[data-target="${pageId}"]`);
+    if (tab) {
+      tab.classList.add('has-search-results');
+      tab.setAttribute('data-search-count', String(count));
+    }
+  });
+
+  shownMatches.forEach((match, index) => {
+    const result = document.createElement('button');
+    result.type = 'button';
+    result.className = 'settings-search-result';
+    result.dataset.resultIndex = String(index);
+
+    const title = document.createElement('div');
+    title.className = 'settings-search-result-title';
+
+    const titleText = document.createElement('span');
+    titleText.textContent = match.label;
+
+    const location = document.createElement('span');
+    location.className = 'settings-search-result-location';
+    location.textContent = match.location;
+
+    title.append(titleText, location);
+    result.append(title);
+
+    if (match.description) {
+      const description = document.createElement('div');
+      description.className = 'settings-search-result-description';
+      description.textContent = match.description;
+      result.append(description);
+    }
+
+    results.append(result);
+  });
+}
+
+function clearSettingsSearch(options = {}) {
+  const { focusInput = false } = options;
+  const input = document.getElementById('input-settings-search');
+  if (!input) {
+    return;
+  }
+
+  input.value = '';
+  refreshSettingsSearchResults();
+
+  if (focusInput) {
+    input.focus();
+  }
+}
+
+function activateSettingsSearchResult(index) {
+  const match = settingsSearchState.lastMatches[index];
+  if (!match) {
+    return;
+  }
+
+  switchTab(match.pageId);
+
+  if (match.element.closest('#div-more-engines')) {
+    toggleMoreEngines(true);
+  }
+
+  const details = match.element.closest('details');
+  if (details) {
+    details.open = true;
+  }
+
+  const results = document.getElementById('settings-search-results');
+  if (results) {
+    results.hidden = true;
+  }
+
+  window.clearTimeout(settingsSearchState.highlightTimer);
+
+  requestAnimationFrame(() => {
+    match.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    match.element.classList.add('setting-search-focused');
+
+    const focusTarget = match.element.querySelector('select, input:not([type="hidden"]), textarea, button, a[href]');
+    if (focusTarget) {
+      focusTarget.focus({ preventScroll: true });
+    }
+
+    settingsSearchState.highlightTimer = window.setTimeout(() => {
+      match.element.classList.remove('setting-search-focused');
+    }, 1500);
   });
 }
 
