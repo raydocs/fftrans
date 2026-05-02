@@ -16,6 +16,7 @@ const requiredFiles = [
   'extension/elevenreader-bearer/README.md',
   'src/data/text/readme/index.html',
   'src/data/text/readme/elevenlabs-token-helper.html',
+  'src/data/text/cache/msq-speaker-gender.json',
 ];
 
 const missingFiles = requiredFiles.filter((relativePath) => !fs.existsSync(path.join(rootDir, relativePath)));

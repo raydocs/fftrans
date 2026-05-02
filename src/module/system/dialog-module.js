@@ -171,6 +171,11 @@ function enqueueDialogPlayback(dialogData = {}, config = configModule.getConfig(
         dialogData.translation.from,
         {
           config,
+          speaker: {
+            name: dialogData.name,
+            code: dialogData.code,
+            isNpc: npcChannel.includes(dialogData.code),
+          },
           onError: (error, engine) => {
             console.error(`[Dialog Module] ${engine} TTS error:`, error);
           },

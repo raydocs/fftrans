@@ -20,6 +20,30 @@ let settingsSearchState = {
   highlightTimer: null,
 };
 
+const ELEVENLABS_VOICE_SELECT_IDS = [
+  'select-elevenlabs-voice-id',
+  'select-elevenlabs-female-voice-id',
+  'select-elevenlabs-male-voice-id',
+];
+
+const ELEVENLABS_PREVIEW_CONTROLS = [
+  {
+    selectId: 'select-elevenlabs-voice-id',
+    buttonId: 'btn-preview-elevenlabs-voice',
+    roleLabel: 'default voice',
+  },
+  {
+    selectId: 'select-elevenlabs-female-voice-id',
+    buttonId: 'btn-preview-elevenlabs-female-voice',
+    roleLabel: 'female NPC voice',
+  },
+  {
+    selectId: 'select-elevenlabs-male-voice-id',
+    buttonId: 'btn-preview-elevenlabs-male-voice',
+    roleLabel: 'male NPC voice',
+  },
+];
+
 const UI_COPY = {
   toastSuccessTitle: ['成功', '成功', 'Success'],
   toastErrorTitle: ['錯誤', '错误', 'Error'],
@@ -177,6 +201,7 @@ async function setView() {
 
   //document.getElementById('select-app-language').innerHTML = await ipcRenderer.invoke('get-ui-select');
 
+  initializeElevenLabsGenderVoiceSelects();
   await readConfig();
 
   // Initialize prompt preset selector based on current value
@@ -1595,63 +1620,8 @@ function setButton() {
     }
   };
 
-  // ElevenLabs: Preview voice
-  document.getElementById('btn-preview-elevenlabs-voice').onclick = async () => {
-    const button = document.getElementById('btn-preview-elevenlabs-voice');
-    const voiceSelect = document.getElementById('select-elevenlabs-voice-id');
-    const selectedVoice = voiceSelect.value;
-    const originalText = button.innerText;
-    let playbackStarted = false;
-
-    try {
-      const previewConfig = collectElevenLabsFormConfig();
-      const validationMessage = validateElevenLabsFormConfig(previewConfig);
-      if (validationMessage) {
-        alert(`❌ 配置无效\n\n${validationMessage}`);
-        return;
-      }
-
-      button.disabled = true;
-      button.innerText = `🎧 ${getUiText('generating')}`;
-
-      const voiceName = voiceSelect.options[voiceSelect.selectedIndex].text;
-      const previewText = `Welcome to Final Fantasy XIV! This is ${voiceName}. I hope you enjoy this voice!`;
-      const result = await ipcRenderer.invoke(IPC_CHANNELS.PREVIEW_ELEVENLABS_VOICE, {
-        text: previewText,
-        config: {
-          ...previewConfig,
-          voiceId: selectedVoice,
-        }
-      });
-
-      if (result.success && result.data?.audioUrl) {
-        const audio = new Audio(result.data.audioUrl);
-        playbackStarted = true;
-        button.innerText = `🎧 ${getUiText('playing')}`;
-        audio.play();
-
-        audio.onended = () => {
-          button.disabled = false;
-          button.innerText = originalText;
-        };
-
-        audio.onerror = () => {
-          alert('❌ 音频播放失败');
-          button.disabled = false;
-          button.innerText = originalText;
-        };
-      } else {
-        alert(formatTtsErrorAlert(result, '❌ 语音生成失败'));
-      }
-    } catch (error) {
-      alert(`❌ 试听出错\n\n${error.message}`);
-    } finally {
-      if (!playbackStarted) {
-        button.disabled = false;
-        button.innerText = originalText;
-      }
-    }
-  };
+  // ElevenLabs: Preview default / per-gender voices
+  bindElevenLabsPreviewButtons();
 
   updateElevenLabsActionAvailability();
 
@@ -1745,6 +1715,9 @@ function collectElevenLabsFormConfig() {
     appCheckToken: document.getElementById('input-elevenlabs-app-check-token').value.trim(),
     deviceId: document.getElementById('input-elevenlabs-device-id').value.trim(),
     voiceId: document.getElementById('select-elevenlabs-voice-id').value,
+    genderVoiceRoutingEnabled: document.getElementById('checkbox-elevenlabs-gender-voice-routing').checked,
+    femaleVoiceId: document.getElementById('select-elevenlabs-female-voice-id').value,
+    maleVoiceId: document.getElementById('select-elevenlabs-male-voice-id').value,
     modelId: document.getElementById('select-elevenlabs-model').value,
     stability: document.getElementById('input-elevenlabs-stability').value,
     similarityBoost: document.getElementById('input-elevenlabs-similarity-boost').value,
@@ -1822,18 +1795,104 @@ function setElevenLabsStatusPill(elementId = '', text = '', tone = 'muted') {
   element.className = `elevenlabs-status-pill tone-${tone}`;
 }
 
+function getElevenLabsPreviewButtons() {
+  return ELEVENLABS_PREVIEW_CONTROLS
+    .map(({ buttonId }) => document.getElementById(buttonId))
+    .filter(Boolean);
+}
+
+function setElevenLabsPreviewBusy(isBusy) {
+  getElevenLabsPreviewButtons().forEach((previewButton) => {
+    previewButton.disabled = Boolean(isBusy);
+  });
+
+  if (!isBusy) {
+    updateElevenLabsActionAvailability();
+  }
+}
+
+async function previewElevenLabsVoiceBySelect(control = {}) {
+  const button = document.getElementById(control.buttonId);
+  const voiceSelect = document.getElementById(control.selectId);
+  if (!button || !voiceSelect) {
+    return;
+  }
+
+  const selectedVoice = voiceSelect.value;
+  const originalText = button.innerText;
+  let playbackStarted = false;
+
+  try {
+    const previewConfig = collectElevenLabsFormConfig();
+    const validationMessage = validateElevenLabsFormConfig(previewConfig);
+    if (validationMessage) {
+      alert(`❌ 配置无效\n\n${validationMessage}`);
+      return;
+    }
+
+    setElevenLabsPreviewBusy(true);
+    button.innerText = `🎧 ${getUiText('generating')}`;
+
+    const selectedOption = voiceSelect.options[voiceSelect.selectedIndex];
+    const voiceName = selectedOption?.text || selectedVoice || control.roleLabel;
+    const previewText = `Welcome to Final Fantasy XIV! This is ${voiceName}. I hope you enjoy this voice!`;
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.PREVIEW_ELEVENLABS_VOICE, {
+      text: previewText,
+      config: {
+        ...previewConfig,
+        voiceId: selectedVoice,
+      },
+    });
+
+    if (result.success && result.data?.audioUrl) {
+      const audio = new Audio(result.data.audioUrl);
+      playbackStarted = true;
+      button.innerText = `🎧 ${getUiText('playing')}`;
+      audio.play();
+
+      audio.onended = () => {
+        button.innerText = originalText;
+        setElevenLabsPreviewBusy(false);
+      };
+
+      audio.onerror = () => {
+        alert('❌ 音频播放失败');
+        button.innerText = originalText;
+        setElevenLabsPreviewBusy(false);
+      };
+    } else {
+      alert(formatTtsErrorAlert(result, '❌ 语音生成失败'));
+    }
+  } catch (error) {
+    alert(`❌ 试听出错\n\n${error.message}`);
+  } finally {
+    if (!playbackStarted) {
+      button.innerText = originalText;
+      setElevenLabsPreviewBusy(false);
+    }
+  }
+}
+
+function bindElevenLabsPreviewButtons() {
+  ELEVENLABS_PREVIEW_CONTROLS.forEach((control) => {
+    const button = document.getElementById(control.buttonId);
+    if (button) {
+      button.onclick = () => previewElevenLabsVoiceBySelect(control);
+    }
+  });
+}
+
 function updateElevenLabsActionAvailability() {
   const authUsable = Boolean(elevenLabsAuthUiState.authUsable);
-  const previewButton = document.getElementById('btn-preview-elevenlabs-voice');
   const refreshButton = document.getElementById('btn-refresh-elevenlabs-voices');
   const currentTtsTestButton = document.getElementById('btn-test-current-tts-engine');
   const isElevenLabsSelected = document.getElementById('select-tts-engine').value === 'elevenlabs';
   const unavailableTitle = getUiText('elevenlabsUnavailableTitle');
 
-  if (previewButton) {
+  getElevenLabsPreviewButtons().forEach((previewButton) => {
     previewButton.disabled = !authUsable;
     previewButton.title = authUsable ? '' : unavailableTitle;
-  }
+  });
 
   if (refreshButton) {
     refreshButton.disabled = !authUsable;
@@ -2168,10 +2227,65 @@ function syncMiMoVoiceControlsFromStoredValue(storedVoice = '') {
 let elevenLabsVoiceRequestId = 0;
 let mimoVoiceRequestId = 0;
 
+function getElevenLabsVoiceSelects() {
+  return ELEVENLABS_VOICE_SELECT_IDS
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+}
+
+function initializeElevenLabsGenderVoiceSelects() {
+  const defaultSelect = document.getElementById('select-elevenlabs-voice-id');
+  if (!defaultSelect) return;
+
+  ['select-elevenlabs-female-voice-id', 'select-elevenlabs-male-voice-id'].forEach((selectId) => {
+    const select = document.getElementById(selectId);
+    if (select && select.options.length === 0) {
+      select.innerHTML = defaultSelect.innerHTML;
+    }
+  });
+}
+
+function restoreElevenLabsVoiceSelection(select, currentValue = '') {
+  if (!select || !currentValue) return;
+
+  let found = false;
+  for (let i = 0; i < select.options.length; i++) {
+    if (select.options[i].value === currentValue) {
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    const option = document.createElement('option');
+    option.value = currentValue;
+    option.textContent = `${currentValue} (当前)`;
+    select.insertBefore(option, select.firstChild);
+  }
+  select.value = currentValue;
+}
+
+function rebuildElevenLabsVoiceSelect(select, groups = {}) {
+  if (!select) return;
+
+  select.innerHTML = '';
+  Object.keys(groups).forEach((groupName) => {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = groupName;
+    groups[groupName].forEach((v) => {
+      const option = document.createElement('option');
+      option.value = v.value;
+      option.textContent = v.label;
+      optgroup.appendChild(option);
+    });
+    select.appendChild(optgroup);
+  });
+}
+
 async function loadElevenLabsVoices() {
   const requestId = ++elevenLabsVoiceRequestId;
-  const select = document.getElementById('select-elevenlabs-voice-id');
-  const currentValue = select.value;
+  const selects = getElevenLabsVoiceSelects();
+  const currentValues = new Map(selects.map((select) => [select.id, select.value]));
   const btn = document.getElementById('btn-refresh-elevenlabs-voices');
   const originalText = btn.innerText;
 
@@ -2202,37 +2316,10 @@ async function loadElevenLabsVoices() {
         groups[group].push(v);
       });
 
-      // Rebuild select
-      select.innerHTML = '';
-      Object.keys(groups).forEach((groupName) => {
-        const optgroup = document.createElement('optgroup');
-        optgroup.label = groupName;
-        groups[groupName].forEach((v) => {
-          const option = document.createElement('option');
-          option.value = v.value;
-          option.textContent = v.label;
-          optgroup.appendChild(option);
-        });
-        select.appendChild(optgroup);
+      selects.forEach((select) => {
+        rebuildElevenLabsVoiceSelect(select, groups);
+        restoreElevenLabsVoiceSelection(select, currentValues.get(select.id));
       });
-
-      // Restore selection or add synthetic option
-      if (currentValue) {
-        let found = false;
-        for (let i = 0; i < select.options.length; i++) {
-          if (select.options[i].value === currentValue) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          const option = document.createElement('option');
-          option.value = currentValue;
-          option.textContent = `${currentValue} (当前)`;
-          select.insertBefore(option, select.firstChild);
-        }
-        select.value = currentValue;
-      }
     }
   } catch (error) {
     console.warn('[Config] Failed to load ElevenLabs voices:', error.message);
@@ -2858,6 +2945,18 @@ function getOptionList() {
     [
       ['select-elevenlabs-voice-id', 'value'],
       ['api', 'elevenlabs', 'voiceId'],
+    ],
+    [
+      ['checkbox-elevenlabs-gender-voice-routing', 'checked'],
+      ['api', 'elevenlabs', 'genderVoiceRoutingEnabled'],
+    ],
+    [
+      ['select-elevenlabs-female-voice-id', 'value'],
+      ['api', 'elevenlabs', 'femaleVoiceId'],
+    ],
+    [
+      ['select-elevenlabs-male-voice-id', 'value'],
+      ['api', 'elevenlabs', 'maleVoiceId'],
     ],
     [
       ['select-elevenlabs-model', 'value'],

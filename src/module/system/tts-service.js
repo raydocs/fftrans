@@ -6,6 +6,7 @@ const googleTTS = require('../translator/google-tts');
 const speechifyTTS = require('../translator/speechify-tts');
 const elevenLabsTTS = require('../translator/elevenlabs-tts');
 const mimoTTS = require('../translator/mimo-tts');
+const msqSpeakerGender = require('./msq-speaker-gender');
 const Logger = require('../../utils/logger');
 
 const RUNTIME_TTS_DISPATCHERS = Object.freeze({
@@ -63,9 +64,120 @@ function getConfiguredEngine(config = configModule.getConfig()) {
   return normalizeEngine(config?.indexWindow?.ttsEngine || 'google');
 }
 
+function isFullAppConfig(config = null) {
+  return Boolean(config && typeof config === 'object' && (config.api || config.indexWindow));
+}
+
+function getEngineConfigOverride(engine = 'google', options = {}) {
+  if (options.configOverride) {
+    return options.configOverride;
+  }
+
+  const config = options.config || null;
+  if (isFullAppConfig(config)) {
+    return config.api?.[normalizeEngine(engine)] || null;
+  }
+
+  return config;
+}
+
+function getElevenLabsBaseConfig(options = {}) {
+  if (options.configOverride) {
+    return options.configOverride;
+  }
+
+  if (isFullAppConfig(options.config)) {
+    return options.config.api?.elevenlabs || {};
+  }
+
+  if (options.config && typeof options.config === 'object') {
+    return options.config;
+  }
+
+  return configModule.getConfig().api?.elevenlabs || {};
+}
+
+function logVoiceRouting(message = '', details = {}) {
+  if (process.env.FFTRANS_TTS_ROUTING_DEBUG === '1') {
+    Logger.info('tts-service', message, details);
+  }
+}
+
+function resolveElevenLabsVoiceRouting(options = {}) {
+  const speaker = options.speaker || {};
+  if (speaker.isNpc !== true) {
+    return null;
+  }
+
+  const baseElevenLabsConfig = getElevenLabsBaseConfig(options);
+  if (baseElevenLabsConfig.genderVoiceRoutingEnabled === false) {
+    logVoiceRouting('MSQ speaker gender routing skipped', {
+      speakerName: speaker.name || '',
+      reason: 'disabled',
+    });
+    return null;
+  }
+
+  const match = msqSpeakerGender.lookupSpeakerGender(speaker.name);
+  if (!match || !['male', 'female'].includes(match.gender)) {
+    logVoiceRouting('MSQ speaker gender routing skipped', {
+      speakerName: speaker.name || '',
+      reason: 'no-gender-match',
+    });
+    return null;
+  }
+
+  const voiceId = String(match.gender === 'female'
+    ? baseElevenLabsConfig.femaleVoiceId || ''
+    : baseElevenLabsConfig.maleVoiceId || '').trim();
+
+  if (!voiceId) {
+    logVoiceRouting('MSQ speaker gender routing skipped', {
+      speakerName: speaker.name || '',
+      gender: match.gender,
+      reason: 'missing-gender-voice-id',
+    });
+    return null;
+  }
+
+  return {
+    configOverride: {
+      ...baseElevenLabsConfig,
+      voiceId,
+    },
+    routingMeta: {
+      source: 'msq-speaker-gender',
+      speakerName: speaker.name || '',
+      matchedName: match.matchedName,
+      matchType: match.matchType,
+      gender: match.gender,
+      voiceId,
+    },
+  };
+}
+
+function applyElevenLabsVoiceRouting(engine = 'google', options = {}) {
+  if (normalizeEngine(engine) !== 'elevenlabs') {
+    return options;
+  }
+
+  const route = resolveElevenLabsVoiceRouting(options);
+  if (!route) {
+    return options;
+  }
+
+  logVoiceRouting('MSQ speaker gender routing selected voice', route.routingMeta);
+  return {
+    ...options,
+    configOverride: route.configOverride,
+    routingMeta: route.routingMeta,
+  };
+}
+
 async function getAudioUrlForEngine(engine = 'google', text = '', from = 'English', options = {}) {
   const normalizedEngine = normalizeEngine(engine);
-  const configOverride = options.configOverride ?? options.config ?? null;
+  const effectiveOptions = applyElevenLabsVoiceRouting(normalizedEngine, options);
+  const configOverride = getEngineConfigOverride(normalizedEngine, effectiveOptions);
 
   if (normalizedEngine === 'google') {
     return googleTTS.getAudioUrl(text, from);
@@ -88,14 +200,15 @@ async function getConfiguredAudioUrl(text = '', from = 'English', options = {}) 
 
 async function getAudioUrlProgressiveForEngine(engine = 'google', text = '', from = 'English', options = {}) {
   const normalizedEngine = normalizeEngine(engine);
-  const configOverride = options.configOverride ?? options.config ?? null;
-  const { onChunk = null } = options;
+  const effectiveOptions = applyElevenLabsVoiceRouting(normalizedEngine, options);
+  const configOverride = getEngineConfigOverride(normalizedEngine, effectiveOptions);
+  const { onChunk = null } = effectiveOptions;
 
   if (normalizedEngine === 'elevenlabs') {
-    return ttsRequestQueue.enqueueSynthesis(() => elevenLabsTTS.getAudioUrlProgressive(text, from, configOverride, options));
+    return ttsRequestQueue.enqueueSynthesis(() => elevenLabsTTS.getAudioUrlProgressive(text, from, configOverride, effectiveOptions));
   }
 
-  const urls = await getAudioUrlForEngine(normalizedEngine, text, from, options);
+  const urls = await getAudioUrlForEngine(normalizedEngine, text, from, effectiveOptions);
   await emitBatchChunks(onChunk, text, urls);
   return {
     urls,
@@ -196,4 +309,5 @@ module.exports = {
   getConfiguredAudioUrlProgressive,
   getConfiguredAudioUrlWithFallback,
   getConfiguredAudioUrlProgressiveWithFallback,
+  _resolveElevenLabsVoiceRouting: resolveElevenLabsVoiceRouting,
 };

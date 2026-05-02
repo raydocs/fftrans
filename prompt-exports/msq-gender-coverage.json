@@ -1,0 +1,3368 @@
+{
+  "generatedAt": "2026-05-02T07:03:59.562Z",
+  "sourcePages": [
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Dawntrail_Main_Scenario_Quests",
+      "questGiverMentions": 100
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Endwalker_Main_Scenario_Quests",
+      "questGiverMentions": 108
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Heavensward_Main_Scenario_Quests",
+      "questGiverMentions": 94
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Post-Dawntrail_Main_Scenario_Quests",
+      "questGiverMentions": 39
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Post-Endwalker_Main_Scenario_Quests",
+      "questGiverMentions": 47
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Post-Heavensward_Main_Scenario_Quests",
+      "questGiverMentions": 44
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Post-Shadowbringers_Main_Scenario_Quests",
+      "questGiverMentions": 51
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Post-Stormblood_Main_Scenario_Quests",
+      "questGiverMentions": 40
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Seventh_Astral_Era_Main_Scenario_Quests",
+      "questGiverMentions": 100
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Seventh_Umbral_Era_Main_Scenario_Quests",
+      "questGiverMentions": 245
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Shadowbringers_Main_Scenario_Quests",
+      "questGiverMentions": 106
+    },
+    {
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Stormblood_Main_Scenario_Quests",
+      "questGiverMentions": 122
+    }
+  ],
+  "totals": {
+    "questGiverMentions": 1096,
+    "uniqueQuestGivers": 287,
+    "genderCovered": 259,
+    "coveragePercent": 90.24,
+    "genderCounts": {
+      "male": 187,
+      "female": 72,
+      "unknown": 28
+    },
+    "totalFetchMs": 10120.7,
+    "characterFetchMedianMs": 150.586,
+    "characterFetchP95Ms": 341.292,
+    "localLookupMedianMs": 0.000208,
+    "localLookupP95Ms": 0.00025
+  },
+  "unresolved": [
+    {
+      "name": "Helpful Hanu",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Helpful_Hanu",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Linuhanu",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Linuhanu",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Wuk Evu",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wuk_Evu",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Approachable Pelu",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Approachable_Pelu",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Mablu",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Mablu",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Rakorok",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Rakorok",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Hunmu Rruk",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hunmu_Rruk",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Zeynuha",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Zeynuha",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Argos",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Argos_(NPC)",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Coph-coodg",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Coph-coodg",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Moghan",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Moghan",
+      "mentions": 5,
+      "error": ""
+    },
+    {
+      "name": "Mogmug",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Mogmug",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Mogwin",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Mogwin",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Guidance Node",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Guidance_Node",
+      "mentions": 5,
+      "error": ""
+    },
+    {
+      "name": "Ga Bu",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ga_Bu",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Beq Lugg",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Beq_Lugg",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Peculiar Crystal",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Peculiar_Crystal",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Restrainment Node",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Restrainment_Node",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Sul Uin",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Sul_Uin",
+      "mentions": 2,
+      "error": ""
+    },
+    {
+      "name": "Ys Iala",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ys_Iala",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Oul Sigun",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Oul_Sigun",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Wyd Aenc",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wyd_Aenc",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Ys Gyuf",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ys_Gyuf",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Wyd Lad",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wyd_Lad",
+      "mentions": 2,
+      "error": ""
+    },
+    {
+      "name": "Seto",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Seto",
+      "mentions": 2,
+      "error": ""
+    },
+    {
+      "name": "Zhun Zun",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Zhun_Zun",
+      "mentions": 1,
+      "error": ""
+    },
+    {
+      "name": "Minfilia",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Minfilia",
+      "mentions": 2,
+      "error": ""
+    },
+    {
+      "name": "Korutt",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Korutt",
+      "mentions": 1,
+      "error": ""
+    }
+  ],
+  "characters": [
+    {
+      "name": "1st Legion Soldier",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/1st_Legion_Soldier",
+      "mentions": 1,
+      "quests": [
+        "An Unforeseen Bargain"
+      ]
+    },
+    {
+      "name": "Adventurers' Guild Assistant",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Adventurers%27_Guild_Assistant",
+      "mentions": 1,
+      "quests": [
+        "Writhing in the Dark"
+      ]
+    },
+    {
+      "name": "Aethelmaer",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Aethelmaer",
+      "mentions": 1,
+      "quests": [
+        "Secret of the White Lily"
+      ]
+    },
+    {
+      "name": "Afumi",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Afumi",
+      "mentions": 1,
+      "quests": [
+        "The Solace of the Sea"
+      ]
+    },
+    {
+      "name": "Ahelissa",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ahelissa",
+      "mentions": 1,
+      "quests": [
+        "A Dash of Green"
+      ]
+    },
+    {
+      "name": "Ahewann",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ahewann",
+      "mentions": 1,
+      "quests": [
+        "The Blasphemy Unmasked"
+      ]
+    },
+    {
+      "name": "Ahtbyrm",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ahtbyrm",
+      "mentions": 2,
+      "quests": [
+        "Do Angry Pirates Dream",
+        "Without a Doubt"
+      ]
+    },
+    {
+      "name": "Aideen",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Aideen",
+      "mentions": 2,
+      "quests": [
+        "Rock of Rancor",
+        "Ziz Is So Ridiculous"
+      ]
+    },
+    {
+      "name": "Alisaie",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Alisaie",
+      "mentions": 39,
+      "quests": [
+        "A Bargain Struck",
+        "A Defector's Tidings",
+        "A Gigantic Undertaking",
+        "A Guide of Sorts",
+        "A Labyrinthine Descent",
+        "A Royal Welcome",
+        "A Seat at the Last Stand",
+        "Breaking and Delivering",
+        "Confederate Consternation",
+        "Culling Their Ranks",
+        "Emissary of the Dawn",
+        "Estate Visitor",
+        "Forget Us Not",
+        "Griffin, Griffin on the Wall",
+        "Heavens Weep",
+        "Hells Open",
+        "His Forgotten Home",
+        "In Darkness the Magatama Dreams",
+        "In Mt. Gulg's Shadow",
+        "Lies, Damn Lies, and Pirates",
+        "Pick up the Pieces",
+        "Prelude in Violet",
+        "Shadowbringers",
+        "Sisterly Act",
+        "Soul Searching",
+        "Tears on the Sand",
+        "The Company We Keep",
+        "The End of a World",
+        "The Full Report, Warts and All",
+        "The Limits of Our Endurance",
+        "The Lord of the Revel",
+        "The Medial Circuit",
+        "The Obvious Solution",
+        "The Whims of the Divine",
+        "Under the Moonlight",
+        "Unto the Breach",
+        "Warm Hearts, Rekindled Hopes",
+        "Word from On High",
+        "You're Not Alone"
+      ]
+    },
+    {
+      "name": "Allied Communications Officer",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Allied_Communications_Officer",
+      "mentions": 1,
+      "quests": [
+        "A Hero in Need"
+      ]
+    },
+    {
+      "name": "Almet",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Almet",
+      "mentions": 5,
+      "quests": [
+        "Legend of the Not-so-hidden Temple",
+        "Look to the Stars",
+        "Mi Casa, Toupasa",
+        "The Aftermath",
+        "The Burden of Knowledge"
+      ]
+    },
+    {
+      "name": "Alphinaud",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Alphinaud",
+      "mentions": 138,
+      "quests": [
+        "A Blessed Instrument",
+        "A Blissful Arrival",
+        "A Brave Resolution",
+        "A Difference of Opinion",
+        "A Father's Grief",
+        "A Fickle Existence",
+        "A Good Samurai Is Hard to Find",
+        "A Greater Purpose",
+        "A Haven for the Bold",
+        "A Little Slow, a Little Late",
+        "A Notable Absence",
+        "A Small-scale Operation",
+        "A Sultana's Strings",
+        "A Swift and Secret Departure",
+        "A Way Forward",
+        "A Welcome Guest",
+        "A §trαnge New World",
+        "Aether on Demand",
+        "All Due Respect",
+        "Alphinaud's Way",
+        "An Ally for Ishgard",
+        "An Echo of Madness",
+        "An Ending to Mark a New Beginning",
+        "An Engineering Enterprise",
+        "An Uncertain Future",
+        "Another Time, Another Place",
+        "Awakening in Ul'dah",
+        "Beneath a Star-filled Sky",
+        "Beyond the Clouds",
+        "Beyond the Great Wall",
+        "Black and the White",
+        "Blood for Blood",
+        "Bolt, Chain, and Island",
+        "Breaking into Hives",
+        "Breaking the Cycle",
+        "By the Lights of Ishgard",
+        "Camp of the Convictors",
+        "Causes and Costs",
+        "City of Final Pleasures",
+        "Coming to Ishgard",
+        "Coming to Terms",
+        "Committed to the Cause",
+        "Crossing the Velodyna",
+        "Deeper into the Maze",
+        "Defenders for Ishgard",
+        "Desperate Times",
+        "Dreams of the Lost",
+        "Emergent Splendor",
+        "Endwalker",
+        "Eyes Unclouded",
+        "Familiar Faces",
+        "Fire and Blood",
+        "Flame General Affairs",
+        "For the Greater Good",
+        "For the Living and the Dead",
+        "For the People",
+        "Forge Ahead",
+        "Free to Sightsee",
+        "Futures Rewritten",
+        "Gosetsu and Tsuyu",
+        "Here Be Dragons",
+        "Heroes of the Hour",
+        "Hour of Departure",
+        "Ill-weather Friends",
+        "In Pursuit of the Past",
+        "In Search of Iceheart",
+        "In Yyasulani's Shadow",
+        "Into the Blue",
+        "Kindled Spirit",
+        "King of the Mountain",
+        "Let Us Cling Together",
+        "Lost in the Lifestream",
+        "Louisoix's Finest Student",
+        "Mountaintop Diplomacy",
+        "Mourn in Passing",
+        "No Job Too Small",
+        "On Official Business",
+        "On Rough Seas",
+        "One Life for One World",
+        "Open Arms, Closed Gate",
+        "Ready to Fly",
+        "Reclamation",
+        "Recruiting the Realm",
+        "Roads Pαved││Sacri┣ice",
+        "Scale of Trust",
+        "Seeds of Despair",
+        "Seeking Counsel",
+        "Shadows of the First",
+        "Sounding Out the Amphitheatre",
+        "Stories We Tell",
+        "Strength in Unity",
+        "Taking in the Sights",
+        "Tales from the Far East",
+        "Tendrils of Intrigue",
+        "That None Shall Ever Again",
+        "That We Might Live",
+        "The Admiral's Resolve",
+        "The Color of Joy",
+        "The Darkness Below",
+        "The Far Edge of Fate",
+        "The Feat of Proof",
+        "The First Flight of the Excelsior",
+        "The First of Many",
+        "The Greater Obeisance",
+        "The Intercession of Saints",
+        "The Journey Continues",
+        "The Key to Victory",
+        "The Ladder",
+        "The Leap to Yak T'el",
+        "The Legacy of Our Fathers",
+        "The Lure of the Dream",
+        "The Mad King's Trove",
+        "The Man from Ul'dah",
+        "The Next Ship to Sail",
+        "The Nonmind",
+        "The Price of Freedom",
+        "The Road Home",
+        "The Room Where It Happened",
+        "The Search for Sicard",
+        "The Sins of Antiquity",
+        "The Spice of Life",
+        "The Sword in the Store",
+        "The Word of the Mother",
+        "The World Turned Upside Down",
+        "The Wyrm's Lair",
+        "The Wyrm's Roar",
+        "This War of Ours",
+        "To Siege or Not to Siege",
+        "Trail to the Heavens",
+        "Two Sides of a Coin",
+        "Vows of Virtue, Deeds of Cruelty",
+        "When We Were Free",
+        "When the Dust Settles",
+        "While You Were Away",
+        "Winning Over the Wyrm",
+        "With Tired Hands We Toil",
+        "With the Winds",
+        "Yugiri's Game"
+      ]
+    },
+    {
+      "name": "Amiable Maiden",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Amiable_Maiden",
+      "mentions": 1,
+      "quests": [
+        "A Taste of Honey"
+      ]
+    },
+    {
+      "name": "Ananta Battlemaid",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ananta_Battlemaid",
+      "mentions": 1,
+      "quests": [
+        "Ye Wayward Brothers"
+      ]
+    },
+    {
+      "name": "Angry Coeurl",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Angry_Coeurl",
+      "mentions": 1,
+      "quests": [
+        "Death by a Thousand Rocks"
+      ]
+    },
+    {
+      "name": "Aranami",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Aranami",
+      "mentions": 1,
+      "quests": [
+        "The Last Voyage"
+      ]
+    },
+    {
+      "name": "Arenvald",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Arenvald",
+      "mentions": 1,
+      "quests": [
+        "The Butcher's Blood"
+      ]
+    },
+    {
+      "name": "Armelle",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Armelle",
+      "mentions": 2,
+      "quests": [
+        "Lights Out",
+        "Salvaging the Scene"
+      ]
+    },
+    {
+      "name": "Artoirel",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Artoirel",
+      "mentions": 3,
+      "quests": [
+        "At the End of Our Hope",
+        "Knights Be Not Proud",
+        "Over the Wall"
+      ]
+    },
+    {
+      "name": "Asahi",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Asahi",
+      "mentions": 1,
+      "quests": [
+        "A Guilty Conscience"
+      ]
+    },
+    {
+      "name": "Aymeric",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Aymeric",
+      "mentions": 4,
+      "quests": [
+        "An Allied Decision",
+        "An End to the Song",
+        "For Those We Can Yet Save",
+        "Litany of Peace"
+      ]
+    },
+    {
+      "name": "Baatu",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Baatu",
+      "mentions": 1,
+      "quests": [
+        "The Labors of Magnai"
+      ]
+    },
+    {
+      "name": "Baderon",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Baderon",
+      "mentions": 7,
+      "quests": [
+        "A Mizzenmast Repast",
+        "Call of the Forest",
+        "Close to Home",
+        "Feint and Strike",
+        "It's Probably Pirates",
+        "On to Summerford",
+        "Sky-high"
+      ]
+    },
+    {
+      "name": "Bartholomew",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Bartholomew",
+      "mentions": 2,
+      "quests": [
+        "Call of the Sea"
+      ]
+    },
+    {
+      "name": "Benedict",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Benedict",
+      "mentions": 1,
+      "quests": [
+        "Opportunity Knocks"
+      ]
+    },
+    {
+      "name": "Bertennant",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Bertennant",
+      "mentions": 1,
+      "quests": [
+        "Coming to Gridania"
+      ]
+    },
+    {
+      "name": "Beves",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Beves",
+      "mentions": 1,
+      "quests": [
+        "Future Rust, Future Dust"
+      ]
+    },
+    {
+      "name": "Bloeidin",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Bloeidin",
+      "mentions": 1,
+      "quests": [
+        "Unlikely Allies"
+      ]
+    },
+    {
+      "name": "Bol Wuruq",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Bol_Wuruq",
+      "mentions": 1,
+      "quests": [
+        "A Royal Invitation"
+      ]
+    },
+    {
+      "name": "Brunadier",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Brunadier",
+      "mentions": 1,
+      "quests": [
+        "Ye of Little Faith"
+      ]
+    },
+    {
+      "name": "Buscarron",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Buscarron",
+      "mentions": 6,
+      "quests": [
+        "A Simple Gift",
+        "Druthers House Rules",
+        "Into the Beast's Maw",
+        "Never Forget",
+        "Nouveau Riche",
+        "Sylphish Concerns"
+      ]
+    },
+    {
+      "name": "Cahciua",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cahciua",
+      "mentions": 8,
+      "quests": [
+        "A Journey Never-ending",
+        "An Explorer's Delight",
+        "Embracing Oblivion",
+        "In Search of Discovery",
+        "The Land of Dreams",
+        "The Resilient Son",
+        "The Sanctuary of the Strong",
+        "Unto the Summit"
+      ]
+    },
+    {
+      "name": "Carrilaut",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Carrilaut",
+      "mentions": 1,
+      "quests": [
+        "The Rose and the Unicorn"
+      ]
+    },
+    {
+      "name": "Cassard",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cassard",
+      "mentions": 2,
+      "quests": [
+        "City of the Mord",
+        "Working Off the Meal"
+      ]
+    },
+    {
+      "name": "Ceana",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ceana",
+      "mentions": 4,
+      "quests": [
+        "It's Probably Not Pirates",
+        "Representing the Representative",
+        "The Curious Case of Giggity",
+        "The Reluctant Researcher"
+      ]
+    },
+    {
+      "name": "Chai-Nuzz",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Chai-Nuzz",
+      "mentions": 4,
+      "quests": [
+        "A Breath of Respite",
+        "Extinguishing the Last Light",
+        "Finding Good Help",
+        "Moving Forward"
+      ]
+    },
+    {
+      "name": "Cicidoa",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cicidoa",
+      "mentions": 1,
+      "quests": [
+        "Step Nine"
+      ]
+    },
+    {
+      "name": "Cid",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cid",
+      "mentions": 10,
+      "quests": [
+        "Come-Into-My-Castrum",
+        "Drowning Out the Voices",
+        "Escape from Castrum Centri",
+        "Every Little Thing She Does Is Magitek",
+        "Influencing Inquisitors",
+        "Into the Eye of the Storm",
+        "Lady of the Vortex",
+        "One Good Turn",
+        "Systematic Exploration",
+        "The Best Inventions"
+      ]
+    },
+    {
+      "name": "Cirina",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cirina",
+      "mentions": 5,
+      "quests": [
+        "A Season for War",
+        "A Warrior's Welcome",
+        "An Impossible Dream",
+        "Naadam",
+        "The Heart of Nations"
+      ]
+    },
+    {
+      "name": "Conrad",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Conrad",
+      "mentions": 5,
+      "quests": [
+        "Divide and Conquer",
+        "Rising Fortunes, Rising Spirits",
+        "The Fortunes of War",
+        "The Promise of a New Beginning",
+        "Where Men Go as One"
+      ]
+    },
+    {
+      "name": "Cookingway",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cookingway",
+      "mentions": 1,
+      "quests": [
+        "Agriculture Shock"
+      ]
+    },
+    {
+      "name": "Cracked Fist",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cracked_Fist",
+      "mentions": 3,
+      "quests": [
+        "All upon the Watchtowers",
+        "Hearts on Fire",
+        "The Ladle in the Darkness"
+      ]
+    },
+    {
+      "name": "Crystal Exarch",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Crystal_Exarch",
+      "mentions": 11,
+      "quests": [
+        "A Grand Adventure",
+        "A Sleep Disturbed",
+        "City of the First",
+        "Hope's Confluence",
+        "In Search of Alisaie",
+        "In Search of Alphinaud",
+        "Rich Veins of Hope",
+        "The Crystarium's Resolve",
+        "The Lightwardens",
+        "Travelers of Norvrandt",
+        "Warrior of Darkness"
+      ]
+    },
+    {
+      "name": "Cymet",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Cymet",
+      "mentions": 1,
+      "quests": [
+        "Top of the Tree"
+      ]
+    },
+    {
+      "name": "Dadanen",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Dadanen",
+      "mentions": 1,
+      "quests": [
+        "Supply and Demands"
+      ]
+    },
+    {
+      "name": "Davyd",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Davyd",
+      "mentions": 2,
+      "quests": [
+        "History Repeating",
+        "Sweet Somethings"
+      ]
+    },
+    {
+      "name": "Drest",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Drest",
+      "mentions": 3,
+      "quests": [
+        "Battle Scars",
+        "Not My War",
+        "That Weight"
+      ]
+    },
+    {
+      "name": "Drillemont",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Drillemont",
+      "mentions": 4,
+      "quests": [
+        "Dark Words, Dark Deeds",
+        "First Blood",
+        "The Heretic among Us",
+        "The Path of the Righteous"
+      ]
+    },
+    {
+      "name": "Drunken Stag",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Drunken_Stag",
+      "mentions": 2,
+      "quests": [
+        "Give It to Me Raw",
+        "The Perfect Swarm"
+      ]
+    },
+    {
+      "name": "E-Sumi-Yan",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/E-Sumi-Yan",
+      "mentions": 1,
+      "quests": [
+        "You Have Selected Regicide"
+      ]
+    },
+    {
+      "name": "Eaduuard",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Eaduuard",
+      "mentions": 1,
+      "quests": [
+        "With a Little Elbow Grease"
+      ]
+    },
+    {
+      "name": "Edelstein",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Edelstein",
+      "mentions": 4,
+      "quests": [
+        "An Uninvited Ascian",
+        "On the Counteroffensive",
+        "Rock the Castrum",
+        "Setting the Stage"
+      ]
+    },
+    {
+      "name": "Eirwel",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Eirwel",
+      "mentions": 1,
+      "quests": [
+        "Heroic Dreams"
+      ]
+    },
+    {
+      "name": "Eluned",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Eluned",
+      "mentions": 3,
+      "quests": [
+        "Bringing out the Dead",
+        "Bury Me Not on the Lone Prairie",
+        "The Warden Works in Mysterious Ways"
+      ]
+    },
+    {
+      "name": "Emet-Selch",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Emet-Selch",
+      "mentions": 2,
+      "quests": [
+        "Their Greatest Contribution",
+        "Words without Sound"
+      ]
+    },
+    {
+      "name": "Emmanellain",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Emmanellain",
+      "mentions": 5,
+      "quests": [
+        "A Reward Long in Coming",
+        "For Those We Have Lost",
+        "Once More, a Favor",
+        "Onwards and Upwards",
+        "Tracks in the Snow"
+      ]
+    },
+    {
+      "name": "Erenville",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Erenville",
+      "mentions": 16,
+      "quests": [
+        "A Leaking Workpot",
+        "And the Land Would Tremble",
+        "Blowing Smoke",
+        "Braced for Trouble",
+        "Gone and Forgotten",
+        "Law of the Land",
+        "On Track",
+        "One with Nature",
+        "Pointing the Way",
+        "Saddled Up",
+        "The Feat of Gold",
+        "The Land of Levin",
+        "The Long Road to Xak Tural",
+        "The Promise of Peace",
+        "The Rite of Succession",
+        "The Skyruin"
+      ]
+    },
+    {
+      "name": "Estinien",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Estinien",
+      "mentions": 12,
+      "quests": [
+        "A Cold Reunion",
+        "A Test of Wιll",
+        "Friends for the Road",
+        "Groping in the Dark",
+        "House of Divinities",
+        "Into the Aery",
+        "New Winds, Old Friends",
+        "Purple Flame, Purple Flame",
+        "Righteous Indignation",
+        "Simple Pleasures",
+        "The Song Begins",
+        "Unrest in Ishgard"
+      ]
+    },
+    {
+      "name": "Expedition Leader",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Expedition_Leader",
+      "mentions": 1,
+      "quests": [
+        "From One Heretic to Another"
+      ]
+    },
+    {
+      "name": "Eyaney",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Eyaney",
+      "mentions": 1,
+      "quests": [
+        "In Her Heart"
+      ]
+    },
+    {
+      "name": "Eylgar",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Eylgar",
+      "mentions": 1,
+      "quests": [
+        "Migrant Marauders"
+      ]
+    },
+    {
+      "name": "Eynzahr Slafyrsyn",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Eynzahr_Slafyrsyn",
+      "mentions": 1,
+      "quests": [
+        "Lord of the Whorl"
+      ]
+    },
+    {
+      "name": "F'lhaminn",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/F%27lhaminn",
+      "mentions": 1,
+      "quests": [
+        "All Things in Time"
+      ]
+    },
+    {
+      "name": "Falkbryda",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Falkbryda",
+      "mentions": 3,
+      "quests": [
+        "Fireworks and Fish Don't Mix",
+        "Scouts in Distress",
+        "The Gift of Eternity"
+      ]
+    },
+    {
+      "name": "Flame Officer",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Flame_Officer",
+      "mentions": 1,
+      "quests": [
+        "The Company You Keep (Immortal Flames)"
+      ]
+    },
+    {
+      "name": "Flame Personnel Officer",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Flame_Personnel_Officer",
+      "mentions": 1,
+      "quests": [
+        "For Coin and Country"
+      ]
+    },
+    {
+      "name": "Fourchenault",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Fourchenault",
+      "mentions": 2,
+      "quests": [
+        "Going Underground",
+        "Her Children, One and All"
+      ]
+    },
+    {
+      "name": "Fraeloef",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Fraeloef",
+      "mentions": 1,
+      "quests": [
+        "Relighting the Torch"
+      ]
+    },
+    {
+      "name": "Fufulupa",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Fufulupa",
+      "mentions": 3,
+      "quests": [
+        "Following Footfalls",
+        "Last Letter to Lost Hope",
+        "Secrets and Lies"
+      ]
+    },
+    {
+      "name": "G'raha Tia",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/G%27raha_Tia",
+      "mentions": 16,
+      "quests": [
+        "A Trip to the Moon",
+        "Beyond the Depths of Despair",
+        "Hello, World",
+        "In Search of the Past",
+        "In Serenity and Sorrow",
+        "Once Forged",
+        "Putting Plans into Locomotion",
+        "Return to the Crystarium",
+        "Reviving the Legacy",
+        "The Coming Dawn",
+        "The Flames of War",
+        "The Game Is Afoot",
+        "The Wisdom of Allag",
+        "Two Worlds Entwined",
+        "Vic┨οry ̈ ̈ ̈╳, │̆││ε Lost",
+        "┣┨̈//̈ No┨ΦounΔ•••"
+      ]
+    },
+    {
+      "name": "Galfrid",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Galfrid",
+      "mentions": 5,
+      "quests": [
+        "An Eft for Effort",
+        "Chasing Shadows",
+        "Eggs over Queasy",
+        "Passing Muster",
+        "Spirithold Broken"
+      ]
+    },
+    {
+      "name": "Geode",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Geode",
+      "mentions": 1,
+      "quests": [
+        "Guidance of the Hhetso"
+      ]
+    },
+    {
+      "name": "Ghimthota",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ghimthota",
+      "mentions": 2,
+      "quests": [
+        "Men of the Blue Tattoos",
+        "Victory in Peril"
+      ]
+    },
+    {
+      "name": "Gibrillont",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Gibrillont",
+      "mentions": 3,
+      "quests": [
+        "A Child Apart",
+        "Bloodlines",
+        "Noble Indiscretions"
+      ]
+    },
+    {
+      "name": "Gisilbehrt",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Gisilbehrt",
+      "mentions": 2,
+      "quests": [
+        "Foot in the Door",
+        "Tea for Three"
+      ]
+    },
+    {
+      "name": "Glaumunt",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Glaumunt",
+      "mentions": 3,
+      "quests": [
+        "Acting the Part",
+        "Fool Me Twice",
+        "Getting Even with Garlemald"
+      ]
+    },
+    {
+      "name": "Gosetsu",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Gosetsu",
+      "mentions": 7,
+      "quests": [
+        "A Final Peace",
+        "A Silence in Three Parts",
+        "As the Gods Will",
+        "Life after Doma",
+        "Once More, to the Ruby Sea",
+        "Path of No Return",
+        "The Undying Ones"
+      ]
+    },
+    {
+      "name": "Grenoldt",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Grenoldt",
+      "mentions": 1,
+      "quests": [
+        "The Illuminated Land"
+      ]
+    },
+    {
+      "name": "Griseldis",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Griseldis",
+      "mentions": 1,
+      "quests": [
+        "Hard Country"
+      ]
+    },
+    {
+      "name": "Growingway",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Growingway",
+      "mentions": 2,
+      "quests": [
+        "All's Vale That Endsvale",
+        "Heart of the Matter"
+      ]
+    },
+    {
+      "name": "Gulool Ja",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Gulool_Ja",
+      "mentions": 1,
+      "quests": [
+        "Alexandria Mourns"
+      ]
+    },
+    {
+      "name": "Gundobald",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Gundobald",
+      "mentions": 3,
+      "quests": [
+        "Back to Square One",
+        "Big Trouble in Little Ala Mhigo",
+        "The Bear and the Young'uns' Cares"
+      ]
+    },
+    {
+      "name": "Guolgeim",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Guolgeim",
+      "mentions": 1,
+      "quests": [
+        "Better Late than Sever"
+      ]
+    },
+    {
+      "name": "Gurcant",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Gurcant",
+      "mentions": 2,
+      "quests": [
+        "Further Afield",
+        "Loam Maintenance"
+      ]
+    },
+    {
+      "name": "Guthjon",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Guthjon",
+      "mentions": 2,
+      "quests": [
+        "A Dirty Job",
+        "Have a Heart"
+      ]
+    },
+    {
+      "name": "H'naanza",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/H%27naanza",
+      "mentions": 1,
+      "quests": [
+        "On to the Drydocks"
+      ]
+    },
+    {
+      "name": "Hahasako",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hahasako",
+      "mentions": 1,
+      "quests": [
+        "With the Utmost Care"
+      ]
+    },
+    {
+      "name": "Haldbroda",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Haldbroda",
+      "mentions": 1,
+      "quests": [
+        "Righting the Shipwright"
+      ]
+    },
+    {
+      "name": "Hancock",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hancock",
+      "mentions": 2,
+      "quests": [
+        "By the Grace of Lord Lolorito",
+        "Where the Streets Are Paved with Koban"
+      ]
+    },
+    {
+      "name": "Haurchefant",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Haurchefant",
+      "mentions": 10,
+      "quests": [
+        "Before the Dawn",
+        "Disclosure",
+        "Feats of Strength",
+        "Following the Evidence",
+        "He Who Would Not Be Denied",
+        "In the Eyes of Gods and Men",
+        "Road to Redemption",
+        "The Final Flight of the Enterprise",
+        "The Talk of Coerthas",
+        "When the Cold Sets In"
+      ]
+    },
+    {
+      "name": "Haustefort",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Haustefort",
+      "mentions": 1,
+      "quests": [
+        "Factual Folklore"
+      ]
+    },
+    {
+      "name": "Hedyn",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hedyn",
+      "mentions": 1,
+      "quests": [
+        "Better Late than Never"
+      ]
+    },
+    {
+      "name": "Hermes",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hermes",
+      "mentions": 5,
+      "quests": [
+        "A Sentimental Gift",
+        "Aether to Aether",
+        "Lives Apart",
+        "Ponder, Warrant, Cherish, Welcome",
+        "Verdict and Execution"
+      ]
+    },
+    {
+      "name": "Hien",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hien",
+      "mentions": 20,
+      "quests": [
+        "A Power in Slumber",
+        "A Trial Before the Trial",
+        "Conscripts and Contingencies",
+        "Feel the Burn",
+        "For Love of the Moon",
+        "Fruits of Her Labor",
+        "Glory to the Khagan",
+        "Gone Like the Morning Dew",
+        "In Crimson They Walked",
+        "In the Footsteps of Bardam the Brave",
+        "On the Eve of Destiny",
+        "Parley on the Front Lines",
+        "Rise of a New Sun",
+        "Seiryu's Wall",
+        "Shadows in the Empire",
+        "Stars in the Dark",
+        "Storm on the Horizon",
+        "The Die Is Cast",
+        "The Hour of Reckoning",
+        "The Primary Agreement"
+      ]
+    },
+    {
+      "name": "Higiri",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Higiri",
+      "mentions": 1,
+      "quests": [
+        "In Search of Raubahn"
+      ]
+    },
+    {
+      "name": "Hihibaru",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hihibaru",
+      "mentions": 4,
+      "quests": [
+        "Highbridge Times",
+        "On to Little Ala Mhigo",
+        "Ratting It Out",
+        "Where There Is Smoke"
+      ]
+    },
+    {
+      "name": "Hilda",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hilda",
+      "mentions": 1,
+      "quests": [
+        "A Knight's Calling"
+      ]
+    },
+    {
+      "name": "Hirase",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hirase",
+      "mentions": 1,
+      "quests": [
+        "Alisaie's Stones"
+      ]
+    },
+    {
+      "name": "Hoary Boulder",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hoary_Boulder",
+      "mentions": 1,
+      "quests": [
+        "A Brief Reprieve"
+      ]
+    },
+    {
+      "name": "Honoroit",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Honoroit",
+      "mentions": 1,
+      "quests": [
+        "A Series of Unfortunate Events"
+      ]
+    },
+    {
+      "name": "House Fortemps Knight",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/House_Fortemps_Knight_(NPC)",
+      "mentions": 2,
+      "quests": [
+        "Promises Kept",
+        "The Man Within"
+      ]
+    },
+    {
+      "name": "House Fortemps Manservant",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/House_Fortemps_Manservant",
+      "mentions": 1,
+      "quests": [
+        "The Better Half"
+      ]
+    },
+    {
+      "name": "House Fortemps Steward",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/House_Fortemps_Steward",
+      "mentions": 1,
+      "quests": [
+        "Divine Intervention"
+      ]
+    },
+    {
+      "name": "Hozan",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hozan",
+      "mentions": 3,
+      "quests": [
+        "If Wishes Were Horsebirds",
+        "Keeping the Flame Alive",
+        "Why We Adventure"
+      ]
+    },
+    {
+      "name": "Hremfing",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hremfing",
+      "mentions": 1,
+      "quests": [
+        "Wilred Wants You"
+      ]
+    },
+    {
+      "name": "Hythlodaeus",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Hythlodaeus",
+      "mentions": 6,
+      "quests": [
+        "Caging the Messenger",
+        "Follow, Wander, Stumble, Listen",
+        "Hunger in the Garden",
+        "In Search of Hermes",
+        "Petalouda Hunt",
+        "Travelers at the Crossroads"
+      ]
+    },
+    {
+      "name": "Ilberd",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ilberd",
+      "mentions": 6,
+      "quests": [
+        "Back and Fourth",
+        "Bait and Switch",
+        "Best-laid Schemes",
+        "Chasing Ivy",
+        "Doman Connection",
+        "In Flagrante Delicto"
+      ]
+    },
+    {
+      "name": "Ilcum",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ilcum",
+      "mentions": 1,
+      "quests": [
+        "A Tall Drink of Aqua del Sol"
+      ]
+    },
+    {
+      "name": "Iliud",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Iliud",
+      "mentions": 2,
+      "quests": [
+        "Flowers for One",
+        "He Who Waited Behind"
+      ]
+    },
+    {
+      "name": "Isembard",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Isembard",
+      "mentions": 6,
+      "quests": [
+        "A Proper Burial",
+        "Amalj'aa Wrong Places",
+        "Dressed to Deceive",
+        "For the Children",
+        "Unsolved Mystery",
+        "What Poor People Think"
+      ]
+    },
+    {
+      "name": "Isse",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Isse",
+      "mentions": 1,
+      "quests": [
+        "All the Little Angels"
+      ]
+    },
+    {
+      "name": "Ivaurault",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ivaurault",
+      "mentions": 1,
+      "quests": [
+        "Seeing Eye to Winged Eye"
+      ]
+    },
+    {
+      "name": "Iyaate",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Iyaate",
+      "mentions": 1,
+      "quests": [
+        "A Hot Commodity"
+      ]
+    },
+    {
+      "name": "Jareck",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Jareck",
+      "mentions": 1,
+      "quests": [
+        "At the End of the Trail"
+      ]
+    },
+    {
+      "name": "Jeryk",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Jeryk",
+      "mentions": 2,
+      "quests": [
+        "Down for Maintenance",
+        "The Truth Hurts"
+      ]
+    },
+    {
+      "name": "Jocea",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Jocea",
+      "mentions": 1,
+      "quests": [
+        "Men of Honor"
+      ]
+    },
+    {
+      "name": "Jullus",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Jullus",
+      "mentions": 7,
+      "quests": [
+        "Alea Iacta Est",
+        "Bonds of Trust",
+        "His Park Materials",
+        "No Good Deed",
+        "Personae non Gratae",
+        "The Fallen Empire",
+        "The Last Bastion"
+      ]
+    },
+    {
+      "name": "Kai-Shirr",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Kai-Shirr",
+      "mentions": 1,
+      "quests": [
+        "Nowhere to Turn"
+      ]
+    },
+    {
+      "name": "Kajika",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Kajika",
+      "mentions": 1,
+      "quests": [
+        "The Arrows of Misfortune"
+      ]
+    },
+    {
+      "name": "Kan-E-Senna",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Kan-E-Senna",
+      "mentions": 2,
+      "quests": [
+        "Death Unto Dawn",
+        "The Gridanian Envoy"
+      ]
+    },
+    {
+      "name": "Katliss",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Katliss",
+      "mentions": 1,
+      "quests": [
+        "In His Garden"
+      ]
+    },
+    {
+      "name": "Keitha",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Keitha",
+      "mentions": 3,
+      "quests": [
+        "Feeding Time",
+        "Ruffled Feathers",
+        "You Shall Not Trespass"
+      ]
+    },
+    {
+      "name": "Ketenramm",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ketenramm",
+      "mentions": 1,
+      "quests": [
+        "Road to the Golden City"
+      ]
+    },
+    {
+      "name": "Koana",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Koana",
+      "mentions": 8,
+      "quests": [
+        "A Brother's Duty",
+        "A History of Violence",
+        "Feeding the River",
+        "Lost Promise",
+        "Sibling Rescue",
+        "The Feat of Pots",
+        "The Feat of Repast",
+        "The Warmth of Family"
+      ]
+    },
+    {
+      "name": "Kokkol Dankkol",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Kokkol_Dankkol",
+      "mentions": 1,
+      "quests": [
+        "Bonds of Adamant(ite)"
+      ]
+    },
+    {
+      "name": "Komuxio",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Komuxio",
+      "mentions": 5,
+      "quests": [
+        "Believe in Your Sylph",
+        "Brotherly Love",
+        "Of Sylphs and Spriggans",
+        "Presence of the Enemy",
+        "Spirited Away"
+      ]
+    },
+    {
+      "name": "Krile",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Krile",
+      "mentions": 23,
+      "quests": [
+        "A Bold Decision",
+        "A Capital Idea",
+        "A Glimmer of the Past",
+        "A Saga in Stone",
+        "Alisaie's Quest",
+        "Among the Abandoned",
+        "As the Heavens Burn",
+        "Beyond the Mountains",
+        "Ever Greater, Ever Brighter",
+        "Glorified Ratcatcher",
+        "Hitting the Books",
+        "In Fate's Footsteps",
+        "In the Dark of the Tower",
+        "In the Eye of the Beholder",
+        "Into the Mist",
+        "Leafing through the Past",
+        "Old Enemies, New Threats",
+        "Old Sharlayan, New to You",
+        "Sound the Bell, School's In",
+        "The Taste of Family",
+        "The Way Home",
+        "Through the Thunder",
+        "Toward Trouble"
+      ]
+    },
+    {
+      "name": "Lamberteint",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lamberteint",
+      "mentions": 3,
+      "quests": [
+        "A Promising Prospect",
+        "All Due Precautions",
+        "Sealed with Science"
+      ]
+    },
+    {
+      "name": "Landenel",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Landenel",
+      "mentions": 3,
+      "quests": [
+        "Changing of the Guard",
+        "The Penitent Man",
+        "Trial by Turtle"
+      ]
+    },
+    {
+      "name": "Laniaitte",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Laniaitte",
+      "mentions": 2,
+      "quests": [
+        "An Indispensable Ally",
+        "Meeting the Neighbors"
+      ]
+    },
+    {
+      "name": "Leofric",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Leofric",
+      "mentions": 2,
+      "quests": [
+        "Heir Today, Gone Tomorrow",
+        "Passing the Blade"
+      ]
+    },
+    {
+      "name": "Lewin",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lewin",
+      "mentions": 1,
+      "quests": [
+        "Festive Endeavors"
+      ]
+    },
+    {
+      "name": "Liberation Front Guard",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Liberation_Front_Guard",
+      "mentions": 1,
+      "quests": [
+        "A Glimpse of Madness"
+      ]
+    },
+    {
+      "name": "Licinia",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Licinia",
+      "mentions": 1,
+      "quests": [
+        "How the Mighty Are Fallen"
+      ]
+    },
+    {
+      "name": "Livingway",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Livingway",
+      "mentions": 2,
+      "quests": [
+        "A Taste of the Moon",
+        "Styled a Hero"
+      ]
+    },
+    {
+      "name": "Lonu Vanu",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lonu_Vanu",
+      "mentions": 1,
+      "quests": [
+        "Devourer of Worlds"
+      ]
+    },
+    {
+      "name": "Lothaire",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lothaire",
+      "mentions": 2,
+      "quests": [
+        "A Hearer Is Often Late",
+        "Skeletons in My Deepcroft"
+      ]
+    },
+    {
+      "name": "Lucia",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lucia",
+      "mentions": 10,
+      "quests": [
+        "A Spectacle for the Ages",
+        "Against the Dying of the Light",
+        "An Envoy for Ishgard",
+        "As Goes Light, So Goes Darkness",
+        "Gateway of the Gods",
+        "In Search of the Soleil",
+        "In from the Cold",
+        "Outside Help",
+        "Staunch Conviction",
+        "Strange Bedfellows"
+      ]
+    },
+    {
+      "name": "Ludovoix",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ludovoix",
+      "mentions": 1,
+      "quests": [
+        "The Unending War"
+      ]
+    },
+    {
+      "name": "Lumull",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lumull",
+      "mentions": 3,
+      "quests": [
+        "Around the City",
+        "To Work",
+        "Where We Call Home"
+      ]
+    },
+    {
+      "name": "Luquelot",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Luquelot",
+      "mentions": 2,
+      "quests": [
+        "Dread Is in the Air",
+        "Leia's Legacy"
+      ]
+    },
+    {
+      "name": "Lyna",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lyna",
+      "mentions": 4,
+      "quests": [
+        "Facing the Truth",
+        "Small Favors",
+        "The Oracle of Light",
+        "The Unbroken Thread"
+      ]
+    },
+    {
+      "name": "Lyse",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lyse",
+      "mentions": 19,
+      "quests": [
+        "Above the Churning Waters",
+        "Arenvald's Adventure",
+        "Echoes of an Echo",
+        "Forever and Ever Apart",
+        "It's Probably a Trap",
+        "Lyse Takes the Lead",
+        "Making the Catfish Sing",
+        "Not without Incident",
+        "The Black Wolf's Pups",
+        "The Children of Azim",
+        "The Doma Within",
+        "The Face of War",
+        "The Lady in Red",
+        "The Path Forward",
+        "The Resonant",
+        "Tide Goes in, Imperials Go Out",
+        "Tidings from the East",
+        "Upon the Great Loch's Shore",
+        "Where Courage Endures"
+      ]
+    },
+    {
+      "name": "Lyulf",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Lyulf",
+      "mentions": 1,
+      "quests": [
+        "Farmer of Fortune"
+      ]
+    },
+    {
+      "name": "M'naago",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/M%27naago",
+      "mentions": 4,
+      "quests": [
+        "A Friend of a Friend in Need",
+        "Let Fill Your Hearts with Pride",
+        "Signed, Sealed, to Be Delivered",
+        "Strong and Unified"
+      ]
+    },
+    {
+      "name": "Maerwynn",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Maerwynn",
+      "mentions": 1,
+      "quests": [
+        "Crazy Enough to Work"
+      ]
+    },
+    {
+      "name": "Magnai",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Magnai",
+      "mentions": 1,
+      "quests": [
+        "Sworn Enemies of the Sun"
+      ]
+    },
+    {
+      "name": "Magnus",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Magnus",
+      "mentions": 1,
+      "quests": [
+        "Full Steam Ahead"
+      ]
+    },
+    {
+      "name": "Manager of Suites",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Manager_of_Suites",
+      "mentions": 6,
+      "quests": [
+        "A Party Soon Divided",
+        "An Unwelcome Guest",
+        "In the Name of the Light",
+        "Reassuring the Masses",
+        "Return to Eulmore",
+        "When It Rains"
+      ]
+    },
+    {
+      "name": "Marcechamp",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Marcechamp",
+      "mentions": 1,
+      "quests": [
+        "Worse than Dragons"
+      ]
+    },
+    {
+      "name": "Marcelain",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Marcelain",
+      "mentions": 1,
+      "quests": [
+        "The Steps of Faith"
+      ]
+    },
+    {
+      "name": "Marielle",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Marielle",
+      "mentions": 2,
+      "quests": [
+        "Hope Springs Eternal",
+        "Sense of Urgency"
+      ]
+    },
+    {
+      "name": "Marques",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Marques",
+      "mentions": 2,
+      "quests": [
+        "Eyes on Me",
+        "You Can't Take It with You"
+      ]
+    },
+    {
+      "name": "Matoya",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Matoya",
+      "mentions": 2,
+      "quests": [
+        "An Eye for Aether",
+        "Forbidden Knowledge"
+      ]
+    },
+    {
+      "name": "Matsya",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Matsya",
+      "mentions": 4,
+      "quests": [
+        "A Fisherman's Friend",
+        "The Great Work",
+        "Under His Wing",
+        "When All Hope Seems Lost"
+      ]
+    },
+    {
+      "name": "Maxima",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Maxima",
+      "mentions": 1,
+      "quests": [
+        "Best of the Best"
+      ]
+    },
+    {
+      "name": "Medrod",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Medrod",
+      "mentions": 1,
+      "quests": [
+        "Power of Deduction"
+      ]
+    },
+    {
+      "name": "Meffrid",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Meffrid",
+      "mentions": 9,
+      "quests": [
+        "A Familiar Face Forgotten",
+        "A Life More Ordinary",
+        "Come Highly Recommended",
+        "He Ain't Heavy",
+        "Helping Horn",
+        "Homeward Bound",
+        "Killing Him Softly",
+        "The Color of Angry Qiqirn",
+        "The Prodigal Daughter"
+      ]
+    },
+    {
+      "name": "Merilda",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Merilda",
+      "mentions": 2,
+      "quests": [
+        "Compulsory Catering",
+        "Oh Captain, My Captain"
+      ]
+    },
+    {
+      "name": "Merlwyb",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Merlwyb",
+      "mentions": 3,
+      "quests": [
+        "Into the Heart of the Whorl",
+        "The Great Ship Vylbrand",
+        "The Lominsan Envoy"
+      ]
+    },
+    {
+      "name": "Mihleel",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Mihleel",
+      "mentions": 1,
+      "quests": [
+        "Amidst the Apocalypse"
+      ]
+    },
+    {
+      "name": "Miilal Ja",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Miilal_Ja",
+      "mentions": 1,
+      "quests": [
+        "Blessed Siblings"
+      ]
+    },
+    {
+      "name": "Minfilia",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Minfilia_Warde",
+      "mentions": 38,
+      "quests": [
+        "A Hard Hapalit to Break",
+        "A Hero in the Making",
+        "A Simple Plan",
+        "A Time to Every Purpose",
+        "A Wild Rose by Any Other Name",
+        "Administrative Decision",
+        "An Unexpected Ambition",
+        "Build on the Stone",
+        "Come, but Not Gone",
+        "Full Belly, Happy Heart",
+        "Good Intentions",
+        "Guardian of Eorzea",
+        "Heretical Harassment",
+        "In Memory of Moenbryda",
+        "Laying the Foundation",
+        "Life, Materia and Everything",
+        "Lord of Levin",
+        "Lord of the Inferno",
+        "Mask of Grief",
+        "Meeting with the Resistance",
+        "Moving On",
+        "Operation Archon",
+        "Shadow of Darkness",
+        "Still Waters",
+        "Sylph-management",
+        "Terror at Fallgourd",
+        "The Black Wolf's Ultimatum",
+        "The Gifted",
+        "The Great Divide",
+        "The Instruments of Our Deliverance",
+        "The Price of Principles",
+        "The Reason Roaille",
+        "The Resolute",
+        "The Sea Rises",
+        "Traitor in the Midst",
+        "Volunteer Dragonslayers",
+        "Where We Are Needed",
+        "Wrath of the Titan"
+      ]
+    },
+    {
+      "name": "Moenbryda",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Moenbryda",
+      "mentions": 1,
+      "quests": [
+        "The Road Less Traveled"
+      ]
+    },
+    {
+      "name": "Moglin",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Moglin",
+      "mentions": 1,
+      "quests": [
+        "Moglin's Judgment"
+      ]
+    },
+    {
+      "name": "Momodi",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Momodi",
+      "mentions": 8,
+      "quests": [
+        "A Royal Reception",
+        "Close to Home",
+        "Duty, Honor, Country",
+        "Into a Copper Hell",
+        "Takin' What They're Givin'",
+        "The Parting Glass",
+        "The Scions of the Seventh Dawn",
+        "We Must Rebuild"
+      ]
+    },
+    {
+      "name": "Monranguin",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Monranguin",
+      "mentions": 1,
+      "quests": [
+        "Surveying the Damage"
+      ]
+    },
+    {
+      "name": "Montichaigne",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Montichaigne",
+      "mentions": 1,
+      "quests": [
+        "Restricted Reading"
+      ]
+    },
+    {
+      "name": "Mother Miounne",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Mother_Miounne",
+      "mentions": 7,
+      "quests": [
+        "Call of the Desert",
+        "Close to Home",
+        "Fire in the Gloom",
+        "On to Bentbranch",
+        "Renewing the Covenant",
+        "To Guard a Guardian",
+        "To the Bannock"
+      ]
+    },
+    {
+      "name": "Nahbdeen",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Nahbdeen",
+      "mentions": 1,
+      "quests": [
+        "Desires Untold"
+      ]
+    },
+    {
+      "name": "Nanamo Ul Namo",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Nanamo_Ul_Namo",
+      "mentions": 3,
+      "quests": [
+        "A Sultana's Duty",
+        "A Sultana's Resolve",
+        "Securing the Saltery"
+      ]
+    },
+    {
+      "name": "Nidhana",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Nidhana",
+      "mentions": 2,
+      "quests": [
+        "A Boy's Errand",
+        "Shadowed Footsteps"
+      ]
+    },
+    {
+      "name": "Nivie",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Nivie",
+      "mentions": 1,
+      "quests": [
+        "All By Ourselves"
+      ]
+    },
+    {
+      "name": "Nunuzofu",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Nunuzofu",
+      "mentions": 1,
+      "quests": [
+        "Storms on the Horizon"
+      ]
+    },
+    {
+      "name": "Ojika Tsunjika",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ojika_Tsunjika",
+      "mentions": 2,
+      "quests": [
+        "A New World to Explore",
+        "Unto the Heavens"
+      ]
+    },
+    {
+      "name": "Osha Jaab",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Osha_Jaab",
+      "mentions": 1,
+      "quests": [
+        "Don't Look Down"
+      ]
+    },
+    {
+      "name": "Otis",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Otis",
+      "mentions": 2,
+      "quests": [
+        "At a Crossroads",
+        "Memories of a Knight"
+      ]
+    },
+    {
+      "name": "Owyne",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Owyne",
+      "mentions": 1,
+      "quests": [
+        "A Matter of Tradition"
+      ]
+    },
+    {
+      "name": "Papalymo",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Papalymo",
+      "mentions": 2,
+      "quests": [
+        "Forest Friend",
+        "Honorable Heroes"
+      ]
+    },
+    {
+      "name": "Papashan",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Papashan",
+      "mentions": 2,
+      "quests": [
+        "Nothing to See Here",
+        "Underneath the Sultantree"
+      ]
+    },
+    {
+      "name": "Pauline",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Pauline",
+      "mentions": 2,
+      "quests": [
+        "A Soldier's Breakfast",
+        "Butcher of Greentear"
+      ]
+    },
+    {
+      "name": "Peshekwa",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Peshekwa",
+      "mentions": 1,
+      "quests": [
+        "Dawn of a New Tomorrow"
+      ]
+    },
+    {
+      "name": "Pfrewahl",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Pfrewahl",
+      "mentions": 1,
+      "quests": [
+        "Plowshares to Swords"
+      ]
+    },
+    {
+      "name": "Pierremons",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Pierremons",
+      "mentions": 1,
+      "quests": [
+        "Footprints in the Snow"
+      ]
+    },
+    {
+      "name": "Pipin",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Pipin",
+      "mentions": 3,
+      "quests": [
+        "Bereft of Hearth and Home",
+        "In Crimson It Began",
+        "Stormblood"
+      ]
+    },
+    {
+      "name": "Portelaine",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Portelaine",
+      "mentions": 2,
+      "quests": [
+        "Eyes on the Empire",
+        "Three for Three"
+      ]
+    },
+    {
+      "name": "Radiant Host Soldier",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Radiant_Host_Soldier",
+      "mentions": 1,
+      "quests": [
+        "At World's End"
+      ]
+    },
+    {
+      "name": "Rasho",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Rasho",
+      "mentions": 1,
+      "quests": [
+        "Under the Sea"
+      ]
+    },
+    {
+      "name": "Raubahn",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Raubahn",
+      "mentions": 10,
+      "quests": [
+        "Best Served with Cold Steel",
+        "Liberty or Death",
+        "Promises to Keep",
+        "Raubahn's Invitation",
+        "Return of the Bull",
+        "Rhalgr's Beacon",
+        "The Fires Fade",
+        "The Measure of His Reach",
+        "The Ul'dahn Envoy",
+        "The Ultimate Weapon"
+      ]
+    },
+    {
+      "name": "Raya-O-Senna",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Raya-O-Senna",
+      "mentions": 1,
+      "quests": [
+        "On the Properties of Primals"
+      ]
+    },
+    {
+      "name": "Redwald",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Redwald",
+      "mentions": 2,
+      "quests": [
+        "Reconnaissance Lost",
+        "Work in Progress"
+      ]
+    },
+    {
+      "name": "Resistance Fighter",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Resistance_Fighter",
+      "mentions": 1,
+      "quests": [
+        "A Requiem for Heroes"
+      ]
+    },
+    {
+      "name": "Reyner",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Reyner",
+      "mentions": 1,
+      "quests": [
+        "High Society"
+      ]
+    },
+    {
+      "name": "Riol",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Riol",
+      "mentions": 1,
+      "quests": [
+        "Lord of Crags"
+      ]
+    },
+    {
+      "name": "Roger",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Roger",
+      "mentions": 3,
+      "quests": [
+        "Disorderly Conduct",
+        "Prudence at This Junction",
+        "Until a Quieter Time"
+      ]
+    },
+    {
+      "name": "Rolfe Hawthorne",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Rolfe_Hawthorne",
+      "mentions": 3,
+      "quests": [
+        "First Contact",
+        "First Impressions",
+        "Sylphic Studies"
+      ]
+    },
+    {
+      "name": "Roseline",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Roseline",
+      "mentions": 1,
+      "quests": [
+        "Threat Level Elevated"
+      ]
+    },
+    {
+      "name": "Rothe",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Rothe",
+      "mentions": 1,
+      "quests": [
+        "The First and Foremost"
+      ]
+    },
+    {
+      "name": "Runar",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Runar",
+      "mentions": 3,
+      "quests": [
+        "A Helping Hand",
+        "Lost but Not Forgotten",
+        "Saying Good-bye"
+      ]
+    },
+    {
+      "name": "Ryne",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ryne",
+      "mentions": 7,
+      "quests": [
+        "A Fresh Start",
+        "Appealing to the Masses",
+        "Back to Action",
+        "Fraying Threads",
+        "Hope Upon a Flower",
+        "More than a Hunch",
+        "Reflections in Crystal"
+      ]
+    },
+    {
+      "name": "Ryssfloh",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ryssfloh",
+      "mentions": 1,
+      "quests": [
+        "Coming to Limsa Lominsa"
+      ]
+    },
+    {
+      "name": "Sark Malark",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Sark_Malark",
+      "mentions": 2,
+      "quests": [
+        "Crate Go Kaboom",
+        "Dressed for Conquest"
+      ]
+    },
+    {
+      "name": "Serpent Lieutenant",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Serpent_Lieutenant",
+      "mentions": 3,
+      "quests": [
+        "A Sylphlands Sting",
+        "Levin an Impression",
+        "What Little Gods Are Made Of"
+      ]
+    },
+    {
+      "name": "Serpent Officer",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Serpent_Officer",
+      "mentions": 2,
+      "quests": [
+        "Call of the Sea",
+        "The Company You Keep (Twin Adder)"
+      ]
+    },
+    {
+      "name": "Serpent Personnel Officer",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Serpent_Personnel_Officer",
+      "mentions": 1,
+      "quests": [
+        "Wood's Will Be Done"
+      ]
+    },
+    {
+      "name": "Shale",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Shale",
+      "mentions": 5,
+      "quests": [
+        "A Calculated Evolution",
+        "A Darkness in the Heart",
+        "Descent to the Foundation",
+        "Targeted Tragedy",
+        "The Promise of Tomorrow"
+      ]
+    },
+    {
+      "name": "Shamani Lohmani",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Shamani_Lohmani",
+      "mentions": 4,
+      "quests": [
+        "An Offer You Can Refuse",
+        "Give a Man a Drink",
+        "It Was a Very Good Year",
+        "It Won't Work"
+      ]
+    },
+    {
+      "name": "Slafborn",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Slafborn",
+      "mentions": 7,
+      "quests": [
+        "Answering the Call",
+        "Brave New Companions",
+        "It's Possibly a Primal",
+        "Picking Up the Sledge",
+        "Rock-solid Protection",
+        "Welcome to Morbol Country",
+        "You're Gonna Carry That"
+      ]
+    },
+    {
+      "name": "Slowfix",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Slowfix",
+      "mentions": 3,
+      "quests": [
+        "An Illuminati Incident",
+        "Golems Begone",
+        "Leaving Idyllshire"
+      ]
+    },
+    {
+      "name": "Soroban",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Soroban",
+      "mentions": 4,
+      "quests": [
+        "In Soroban We Trust",
+        "Of Kojin and Kami",
+        "Open Water",
+        "To Bend with the Wind"
+      ]
+    },
+    {
+      "name": "Sphene",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Sphene_(NPC)",
+      "mentions": 13,
+      "quests": [
+        "A Day in the Life",
+        "A Jewel Shattered",
+        "Blades in Waiting",
+        "Her People, Her Family",
+        "In Search of Meaning",
+        "Memories of a Bygone Age",
+        "My Memories and Yours",
+        "On the Cloud",
+        "One of Our Own",
+        "Seekers of Eternity",
+        "Shared Paths",
+        "The Meeting",
+        "The Queen's Tour"
+      ]
+    },
+    {
+      "name": "Staelwyrn",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Staelwyrn",
+      "mentions": 5,
+      "quests": [
+        "Double Dealing",
+        "Dressed to Call",
+        "Just Deserts",
+        "Lurkers in the Grotto",
+        "Washed Up"
+      ]
+    },
+    {
+      "name": "Storm Officer",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Storm_Officer",
+      "mentions": 1,
+      "quests": [
+        "The Company You Keep (Maelstrom)"
+      ]
+    },
+    {
+      "name": "Storm Personnel Officer",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Storm_Personnel_Officer",
+      "mentions": 1,
+      "quests": [
+        "Till Sea Swallows All"
+      ]
+    },
+    {
+      "name": "Swarthy Resistance Fighter",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Swarthy_Resistance_Fighter",
+      "mentions": 1,
+      "quests": [
+        "Token of Faith"
+      ]
+    },
+    {
+      "name": "Swift",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Swift",
+      "mentions": 1,
+      "quests": [
+        "Revolution"
+      ]
+    },
+    {
+      "name": "Szem Djenmai",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Szem_Djenmai",
+      "mentions": 2,
+      "quests": [
+        "A Still Tide",
+        "Logistics of War"
+      ]
+    },
+    {
+      "name": "Tansui",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Tansui",
+      "mentions": 1,
+      "quests": [
+        "Boys with Boats"
+      ]
+    },
+    {
+      "name": "Tassos",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Tassos",
+      "mentions": 1,
+      "quests": [
+        "Gives You Teeth"
+      ]
+    },
+    {
+      "name": "Tataru",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Tataru",
+      "mentions": 18,
+      "quests": [
+        "A Frosty Reception",
+        "A General Summons",
+        "Aetherial Trail",
+        "An Allied Perspective",
+        "Ancient Ways, Timeless Wants",
+        "As It Once Was",
+        "Bountiful Ruins",
+        "Food for the Soul",
+        "Friends Gathered",
+        "How Tataru Got Her Groove Back",
+        "Newfound Adventure",
+        "Shaken Resolve",
+        "Skies Aflame",
+        "Tataru's Surprise",
+        "The Rising Chorus",
+        "The Syrcus Trench",
+        "The Things We Do for Tea",
+        "Tidings from Gyr Abania"
+      ]
+    },
+    {
+      "name": "Teary-eyed Private",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Teary-eyed_Private",
+      "mentions": 1,
+      "quests": [
+        "Scattered Scions"
+      ]
+    },
+    {
+      "name": "Terrified Refugee",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Terrified_Refugee",
+      "mentions": 2,
+      "quests": [
+        "Reap the Whirlwind",
+        "Shock and Awe"
+      ]
+    },
+    {
+      "name": "Tesleen",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Tesleen",
+      "mentions": 4,
+      "quests": [
+        "A Desert Crossing",
+        "A Purchase of Fruit",
+        "Following in Her Footprints",
+        "The Time Left to Us"
+      ]
+    },
+    {
+      "name": "Teteroon",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Teteroon",
+      "mentions": 2,
+      "quests": [
+        "Like Fine Wine",
+        "Microbrewing"
+      ]
+    },
+    {
+      "name": "Thaffe",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Thaffe",
+      "mentions": 1,
+      "quests": [
+        "Rust and Ruin"
+      ]
+    },
+    {
+      "name": "Thancred",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Thancred",
+      "mentions": 21,
+      "quests": [
+        "A Convenient Distraction",
+        "A Final Temptation",
+        "A Grave Presentiment",
+        "A Harey Situation",
+        "Back to Old Tricks",
+        "Choices",
+        "Consequences",
+        "Faded Memories",
+        "For Thavnair Bound",
+        "Free Trade",
+        "Il Mheg, the Faerie Kingdom",
+        "On Low Tide",
+        "Paradise Fallen",
+        "The Best Way Out",
+        "The Feat of Ice",
+        "The Jewel of Thavnair",
+        "The Mother of Exiles",
+        "The Satrap of Radz-at-Han",
+        "The Wheel Turns",
+        "Unto the Truth",
+        "Waiting in the Depths"
+      ]
+    },
+    {
+      "name": "The Watcher",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/The_Watcher_(NPC)",
+      "mentions": 3,
+      "quests": [
+        "Helping Hands",
+        "In Shadow's Wake",
+        "Sea of Sorrow"
+      ]
+    },
+    {
+      "name": "Theodore",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Theodore",
+      "mentions": 1,
+      "quests": [
+        "In the Grim Darkness of the Forest"
+      ]
+    },
+    {
+      "name": "Thierremont",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Thierremont",
+      "mentions": 1,
+      "quests": [
+        "From on High"
+      ]
+    },
+    {
+      "name": "Trachtoum",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Trachtoum",
+      "mentions": 3,
+      "quests": [
+        "Hungry Hungry Goobbues",
+        "Tales from the Tidus Slayer",
+        "The Lominsan Way"
+      ]
+    },
+    {
+      "name": "Tristol",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Tristol",
+      "mentions": 1,
+      "quests": [
+        "Meet the Tholls"
+      ]
+    },
+    {
+      "name": "Tsuranuki",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Tsuranuki",
+      "mentions": 1,
+      "quests": [
+        "Broken Steel, Broken Men"
+      ]
+    },
+    {
+      "name": "U'odh Nunh",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/U%27odh_Nunh",
+      "mentions": 4,
+      "quests": [
+        "The Drake Exception",
+        "The Perfect Prey",
+        "There and Back Again",
+        "When the Worm Turns"
+      ]
+    },
+    {
+      "name": "Unsettled Scholar",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Unsettled_Scholar",
+      "mentions": 1,
+      "quests": [
+        "The Least among Us"
+      ]
+    },
+    {
+      "name": "Urianger",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Urianger",
+      "mentions": 24,
+      "quests": [
+        "A Feast of Lies",
+        "A Little Faith",
+        "A Resounding Roar",
+        "A Visit to the Nu Mou",
+        "A Whale's Tale",
+        "Beneath the Surface",
+        "Courting Cooperation",
+        "Echoes of a Fallen Star",
+        "Going Haam",
+        "Hither and Yarns",
+        "In Good Faith",
+        "Into the Dark",
+        "Like Fear to Flame",
+        "Lunar Rendezvous",
+        "On Burdεned ωings",
+        "Put to the Proof",
+        "Sage Council",
+        "Setting Things Straight",
+        "The Red Side of the Moon",
+        "The View from Above",
+        "To Storm-tossed Seas",
+        "Unto the Morrow",
+        "Where Kn∞wledge Leads",
+        "Wise Guides"
+      ]
+    },
+    {
+      "name": "Ursandel",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ursandel",
+      "mentions": 1,
+      "quests": [
+        "Skeletons in Her Closet"
+      ]
+    },
+    {
+      "name": "Vajra",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Vajra",
+      "mentions": 2,
+      "quests": [
+        "The Lady of Bliss",
+        "The Silence of the Gods"
+      ]
+    },
+    {
+      "name": "Varshahn",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Varshahn",
+      "mentions": 11,
+      "quests": [
+        "A Dragon's Resolve",
+        "Buried Memory",
+        "Currying Flavor",
+        "Down in the Dark",
+        "In Search of Azdaja",
+        "Once More unto the Void",
+        "Return from the Void",
+        "Seeking the Light",
+        "Shadowed Remnants",
+        "Sharing the Wealth",
+        "When One Door Closes..."
+      ]
+    },
+    {
+      "name": "Venat",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Venat",
+      "mentions": 5,
+      "quests": [
+        "A Flower upon Your Return",
+        "A Past, Not Yet Come to Pass",
+        "Thou Must Live, Die, and Know",
+        "Witness to the Spectacle",
+        "Worthy of His Back"
+      ]
+    },
+    {
+      "name": "Veteran Radiant",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Veteran_Radiant",
+      "mentions": 1,
+      "quests": [
+        "Bridging the Rift"
+      ]
+    },
+    {
+      "name": "Vorsaile Heuloix",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Vorsaile_Heuloix",
+      "mentions": 3,
+      "quests": [
+        "Back from the Wood",
+        "Hail to the King, Kupo",
+        "We Come in Peace"
+      ]
+    },
+    {
+      "name": "Vortefaurt",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Vortefaurt",
+      "mentions": 1,
+      "quests": [
+        "Cold Reception"
+      ]
+    },
+    {
+      "name": "Vrtra",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Vrtra",
+      "mentions": 1,
+      "quests": [
+        "Reunited at Last"
+      ]
+    },
+    {
+      "name": "Warin",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Warin",
+      "mentions": 2,
+      "quests": [
+        "Out of House and Home",
+        "Spriggan Cleaning"
+      ]
+    },
+    {
+      "name": "Wawlika",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wawlika",
+      "mentions": 1,
+      "quests": [
+        "All Aboard"
+      ]
+    },
+    {
+      "name": "Wayakkwe",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wayakkwe",
+      "mentions": 1,
+      "quests": [
+        "The Endless Choice"
+      ]
+    },
+    {
+      "name": "Wedge",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wedge",
+      "mentions": 2,
+      "quests": [
+        "Monumental Hopes",
+        "Notorious Biggs"
+      ]
+    },
+    {
+      "name": "Wheiskaet",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wheiskaet",
+      "mentions": 6,
+      "quests": [
+        "A Final Ignominy",
+        "A Modest Proposal",
+        "As You Wish",
+        "Nix That",
+        "The Things We Do for Cheese",
+        "What Do You Mean You Forgot the Wine"
+      ]
+    },
+    {
+      "name": "Wuk Lamat",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wuk_Lamat",
+      "mentions": 36,
+      "quests": [
+        "A City of Stairs",
+        "A Comforting Hand",
+        "A Father First",
+        "A Festive People",
+        "A Knight of Alexandria",
+        "A New Family",
+        "A Premium Deal",
+        "City of Silence",
+        "Crossroads",
+        "Dawntrail",
+        "Drowned Vestiges",
+        "For All Turali",
+        "History's Keepers",
+        "In Pursuit of Sphene",
+        "Into the Traverse",
+        "Little Footfalls",
+        "Mablu's Dream",
+        "Mamook Speaks",
+        "No Time for Tears",
+        "Preservation Their Purpose",
+        "Scales of Blue",
+        "Solution Nine",
+        "The Feat of Reeds",
+        "The Feat of the Brotherhood",
+        "The High Luminary",
+        "The Lifting of Wings",
+        "The Nation of Tuliyollal",
+        "The Protector and the Destroyer",
+        "The Shape of Peace",
+        "The Success of Others",
+        "Those Who Live Forever",
+        "Through the Gate of Gold",
+        "Together as One",
+        "Traders of Happiness",
+        "Village of the Hunt",
+        "Wuk Lamat in the Saddle"
+      ]
+    },
+    {
+      "name": "Wymond",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wymond",
+      "mentions": 1,
+      "quests": [
+        "Coming to Ul'dah"
+      ]
+    },
+    {
+      "name": "Wyrkrhit",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Wyrkrhit",
+      "mentions": 2,
+      "quests": [
+        "Courier for a Day",
+        "Thanks a Million"
+      ]
+    },
+    {
+      "name": "Xamott",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Xamott",
+      "mentions": 1,
+      "quests": [
+        "A-Digging We Will Go"
+      ]
+    },
+    {
+      "name": "Y'shtola",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Y%27shtola",
+      "mentions": 31,
+      "quests": [
+        "A Beeautiful Plan",
+        "A Brother's Grief",
+        "A Day in the Neighborhood",
+        "A Great New Nation",
+        "A Satrap's Duty",
+        "A Terminal Invitation",
+        "A World with Light and Life",
+        "All Good Things",
+        "Alzadaal's Legacy",
+        "An Old Friend",
+        "An Unwanted Proposal",
+        "Bearing With It",
+        "Casing the Castrum",
+        "City of the Ancients",
+        "Deep Designs",
+        "Growing Light",
+        "In the Company of Heroes",
+        "Into the Wood",
+        "Like Master, Like Pupil",
+        "Matoya's Cave",
+        "Nothing Unsaid",
+        "Onward to Sharlayan",
+        "Out of the Wood",
+        "Returning Home",
+        "Stirring up Trouble",
+        "The Call",
+        "The Converging Light",
+        "The Dark Throne",
+        "The Light of Inspiration",
+        "The Will of the Moon",
+        "Void Theory"
+      ]
+    },
+    {
+      "name": "Yda",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Yda",
+      "mentions": 3,
+      "quests": [
+        "Dance Dance Diplomacy",
+        "Fly Free, My Pretty",
+        "True to Form"
+      ]
+    },
+    {
+      "name": "Ysayle",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Ysayle",
+      "mentions": 5,
+      "quests": [
+        "A Gnathic Deity",
+        "Gifts for the Outcasts",
+        "Lord of the Hive",
+        "The Trine Towers",
+        "Where the Chocobos Roam"
+      ]
+    },
+    {
+      "name": "Yugiri",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Yugiri",
+      "mentions": 11,
+      "quests": [
+        "A New Ruby Tithe",
+        "Daughter of the Deep",
+        "Elation and Trepidation",
+        "Here There Be Xaela",
+        "Hope on the Waves",
+        "The Ones We Leave Behind",
+        "The Search for Lord Hien",
+        "The Stubborn Remainder",
+        "The Time between the Seconds",
+        "The Will to Live",
+        "Through the Maelstrom"
+      ]
+    },
+    {
+      "name": "Zanthael",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Zanthael",
+      "mentions": 1,
+      "quests": [
+        "When Yugiri Met the Fraternity"
+      ]
+    },
+    {
+      "name": "Zero",
+      "gender": "female",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Zero",
+      "mentions": 8,
+      "quests": [
+        "A Beacon from Beyond",
+        "Abyssal Dark",
+        "Gods Revel, Lands Tremble",
+        "In Defiance of Fate",
+        "Nowhere to Run",
+        "Paths Barred",
+        "The Wind Rises",
+        "Where Everything Begins"
+      ]
+    },
+    {
+      "name": "Zuzumeda",
+      "gender": "male",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/Zuzumeda",
+      "mentions": 1,
+      "quests": [
+        "Way Down in the Hole"
+      ]
+    }
+  ]
+}

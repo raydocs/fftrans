@@ -71,12 +71,18 @@ function extractBalancedBlock(source, startIndex) {
 }
 
 function extractFunctionBody(source, functionName) {
-  const startIndex = source.indexOf(`function ${functionName}`);
-  if (startIndex === -1) {
+  const functionPattern = new RegExp(`(?:async\\s+)?function\\s+${escapeRegExp(functionName)}\\b`);
+  const match = source.match(functionPattern);
+  if (!match) {
     return '';
   }
 
-  return extractBalancedBlock(source, startIndex);
+  const signatureCloseIndex = source.indexOf(')', match.index);
+  if (signatureCloseIndex === -1) {
+    return '';
+  }
+
+  return extractBalancedBlock(source, signatureCloseIndex);
 }
 
 function extractCssBlock(source, selector) {
@@ -115,6 +121,26 @@ const disclosureControlMap = {
 };
 
 const advancedControlIds = Object.values(disclosureControlMap).flat();
+const elevenLabsGenderRoutingControlIds = [
+  'checkbox-elevenlabs-gender-voice-routing',
+  'select-elevenlabs-female-voice-id',
+  'select-elevenlabs-male-voice-id',
+];
+
+const elevenLabsPreviewControls = [
+  {
+    selectId: 'select-elevenlabs-voice-id',
+    buttonId: 'btn-preview-elevenlabs-voice',
+  },
+  {
+    selectId: 'select-elevenlabs-female-voice-id',
+    buttonId: 'btn-preview-elevenlabs-female-voice',
+  },
+  {
+    selectId: 'select-elevenlabs-male-voice-id',
+    buttonId: 'btn-preview-elevenlabs-male-voice',
+  },
+];
 
 advancedDetails.forEach((detailsId) => {
   const openingTag = getOpeningTagById(html, 'details', detailsId);
@@ -140,6 +166,65 @@ Object.entries(disclosureControlMap).forEach(([detailsId, controlIds]) => {
     );
   });
 });
+
+elevenLabsGenderRoutingControlIds.forEach((controlId) => {
+  assert(hasHtmlId(controlId), `Missing ElevenLabs gender routing control in config.html: ${controlId}`);
+  assert(
+    new RegExp(`\\[\\s*\\[\\s*["']${escapeRegExp(controlId)}["']\\s*,`).test(getOptionListBody),
+    `ElevenLabs gender routing control is not mapped in getOptionList(): ${controlId}`,
+  );
+});
+
+const initializeElevenLabsGenderVoiceSelectsBody = extractFunctionBody(configJs, 'initializeElevenLabsGenderVoiceSelects');
+assert(initializeElevenLabsGenderVoiceSelectsBody, 'Missing initializeElevenLabsGenderVoiceSelects() in src/html/config.js');
+assert(
+  /select-elevenlabs-female-voice-id/.test(initializeElevenLabsGenderVoiceSelectsBody)
+    && /select-elevenlabs-male-voice-id/.test(initializeElevenLabsGenderVoiceSelectsBody),
+  'ElevenLabs gender voice selects must be initialized from the default voice select.',
+);
+
+const loadElevenLabsVoicesBody = extractFunctionBody(configJs, 'loadElevenLabsVoices');
+assert(loadElevenLabsVoicesBody, 'Missing loadElevenLabsVoices() in src/html/config.js');
+assert(
+  /getElevenLabsVoiceSelects\(\)/.test(loadElevenLabsVoicesBody)
+    && /restoreElevenLabsVoiceSelection/.test(loadElevenLabsVoicesBody),
+  'ElevenLabs voice refresh must rebuild and preserve all default/female/male voice selects.',
+);
+
+elevenLabsPreviewControls.forEach(({ selectId, buttonId }) => {
+  assert(hasHtmlId(buttonId), `Missing ElevenLabs preview button in config.html: ${buttonId}`);
+  assert(
+    new RegExp(`selectId:\\s*["']${escapeRegExp(selectId)}["'][\\s\\S]{0,240}buttonId:\\s*["']${escapeRegExp(buttonId)}["']`).test(configJs),
+    `ElevenLabs preview control is not mapped in ELEVENLABS_PREVIEW_CONTROLS: ${buttonId}`,
+  );
+});
+
+const bindElevenLabsPreviewButtonsBody = extractFunctionBody(configJs, 'bindElevenLabsPreviewButtons');
+assert(bindElevenLabsPreviewButtonsBody, 'Missing bindElevenLabsPreviewButtons() in src/html/config.js');
+assert(
+  /ELEVENLABS_PREVIEW_CONTROLS\.forEach/.test(bindElevenLabsPreviewButtonsBody)
+    && /previewElevenLabsVoiceBySelect\(control\)/.test(bindElevenLabsPreviewButtonsBody),
+  'ElevenLabs preview buttons must be bound through the shared preview-control mapping.',
+);
+
+const previewElevenLabsVoiceBySelectBody = extractFunctionBody(configJs, 'previewElevenLabsVoiceBySelect');
+assert(previewElevenLabsVoiceBySelectBody, 'Missing previewElevenLabsVoiceBySelect() in src/html/config.js');
+assert(
+  /document\.getElementById\(control\.selectId\)/.test(previewElevenLabsVoiceBySelectBody)
+    && /const selectedVoice = voiceSelect\.value/.test(previewElevenLabsVoiceBySelectBody)
+    && /IPC_CHANNELS\.PREVIEW_ELEVENLABS_VOICE/.test(previewElevenLabsVoiceBySelectBody)
+    && /voiceId:\s*selectedVoice/.test(previewElevenLabsVoiceBySelectBody),
+  'ElevenLabs preview helper must invoke PREVIEW_ELEVENLABS_VOICE with the selected mapped voice ID.',
+);
+
+const updateElevenLabsActionAvailabilityBody = extractFunctionBody(configJs, 'updateElevenLabsActionAvailability');
+assert(updateElevenLabsActionAvailabilityBody, 'Missing updateElevenLabsActionAvailability() in src/html/config.js');
+assert(
+  /getElevenLabsPreviewButtons\(\)\.forEach/.test(updateElevenLabsActionAvailabilityBody)
+    && /previewButton\.disabled\s*=\s*!authUsable/.test(updateElevenLabsActionAvailabilityBody)
+    && /previewButton\.title\s*=\s*authUsable\s*\?\s*''\s*:\s*unavailableTitle/.test(updateElevenLabsActionAvailabilityBody),
+  'ElevenLabs auth availability must gate all preview buttons consistently.',
+);
 
 const getElementSearchTextBody = extractFunctionBody(configJs, 'getElementSearchText');
 assert(getElementSearchTextBody, 'Missing getElementSearchText() in src/html/config.js');
@@ -195,5 +280,7 @@ if (errors.length > 0) {
 console.log('Settings UI regression contracts verified.');
 console.log(`- Advanced disclosures default closed: ${advancedDetails.length}`);
 console.log(`- Advanced controls present, contained, and mapped: ${advancedControlIds.length}`);
+console.log(`- ElevenLabs gender routing controls present and mapped: ${elevenLabsGenderRoutingControlIds.length}`);
+console.log(`- ElevenLabs preview controls present, shared, and auth-gated: ${elevenLabsPreviewControls.length}`);
 console.log('- Search text includes nearest details summary and activation opens ancestor details.');
 console.log(`- Settings dark/light theme tokens present: ${settingsThemeTokens.length}`);

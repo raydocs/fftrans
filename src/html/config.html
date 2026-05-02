@@ -749,6 +749,37 @@
           </div>
           <div class="setting-item">
             <div class="setting-info">
+              <div class="setting-label">NPC 性别语音路由</div>
+              <div class="setting-description">根据已覆盖的主线 NPC 名称自动切换男声 / 女声；未知角色使用上方默认语音。</div>
+            </div>
+            <div class="setting-control">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" role="switch" id="checkbox-elevenlabs-gender-voice-routing" />
+              </div>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">女性 NPC 语音</div>
+              <div class="setting-description">已覆盖的女性主线 NPC 自动朗读使用此 ElevenLabs 语音。</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select voice-select" id="select-elevenlabs-female-voice-id"></select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-elevenlabs-female-voice">试听</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">男性 NPC 语音</div>
+              <div class="setting-description">已覆盖的男性主线 NPC 自动朗读使用此 ElevenLabs 语音。</div>
+            </div>
+            <div class="setting-control setting-control-group">
+              <select class="form-select voice-select" id="select-elevenlabs-male-voice-id"></select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-elevenlabs-male-voice">试听</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
               <div class="setting-label">模型</div>
               <div class="setting-description">TTS 模型版本</div>
             </div>
