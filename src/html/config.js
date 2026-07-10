@@ -67,6 +67,9 @@ const UI_COPY = {
   checking: ['檢查中...', '检查中...', 'Checking...'],
   importing: ['導入中...', '导入中...', 'Importing...'],
   validating: ['驗證中...', '验证中...', 'Validating...'],
+  comparing: ['測試中…', '测试中…', 'Testing…'],
+  fastest: ['最快', '最快', 'Fastest'],
+  preview: ['試聽', '试听', 'Preview'],
   moreEnginesConfigured: ['已設定 {count} 個', '已配置 {count} 个', '{count} configured'],
   toggleVisibility: ['切換顯示狀態', '切换显示状态', 'Toggle visibility'],
   elevenlabsUnavailableTitle: [
@@ -692,6 +695,143 @@ function updateTranslationEngineSections(options = {}) {
   }
 }
 
+// 各语音引擎（对比测速用）
+const TTS_ENGINES = ['google', 'elevenlabs', 'speechify', 'mimo', 'fish'];
+const TTS_ENGINE_LABELS = {
+  google: 'Google TTS',
+  elevenlabs: 'ElevenLabs',
+  speechify: 'Speechify',
+  mimo: 'MiMo TTS',
+  fish: 'Fish Audio',
+};
+
+function escapeHtml(text = '') {
+  return String(text).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+function createCompareRow(engineLabel) {
+  const row = document.createElement('div');
+  row.className = 'compare-row';
+  row.innerHTML = `
+    <span class="compare-row__engine">${escapeHtml(engineLabel)}</span>
+    <span class="compare-row__status">${getUiText('comparing') || '测试中…'}</span>`;
+  return row;
+}
+
+// 完成后按延迟排序、标记最快
+function finalizeCompareRows(container) {
+  const rows = Array.from(container.querySelectorAll('.compare-row'));
+  rows
+    .filter((r) => Number.isFinite(Number(r.dataset.latency)))
+    .sort((a, b) => Number(a.dataset.latency) - Number(b.dataset.latency))
+    .forEach((r, index) => {
+      container.appendChild(r); // 重新排序
+      r.classList.toggle('compare-row--best', index === 0);
+      const badge = r.querySelector('.compare-row__badge');
+      if (badge) badge.remove();
+      if (index === 0) {
+        const b = document.createElement('span');
+        b.className = 'compare-row__badge';
+        b.textContent = getUiText('fastest') || '最快';
+        r.querySelector('.compare-row__latency')?.after(b);
+      }
+    });
+  // 失败/未配置的行排到最后
+  rows.filter((r) => !Number.isFinite(Number(r.dataset.latency))).forEach((r) => container.appendChild(r));
+}
+
+async function runAiComparison() {
+  const button = document.getElementById('btn-compare-ai');
+  const container = document.getElementById('compare-ai-results');
+  if (!button || !container) return;
+
+  const sampleText = document.getElementById('input-compare-ai-text')?.value.trim() || '';
+  button.disabled = true;
+  const originalLabel = button.innerText;
+  button.innerText = getUiText('comparing') || '测试中…';
+  container.hidden = false;
+  container.innerHTML = '';
+
+  for (const engine of AI_ENGINES) {
+    const row = createCompareRow(engine);
+    container.appendChild(row);
+    try {
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.TEST_AI_TRANSLATION, engine, sampleText);
+      if (result?.success) {
+        row.dataset.latency = String(result.durationMs);
+        row.innerHTML = `
+          <span class="compare-row__engine">${escapeHtml(engine)}</span>
+          <span class="compare-row__latency">${result.durationMs} ms</span>
+          <span class="compare-row__text">${escapeHtml(result.result)}</span>`;
+      } else {
+        row.classList.add('compare-row--error');
+        row.innerHTML = `
+          <span class="compare-row__engine">${escapeHtml(engine)}</span>
+          <span class="compare-row__status">${escapeHtml(result?.message || '失败')}</span>`;
+      }
+    } catch (error) {
+      row.classList.add('compare-row--error');
+      row.innerHTML = `
+        <span class="compare-row__engine">${escapeHtml(engine)}</span>
+        <span class="compare-row__status">${escapeHtml(error.message || String(error))}</span>`;
+    }
+  }
+
+  finalizeCompareRows(container);
+  button.disabled = false;
+  button.innerText = originalLabel;
+}
+
+async function runTtsComparison() {
+  const button = document.getElementById('btn-compare-tts');
+  const container = document.getElementById('compare-tts-results');
+  if (!button || !container) return;
+
+  button.disabled = true;
+  const originalLabel = button.innerText;
+  button.innerText = getUiText('comparing') || '测试中…';
+  container.hidden = false;
+  container.innerHTML = '';
+
+  for (const engine of TTS_ENGINES) {
+    const label = TTS_ENGINE_LABELS[engine] || engine;
+    const row = createCompareRow(label);
+    container.appendChild(row);
+    try {
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.BENCHMARK_TTS, engine, '');
+      if (result?.success) {
+        row.dataset.latency = String(result.durationMs);
+        row.innerHTML = `
+          <span class="compare-row__engine">${escapeHtml(label)}</span>
+          <span class="compare-row__latency">${result.durationMs} ms</span>
+          <span class="compare-row__text"></span>`;
+        const playBtn = document.createElement('button');
+        playBtn.type = 'button';
+        playBtn.className = 'btn btn-secondary btn-sm';
+        playBtn.textContent = getUiText('preview') || '试听';
+        playBtn.onclick = () => { try { new Audio(result.audioUrl).play(); } catch { /* ignore */ } };
+        row.querySelector('.compare-row__text').appendChild(playBtn);
+      } else {
+        row.classList.add('compare-row--error');
+        row.innerHTML = `
+          <span class="compare-row__engine">${escapeHtml(label)}</span>
+          <span class="compare-row__status">${escapeHtml(result?.message || '未配置或失败')}</span>`;
+      }
+    } catch (error) {
+      row.classList.add('compare-row--error');
+      row.innerHTML = `
+        <span class="compare-row__engine">${escapeHtml(label)}</span>
+        <span class="compare-row__status">${escapeHtml(error.message || String(error))}</span>`;
+    }
+  }
+
+  finalizeCompareRows(container);
+  button.disabled = false;
+  button.innerText = originalLabel;
+}
+
 function setDirtyState(nextValue) {
   isDirty = Boolean(nextValue);
   const saveButton = document.getElementById('button-save-config');
@@ -1044,6 +1184,15 @@ function setEvent() {
   document.getElementById('select-engine-alternate').addEventListener('change', () => {
     updateTranslationEngineSections();
   });
+
+  const btnCompareAi = document.getElementById('btn-compare-ai');
+  if (btnCompareAi) {
+    btnCompareAi.addEventListener('click', runAiComparison);
+  }
+  const btnCompareTts = document.getElementById('btn-compare-tts');
+  if (btnCompareTts) {
+    btnCompareTts.addEventListener('click', runTtsComparison);
+  }
 
 }
 

@@ -105,6 +105,7 @@ const IPC_CHANNELS = {
     GET_UI_SELECT: 'get-ui-select',
     GET_AI_LIST: 'get-ai-list',
     TEST_AI_TRANSLATION: 'test-ai-translation',
+    BENCHMARK_TTS: 'benchmark-tts',
     ADD_TASK: 'add-task',
     TRANSLATE_TEXT: 'translate-text',
     TRANSLATE_TEXT_STREAM: 'translate-text-stream',

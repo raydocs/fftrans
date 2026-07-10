@@ -68,7 +68,7 @@ function setTranslateChannel() {
         return engineModule.aiList;
     });
 
-    ipcMain.handle(IPC_CHANNELS.TEST_AI_TRANSLATION, async (event, engine) => {
+    ipcMain.handle(IPC_CHANNELS.TEST_AI_TRANSLATION, async (event, engine, sampleTextArg) => {
         const engineName = typeof engine === 'string' ? engine.trim() : '';
         if (!engineName || !engineModule.aiList.includes(engineName)) {
             return { success: false, message: 'Invalid AI engine' };
@@ -121,7 +121,9 @@ function setTranslateChannel() {
             to,
         };
 
-        const sampleText = 'hi';
+        const sampleText = (typeof sampleTextArg === 'string' && sampleTextArg.trim())
+            ? sampleTextArg.trim()
+            : 'The adventurer arrived at the ancient ruins as dusk fell.';
         const startTime = Date.now();
         const configTimeout = parseInt(config.translation?.timeout, 10);
         const timeoutMs = Math.max(30000, Number.isNaN(configTimeout) ? 30000 : configTimeout * 1000);
@@ -138,6 +140,11 @@ function setTranslateChannel() {
                 return { success: false, message: 'Empty response from translation' };
             }
 
+            // 引擎失败时可能把错误文本当译文返回，识别后判为失败，避免误标为最快
+            if (/^(assistant\s+)?error[:：]|translation failed/i.test(result.trim())) {
+                return { success: false, message: result.trim() };
+            }
+
             return {
                 success: true,
                 engine: engineName,
@@ -146,6 +153,40 @@ function setTranslateChannel() {
             };
         } catch (error) {
             return { success: false, message: error.message || String(error) };
+        }
+    });
+
+    // TTS latency benchmark — time a single synthesis for one engine
+    ipcMain.handle(IPC_CHANNELS.BENCHMARK_TTS, async (event, engine, sampleTextArg) => {
+        const engineName = typeof engine === 'string' ? engine.trim().toLowerCase() : '';
+        if (!engineName) {
+            return { success: false, engine, message: 'Invalid TTS engine' };
+        }
+
+        const config = configModule.getConfig();
+        const from = config.translation?.to === 'English' ? 'English' : 'Japanese';
+        const sampleText = (typeof sampleTextArg === 'string' && sampleTextArg.trim())
+            ? sampleTextArg.trim()
+            : 'こんにちは、これは音声テストです。';
+
+        const startTime = Date.now();
+        try {
+            const result = await withTimeout(
+                ttsService.getAudioUrlForEngine(engineName, sampleText, from),
+                30000,
+                'TTS benchmark'
+            );
+            const durationMs = Date.now() - startTime;
+            // getAudioUrlForEngine 可能返回单个 url 或 url 数组
+            const audioUrl = Array.isArray(result) ? result[0] : result;
+
+            if (!audioUrl) {
+                return { success: false, engine: engineName, message: '未返回音频' };
+            }
+
+            return { success: true, engine: engineName, durationMs, audioUrl };
+        } catch (error) {
+            return { success: false, engine: engineName, message: error?.message || String(error) };
         }
     });
 

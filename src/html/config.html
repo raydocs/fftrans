@@ -1434,6 +1434,51 @@
       <!-- system page -->
       <div id="div-system" class="config-page" hidden role="tabpanel" aria-labelledby="tab-system">
 
+        <!-- 模型对比：实时测速 / 质量对比 -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg class="settings-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span id="section-model-compare">模型对比</span>
+          </div>
+
+          <!-- AI 翻译质量对比 -->
+          <div class="settings-body">
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-compare-ai">AI 翻译对比</div>
+                <div class="setting-description" id="desc-compare-ai">同一句话跑遍已配置的 AI 引擎，对比译文质量与延迟</div>
+              </div>
+              <div class="setting-control">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-compare-ai">开始对比</button>
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-control" style="width:100%">
+                <input type="text" class="form-control" id="input-compare-ai-text" placeholder="测试文本（留空用默认句子）" />
+              </div>
+            </div>
+            <div id="compare-ai-results" class="compare-results" hidden></div>
+          </div>
+
+          <!-- 语音延迟对比 -->
+          <div class="settings-body">
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-label" id="label-compare-tts">语音延迟对比</div>
+                <div class="setting-description" id="desc-compare-tts">测试各语音引擎合成同一句话的延迟，可试听</div>
+              </div>
+              <div class="setting-control">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-compare-tts">开始测速</button>
+              </div>
+            </div>
+            <div id="compare-tts-results" class="compare-results" hidden></div>
+          </div>
+        </div>
+
         <!-- 截图 OCR (Google Vision) -->
         <div class="settings-section">
           <div class="settings-section-header">
