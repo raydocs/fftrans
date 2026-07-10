@@ -1010,7 +1010,7 @@ function setButton() {
     tab.onkeydown = (event) => {
       const tabs = Array.from(document.querySelectorAll('.tab-item'));
       const currentIndex = tabs.indexOf(tab);
-      let nextIndex = currentIndex;
+      let nextIndex;
 
       switch (event.key) {
         case 'ArrowRight':

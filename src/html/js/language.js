@@ -73,7 +73,7 @@ function setText(appLanguage) {
 
 // get text index
 function getTextIndex(appLanguage) {
-  let index = 0;
+  let index;
 
   switch (appLanguage) {
     case 'app-zht':
