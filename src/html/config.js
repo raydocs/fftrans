@@ -1347,6 +1347,103 @@ function setButton() {
     await loadMiMoVoices();
   };
 
+  // Fish Audio: Test configuration
+  document.getElementById('btn-test-fish').onclick = async () => {
+    const button = document.getElementById('btn-test-fish');
+    const originalText = button.innerText;
+
+    button.disabled = true;
+    button.innerText = getUiText('testing');
+
+    try {
+      const fishConfig = collectFishFormConfig();
+      const validationMessage = validateFishFormConfig(fishConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
+        return;
+      }
+
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.TEST_FISH_CONFIG, fishConfig);
+      if (result.success && result.data) {
+        const meta = result.data.meta || {};
+        alert(`✅ 测试成功！\n\n模型: ${meta.model || 's2.1-pro-free'}\n克隆语音: ${meta.referenceId || '默认'}\n格式: ${meta.responseFormat || 'mp3'}\n\n本次测试使用当前表单值，若需正式保存请点击"保存设置"。`);
+      } else {
+        alert(formatTtsErrorAlert(result, '❌ 测试失败'));
+      }
+    } catch (error) {
+      alert(`❌ 测试出错\n\n${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.innerText = originalText;
+    };
+  };
+
+  // Fish Audio: Preview voice
+  document.getElementById('btn-preview-fish-voice').onclick = async () => {
+    const button = document.getElementById('btn-preview-fish-voice');
+    const originalText = button.innerText;
+    let playbackStarted = false;
+
+    try {
+      const previewConfig = collectFishFormConfig();
+      const validationMessage = validateFishFormConfig(previewConfig);
+      if (validationMessage) {
+        alert(`❌ 配置无效\n\n${validationMessage}`);
+        return;
+      }
+
+      button.disabled = true;
+      button.innerText = `🎧 ${getUiText('generating')}`;
+
+      const previewText = 'Welcome to Final Fantasy XIV! This is a Fish Audio preview. I hope you enjoy this voice!';
+      const result = await ipcRenderer.invoke(IPC_CHANNELS.PREVIEW_FISH_VOICE, {
+        text: previewText,
+        config: previewConfig
+      });
+
+      if (result.success && result.data?.audioUrl) {
+        const audio = new Audio(result.data.audioUrl);
+        playbackStarted = true;
+        button.innerText = `🎧 ${getUiText('playing')}`;
+        audio.play();
+
+        audio.onended = () => {
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+
+        audio.onerror = () => {
+          alert('❌ 音频播放失败');
+          button.disabled = false;
+          button.innerText = originalText;
+        };
+      } else {
+        alert(formatTtsErrorAlert(result, '❌ 语音生成失败'));
+      }
+    } catch (error) {
+      alert(`❌ 试听出错\n\n${error.message}`);
+    } finally {
+      if (!playbackStarted) {
+        button.disabled = false;
+        button.innerText = originalText;
+      }
+    }
+  };
+
+  // Fish Audio: Voice select change handler
+  document.getElementById('select-fish-voice-option').onchange = () => {
+    syncFishVoiceFromSelect();
+  };
+
+  document.getElementById('input-fish-voice-custom').oninput = () => {
+    document.getElementById('input-fish-voice').value = document.getElementById('input-fish-voice-custom').value.trim();
+  };
+
+  // Fish Audio: Refresh voices
+  document.getElementById('btn-refresh-fish-voices').onclick = async () => {
+    await loadFishVoices();
+  };
+
   // ElevenLabs: Begin browser pairing
   document.getElementById('btn-elevenlabs-begin-pairing').onclick = async () => {
     const button = document.getElementById('btn-elevenlabs-begin-pairing');
@@ -1667,6 +1764,31 @@ function validateSpeechifyFormConfig(config = {}) {
 
   if (!['mp3', 'ogg', 'wav'].includes(config.audioFormat)) {
     return 'Speechify 音频格式无效';
+  }
+
+  return '';
+}
+
+function collectFishFormConfig() {
+  return {
+    apiKey: document.getElementById('input-fish-api-key').value.trim(),
+    model: document.getElementById('select-fish-model').value,
+    referenceId: document.getElementById('input-fish-voice').value.trim(),
+    responseFormat: document.getElementById('select-fish-response-format').value,
+  };
+}
+
+function validateFishFormConfig(config = {}) {
+  if (!config.apiKey) {
+    return '请先填写 Fish Audio API Key';
+  }
+
+  if (!['s2.1-pro-free', 's2.1-pro'].includes(config.model)) {
+    return 'Fish Audio 模型无效';
+  }
+
+  if (!['mp3', 'wav', 'opus'].includes(config.responseFormat)) {
+    return 'Fish Audio 音频格式无效';
   }
 
   return '';
@@ -2165,6 +2287,7 @@ function collectConfigForEngine(engine) {
     case 'speechify': return collectSpeechifyFormConfig();
     case 'elevenlabs': return collectElevenLabsFormConfig();
     case 'mimo': return collectMiMoFormConfig();
+    case 'fish': return collectFishFormConfig();
     case 'google': return {};
     default: return {};
   }
@@ -2175,6 +2298,7 @@ function validateConfigForEngine(engine, config) {
     case 'speechify': return validateSpeechifyFormConfig(config);
     case 'elevenlabs': return validateElevenLabsFormConfig(config);
     case 'mimo': return validateMiMoFormConfig(config);
+    case 'fish': return validateFishFormConfig(config);
     case 'google': return '';
     default: return '';
   }
@@ -2222,10 +2346,53 @@ function syncMiMoVoiceControlsFromStoredValue(storedVoice = '') {
   }
 }
 
+// --- Fish Audio voice select/custom sync ---
+
+function syncFishVoiceFromSelect() {
+  const select = document.getElementById('select-fish-voice-option');
+  const customRow = document.getElementById('fish-custom-voice-row');
+  const hiddenInput = document.getElementById('input-fish-voice');
+  const customInput = document.getElementById('input-fish-voice-custom');
+
+  if (select.value === '__custom__') {
+    customRow.hidden = false;
+    hiddenInput.value = customInput.value.trim();
+  } else {
+    customRow.hidden = true;
+    hiddenInput.value = select.value;
+  }
+}
+
+function syncFishVoiceControlsFromStoredValue(storedVoice = '') {
+  const select = document.getElementById('select-fish-voice-option');
+  const customRow = document.getElementById('fish-custom-voice-row');
+  const customInput = document.getElementById('input-fish-voice-custom');
+
+  // Try to match stored voice to an option
+  let found = false;
+  for (let i = 0; i < select.options.length; i++) {
+    if (select.options[i].value === storedVoice && storedVoice !== '__custom__') {
+      select.value = storedVoice;
+      found = true;
+      break;
+    }
+  }
+
+  if (!found && storedVoice) {
+    // Switch to custom mode
+    select.value = '__custom__';
+    customInput.value = storedVoice;
+    customRow.hidden = false;
+  } else if (found) {
+    customRow.hidden = true;
+  }
+}
+
 // --- Voice list loading ---
 
 let elevenLabsVoiceRequestId = 0;
 let mimoVoiceRequestId = 0;
+let fishVoiceRequestId = 0;
 
 function getElevenLabsVoiceSelects() {
   return ELEVENLABS_VOICE_SELECT_IDS
@@ -2396,6 +2563,76 @@ async function loadMiMoVoices() {
 }
 
 
+async function loadFishVoices() {
+  const requestId = ++fishVoiceRequestId;
+  const select = document.getElementById('select-fish-voice-option');
+  const hiddenInput = document.getElementById('input-fish-voice');
+  const currentValue = hiddenInput.value;
+  const btn = document.getElementById('btn-refresh-fish-voices');
+  const originalText = btn.innerText;
+
+  try {
+    btn.disabled = true;
+    btn.innerText = '...';
+
+    const fishConfig = collectFishFormConfig();
+    if (!fishConfig.apiKey) {
+      return; // No API key, keep fallback
+    }
+
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.GET_TTS_VOICES, {
+      engine: 'fish',
+      config: fishConfig,
+    });
+
+    if (requestId !== fishVoiceRequestId) return; // Stale response
+
+    if (result.success && result.data?.voices?.length > 0) {
+      const voices = result.data.voices;
+
+      // Group voices
+      const groups = {};
+      voices.forEach((v) => {
+        const group = v.group || 'My Voices';
+        if (!groups[group]) groups[group] = [];
+        groups[group].push(v);
+      });
+
+      // Rebuild select (keep default + __custom__ sentinels)
+      select.innerHTML = '';
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = '默认语音';
+      select.appendChild(defaultOption);
+
+      Object.keys(groups).forEach((groupName) => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = groupName;
+        groups[groupName].forEach((v) => {
+          const option = document.createElement('option');
+          option.value = v.value;
+          option.textContent = v.label;
+          optgroup.appendChild(option);
+        });
+        select.appendChild(optgroup);
+      });
+
+      const customOption = document.createElement('option');
+      customOption.value = '__custom__';
+      customOption.textContent = '自定义 Reference ID...';
+      select.appendChild(customOption);
+
+      // Restore selection
+      syncFishVoiceControlsFromStoredValue(currentValue);
+    }
+  } catch (error) {
+    console.warn('[Config] Failed to load Fish Audio voices:', error.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = originalText;
+  }
+}
+
 // read config
 async function readConfig() {
   suppressDirtyTracking = true;
@@ -2409,10 +2646,14 @@ async function readConfig() {
   // Sync MiMo voice controls from stored value
   syncMiMoVoiceControlsFromStoredValue(config?.api?.mimo?.voice || '');
 
+  // Sync Fish Audio voice controls from stored value
+  syncFishVoiceControlsFromStoredValue(config?.api?.fish?.referenceId || '');
+
   await refreshElevenLabsAuthStatus({ loadVoices: true });
 
   // Async voice loading (non-blocking)
   loadMiMoVoices().catch(() => {});
+  loadFishVoices().catch(() => {});
 
   // channel
   readChannel(config, chatCode);
@@ -2923,6 +3164,24 @@ function getOptionList() {
     [
       ['input-mimo-language', 'value'],
       ['api', 'mimo', 'language'],
+    ],
+
+    // Fish Audio TTS
+    [
+      ['input-fish-api-key', 'value'],
+      ['api', 'fish', 'apiKey'],
+    ],
+    [
+      ['select-fish-model', 'value'],
+      ['api', 'fish', 'model'],
+    ],
+    [
+      ['input-fish-voice', 'value'],
+      ['api', 'fish', 'referenceId'],
+    ],
+    [
+      ['select-fish-response-format', 'value'],
+      ['api', 'fish', 'responseFormat'],
     ],
 
     // ElevenLabs TTS

@@ -6,6 +6,7 @@ const googleTTS = require('../translator/google-tts');
 const speechifyTTS = require('../translator/speechify-tts');
 const elevenLabsTTS = require('../translator/elevenlabs-tts');
 const mimoTTS = require('../translator/mimo-tts');
+const fishTTS = require('../translator/fish-tts');
 const msqSpeakerGender = require('./msq-speaker-gender');
 const Logger = require('../../utils/logger');
 
@@ -13,6 +14,7 @@ const RUNTIME_TTS_DISPATCHERS = Object.freeze({
   speechify: (text, from, configOverride = null) => speechifyTTS.getAudioUrl(text, from, configOverride),
   elevenlabs: (text, from, configOverride = null) => elevenLabsTTS.getAudioUrl(text, from, configOverride),
   mimo: (text, from, configOverride = null) => mimoTTS.getAudioUrl(text, from, configOverride),
+  fish: (text, from, configOverride = null) => fishTTS.getAudioUrl(text, from, configOverride),
 });
 
 async function emitBatchChunks(onChunk = null, text = '', urls = []) {

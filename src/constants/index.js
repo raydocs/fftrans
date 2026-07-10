@@ -135,6 +135,8 @@ const IPC_CHANNELS = {
     GET_MIMO_CONFIG: 'get-mimo-config',
     SET_MIMO_CONFIG: 'set-mimo-config',
     PREVIEW_MIMO_VOICE: 'preview-mimo-voice',
+    TEST_FISH_CONFIG: 'test-fish-config',
+    PREVIEW_FISH_VOICE: 'preview-fish-voice',
     GOOGLE_TTS: 'google-tts',
     SPEECHIFY_TTS: 'speechify-tts',
     ELEVENLABS_TTS: 'elevenlabs-tts',

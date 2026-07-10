@@ -123,6 +123,12 @@ const defaultConfig = {
       emotion: '',
       language: '',
     },
+    fish: {
+      apiKey: '',
+      model: 's2.1-pro-free',
+      referenceId: '',
+      responseFormat: 'mp3',
+    },
   },
   auth: {
     elevenlabs: {

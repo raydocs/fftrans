@@ -11,6 +11,7 @@ const ttsRequestQueue = require('../system/tts-request-queue');
 const speechifyTTS = require('../translator/speechify-tts');
 const elevenLabsTTS = require('../translator/elevenlabs-tts');
 const mimoTTS = require('../translator/mimo-tts');
+const fishTTS = require('../translator/fish-tts');
 const elevenLabsAuth = require('../translator/elevenlabs-auth');
 const elevenLabsBrowserAssist = require('../system/elevenlabs-browser-assist');
 const elevenLabsExtensionBridge = require('../system/elevenlabs-extension-bridge');
@@ -117,11 +118,13 @@ const TTS_TEST_DISPATCHERS = {
   speechify: (config) => speechifyTTS.testConfiguration(config),
   elevenlabs: (config) => elevenLabsTTS.testConfiguration(config),
   mimo: (config) => mimoTTS.testConfiguration(config),
+  fish: (config) => fishTTS.testConfiguration(config),
 };
 
 const TTS_VOICE_DISPATCHERS = {
   elevenlabs: (config) => elevenLabsTTS.getVoices(config),
   mimo: (config) => mimoTTS.getVoices(config),
+  fish: (config) => fishTTS.getVoices(config),
 };
 
 function enqueueControl(task) {
@@ -478,6 +481,37 @@ function setTTSChannel() {
     };
     configModule.setConfig(config);
     return { success: true };
+  });
+
+  // Fish Audio: Test configuration
+  ipcMain.handle(IPC_CHANNELS.TEST_FISH_CONFIG, async (event, configOverride = {}) => {
+    try {
+      const result = await enqueueSynthesis(() => fishTTS.testConfiguration(configOverride));
+      return IPCResponse.success(result, 'Fish Audio 配置测试成功');
+    } catch (error) {
+      Logger.error('tts-ipc', 'Failed to test Fish Audio config', error);
+      return IPCResponse.error(error, error.message, buildErrorDetails(error, 'Fish Audio'));
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.PREVIEW_FISH_VOICE, async (event, payload = {}) => {
+    const { text = '', config = {} } = payload;
+
+    try {
+      const audioUrl = await enqueueSynthesis(() => fishTTS.synthesizeSpeech(text, 'English', config));
+      return IPCResponse.success({
+        provider: 'Fish Audio',
+        audioUrl,
+        meta: {
+          model: config.model,
+          referenceId: config.referenceId,
+          responseFormat: config.responseFormat,
+        },
+      });
+    } catch (error) {
+      Logger.error('tts-ipc', 'Failed to preview Fish Audio voice', error);
+      return IPCResponse.error(error, error.message, buildErrorDetails(error, 'Fish Audio'));
+    }
   });
 
   ipcMain.handle(IPC_CHANNELS.PREVIEW_MIMO_VOICE, async (event, payload = {}) => {

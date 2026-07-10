@@ -171,6 +171,9 @@ function getElementTextList() {
         'btn-test-mimo': ['測試', '测试', 'Test'],
         'btn-preview-mimo-voice': ['試聽', '试听', 'Preview'],
         'btn-refresh-mimo-voices': ['刷新', '刷新', 'Refresh'],
+        'btn-test-fish': ['測試', '测试', 'Test'],
+        'btn-preview-fish-voice': ['試聽', '试听', 'Preview'],
+        'btn-refresh-fish-voices': ['刷新', '刷新', 'Refresh'],
         'btn-refresh-elevenlabs-voices': ['刷新', '刷新', 'Refresh'],
         'btn-test-speechify': ['測試', '测试', 'Test'],
         'btn-preview-voice': ['試聽', '试听', 'Preview'],
@@ -339,6 +342,7 @@ function getElementTextList() {
 
         // tts engine options
         'mimo': ['MiMo TTS', 'MiMo TTS', 'MiMo TTS'],
+        'fish': ['Fish Audio', 'Fish Audio', 'Fish Audio'],
 
         // capture
         'tesseract-ocr': ['Tesseract OCR', 'Tesseract OCR', 'Tesseract OCR'],
@@ -516,6 +520,17 @@ function getElementTextList() {
         'desc-mimo-emotion': ['語音情感 (可選)', '语音情感 (可选)', 'Voice emotion (optional)'],
         'label-mimo-language': ['語言', '语言', 'Language'],
         'desc-mimo-language': ['目標語言 (可選)', '目标语言 (可选)', 'Target language (optional)'],
+        'p-fish-tts': ['Fish Audio', 'Fish Audio', 'Fish Audio'],
+        'label-fish-api-key': ['API Key', 'API Key', 'API Key'],
+        'desc-fish-api-key': ['Fish Audio API 密鑰 (fish.audio 控制台獲取)', 'Fish Audio API 密钥 (fish.audio 控制台获取)', 'Fish Audio API key (from fish.audio console)'],
+        'label-fish-model': ['模型', '模型', 'Model'],
+        'desc-fish-model': ['s2.1-pro-free 為 7 月限免模型', 's2.1-pro-free 为 7 月限免模型', 's2.1-pro-free is free during July'],
+        'label-fish-voice': ['克隆語音', '克隆语音', 'Cloned Voice'],
+        'desc-fish-voice': ['選擇你在 fish.audio 克隆的語音模型，或輸入自定義 Reference ID；留空使用默認語音', '选择你在 fish.audio 克隆的语音模型，或输入自定义 Reference ID；留空使用默认语音', 'Select a voice cloned on fish.audio or enter a custom Reference ID; leave empty for default voice'],
+        'label-fish-voice-custom': ['自定義 Reference ID', '自定义 Reference ID', 'Custom Reference ID'],
+        'desc-fish-voice-custom': ['手動輸入 fish.audio 語音模型 ID', '手动输入 fish.audio 语音模型 ID', 'Manually enter fish.audio voice model ID'],
+        'label-fish-response-format': ['音頻格式', '音频格式', 'Audio Format'],
+        'desc-fish-response-format': ['輸出音頻的格式', '输出音频的格式', 'Output audio format'],
         'p-speechify-tts': ['Speechify TTS', 'Speechify TTS', 'Speechify TTS'],
         'p-elevenlabs-tts': ['ElevenLabs Reader', 'ElevenLabs Reader', 'ElevenLabs Reader'],
         // Speech tab section header
