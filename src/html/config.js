@@ -1269,7 +1269,7 @@ function setButton() {
       const result = await ipcRenderer.invoke(IPC_CHANNELS.TEST_MIMO_CONFIG, mimoConfig);
       if (result.success && result.data) {
         const meta = result.data.meta || {};
-        alert(`✅ 测试成功！\n\n模型: ${meta.model || 'MiMo-V2-TTS'}\n语音: ${meta.voice || '默认'}\n格式: ${meta.responseFormat || 'mp3'}\n\n本次测试使用当前表单值，若需正式保存请点击"保存设置"。`);
+        alert(`✅ 测试成功！\n\n模型: ${meta.model || 'mimo-v2.5-tts'}\n音色: ${meta.voice || 'mimo_default'}\n格式: ${meta.responseFormat || 'wav'}\n\n本次测试使用当前表单值，若需正式保存请点击"保存设置"。`);
       } else {
         alert(formatTtsErrorAlert(result, '❌ 测试失败'));
       }
@@ -1797,13 +1797,10 @@ function validateFishFormConfig(config = {}) {
 function collectMiMoFormConfig() {
   return {
     apiKey: document.getElementById('input-mimo-api-key').value.trim(),
-    model: document.getElementById('input-mimo-model').value.trim(),
+    model: document.getElementById('select-mimo-model').value,
     voice: document.getElementById('input-mimo-voice').value.trim(),
     responseFormat: document.getElementById('select-mimo-response-format').value,
-    speed: document.getElementById('input-mimo-speed').value,
-    style: document.getElementById('input-mimo-style').value.trim(),
-    emotion: document.getElementById('input-mimo-emotion').value.trim(),
-    language: document.getElementById('input-mimo-language').value.trim(),
+    styleInstructions: document.getElementById('input-mimo-style').value.trim(),
   };
 }
 
@@ -1813,18 +1810,15 @@ function validateMiMoFormConfig(config = {}) {
   }
 
   if (!config.voice) {
-    return '请先填写 MiMo 语音 ID (Voice)';
+    return '请先填写 MiMo 音色 (Voice)';
   }
 
-  if (!['mp3', 'ogg', 'wav'].includes(config.responseFormat)) {
+  if (!['mimo-v2.5-tts', 'mimo-v2.5-tts-voiceclone'].includes(config.model)) {
+    return 'MiMo 模型无效';
+  }
+
+  if (!['wav', 'pcm16'].includes(config.responseFormat)) {
     return 'MiMo 音频格式无效';
-  }
-
-  if (config.speed) {
-    const speed = Number(config.speed);
-    if (Number.isNaN(speed) || speed < 0.25 || speed > 4) {
-      return 'MiMo 速度必须在 0.25 到 4 之间';
-    }
   }
 
   return '';
@@ -3138,7 +3132,7 @@ function getOptionList() {
       ['api', 'mimo', 'apiKey'],
     ],
     [
-      ['input-mimo-model', 'value'],
+      ['select-mimo-model', 'value'],
       ['api', 'mimo', 'model'],
     ],
     [
@@ -3150,20 +3144,8 @@ function getOptionList() {
       ['api', 'mimo', 'responseFormat'],
     ],
     [
-      ['input-mimo-speed', 'value'],
-      ['api', 'mimo', 'speed'],
-    ],
-    [
       ['input-mimo-style', 'value'],
-      ['api', 'mimo', 'style'],
-    ],
-    [
-      ['input-mimo-emotion', 'value'],
-      ['api', 'mimo', 'emotion'],
-    ],
-    [
-      ['input-mimo-language', 'value'],
-      ['api', 'mimo', 'language'],
+      ['api', 'mimo', 'styleInstructions'],
     ],
 
     // Fish Audio TTS

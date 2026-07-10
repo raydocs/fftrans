@@ -115,13 +115,10 @@ const defaultConfig = {
     },
     mimo: {
       apiKey: '',
-      model: 'MiMo-V2-TTS',
-      voice: '',
-      responseFormat: 'mp3',
-      speed: '1',
-      style: '',
-      emotion: '',
-      language: '',
+      model: 'mimo-v2.5-tts',
+      voice: 'mimo_default',
+      responseFormat: 'wav',
+      styleInstructions: '',
     },
     fish: {
       apiKey: '',

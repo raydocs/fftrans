@@ -961,39 +961,38 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-label" id="label-mimo-model">模型</div>
-              <div class="setting-description" id="desc-mimo-model">TTS 模型名称</div>
+              <div class="setting-description" id="desc-mimo-model">MiMo-V2.5-TTS（限时免费）</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control control-w-200" id="input-mimo-model" placeholder="MiMo-V2-TTS" />
+              <select class="form-select control-w-200" id="select-mimo-model">
+                <option value="mimo-v2.5-tts" selected>mimo-v2.5-tts (预设音色)</option>
+                <option value="mimo-v2.5-tts-voiceclone">mimo-v2.5-tts-voiceclone (声音克隆)</option>
+              </select>
             </div>
           </div>
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-label" id="label-mimo-voice">语音</div>
-              <div class="setting-description" id="desc-mimo-voice">选择 MiMo 语音角色，或输入自定义语音 ID</div>
+              <div class="setting-description" id="desc-mimo-voice">选择 MiMo 预设音色；克隆模式下填入参考音频 data URL</div>
             </div>
             <div class="setting-control setting-control-group">
               <select class="form-select voice-select" id="select-mimo-voice-option">
-                <optgroup label="推荐">
-                  <option value="Chelsie">Chelsie - 女声</option>
-                  <option value="Xiaoyi">Xiaoyi - 小艺</option>
+                <optgroup label="Default">
+                  <option value="mimo_default">mimo_default</option>
                 </optgroup>
                 <optgroup label="中文">
-                  <option value="Zhonger">Zhonger - 中文女声</option>
-                  <option value="Yunjian">Yunjian - 中文男声</option>
-                  <option value="Yunxi">Yunxi - 中文男声</option>
-                  <option value="Yunxia">Yunxia - 中文女声</option>
-                  <option value="Xiaobei">Xiaobei - 中文女声</option>
+                  <option value="冰糖">冰糖 (女声)</option>
+                  <option value="茉莉">茉莉 (女声)</option>
+                  <option value="苏打">苏打 (男声)</option>
+                  <option value="白桦">白桦 (男声)</option>
                 </optgroup>
                 <optgroup label="English">
-                  <option value="alloy">alloy</option>
-                  <option value="echo">echo</option>
-                  <option value="fable">fable</option>
-                  <option value="onyx">onyx</option>
-                  <option value="nova">nova</option>
-                  <option value="shimmer">shimmer</option>
+                  <option value="Mia">Mia (Female)</option>
+                  <option value="Chloe">Chloe (Female)</option>
+                  <option value="Milo">Milo (Male)</option>
+                  <option value="Dean">Dean (Male)</option>
                 </optgroup>
-                <option value="__custom__">自定义语音 ID...</option>
+                <option value="__custom__">自定义 / 克隆参考音频...</option>
               </select>
               <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-mimo-voice">试听</button>
               <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-mimo-voices">刷新</button>
@@ -1001,11 +1000,11 @@
           </div>
           <div class="setting-item" id="mimo-custom-voice-row" hidden>
             <div class="setting-info">
-              <div class="setting-label" id="label-mimo-voice-custom">自定义语音 ID</div>
-              <div class="setting-description" id="desc-mimo-voice-custom">手动输入 MiMo 语音 ID</div>
+              <div class="setting-label" id="label-mimo-voice-custom">自定义音色 / 参考音频</div>
+              <div class="setting-description" id="desc-mimo-voice-custom">预设音色名，或克隆用 data:audio/mpeg;base64,... 参考音频</div>
             </div>
             <div class="setting-control">
-              <input type="text" class="form-control control-w-200" id="input-mimo-voice-custom" placeholder="输入语音 ID" />
+              <input type="text" class="form-control control-w-200" id="input-mimo-voice-custom" placeholder="音色名或 data:audio 参考音频" />
             </div>
           </div>
           <input type="hidden" id="input-mimo-voice" />
@@ -1019,46 +1018,18 @@
                 </div>
                 <div class="setting-control">
                   <select class="form-select control-w-120" id="select-mimo-response-format">
-                    <option value="mp3" selected>MP3</option>
-                    <option value="ogg">OGG</option>
-                    <option value="wav">WAV</option>
+                    <option value="wav" selected>WAV</option>
+                    <option value="pcm16">PCM16</option>
                   </select>
                 </div>
               </div>
               <div class="setting-item">
                 <div class="setting-info">
-                  <div class="setting-label" id="label-mimo-speed">速度</div>
-                  <div class="setting-description" id="desc-mimo-speed">语音播放速度 (0.25 - 4)</div>
-                </div>
-                <div class="setting-control">
-                  <input type="number" class="form-control control-w-100" id="input-mimo-speed" min="0.25" max="4" step="0.05" />
-                </div>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <div class="setting-label" id="label-mimo-style">风格</div>
-                  <div class="setting-description" id="desc-mimo-style">语音风格 (可选)</div>
+                  <div class="setting-label" id="label-mimo-style">风格描述</div>
+                  <div class="setting-description" id="desc-mimo-style">自然语言描述情感/语气/方言，例如"用温柔的语气"（可选）</div>
                 </div>
                 <div class="setting-control">
                   <input type="text" class="form-control control-w-200" id="input-mimo-style" placeholder="可选" />
-                </div>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <div class="setting-label" id="label-mimo-emotion">情感</div>
-                  <div class="setting-description" id="desc-mimo-emotion">语音情感 (可选)</div>
-                </div>
-                <div class="setting-control">
-                  <input type="text" class="form-control control-w-200" id="input-mimo-emotion" placeholder="可选" />
-                </div>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <div class="setting-label" id="label-mimo-language">语言</div>
-                  <div class="setting-description" id="desc-mimo-language">目标语言 (可选)</div>
-                </div>
-                <div class="setting-control">
-                  <input type="text" class="form-control control-w-200" id="input-mimo-language" placeholder="可选" />
                 </div>
               </div>
             </div>
