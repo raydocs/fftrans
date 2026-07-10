@@ -11,8 +11,8 @@ const PromiseQueue = require('../../utils/promise-queue');
 
 // MiMo v2.5 采用 OpenAI 兼容的 chat/completions 接口（旧的 /v1/audio/speech 已随 V2 于 2026-06-30 下线）
 const MIMO_API_URL = 'https://api.xiaomimimo.com/v1/chat/completions';
-// v2.5 仅支持 wav / pcm16
-const SUPPORTED_AUDIO_FORMATS = ['wav', 'pcm16'];
+// v2.5 支持 wav / pcm16；pcm16 为裸流用于拼接，无法直接播放，本应用只用 wav
+const SUPPORTED_AUDIO_FORMATS = ['wav'];
 const SUPPORTED_MODELS = ['mimo-v2.5-tts', 'mimo-v2.5-tts-voiceclone'];
 const DEFAULT_MODEL = 'mimo-v2.5-tts';
 const DEFAULT_VOICE = 'mimo_default';

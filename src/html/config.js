@@ -652,35 +652,42 @@ function updateTtsEngineSections(options = {}) {
 // AI 类引擎（需要密钥 + AI 参数），其余为传统免费引擎
 const AI_ENGINES = ['Gemini', 'GPT', 'Kimi', 'OpenRouter', 'NVIDIA', 'LLM-API'];
 
-// 根据所选主翻译引擎，只显示对应引擎的配置（镜像 updateTtsEngineSections）
+// 根据所选主/备翻译引擎，只显示相关引擎的配置（镜像 updateTtsEngineSections）
 function updateTranslationEngineSections(options = {}) {
   const { scrollIntoView = false } = options;
-  const selectedEngine = document.getElementById('select-engine')?.value || '';
-  const isAiEngine = AI_ENGINES.includes(selectedEngine);
-  let activeSection = null;
+  const primaryEngine = document.getElementById('select-engine')?.value || '';
+  const alternateEngine = document.getElementById('select-engine-alternate')?.value || '';
+  // 主引擎和备用引擎的配置都要能填（备用引擎也可能是需要密钥的 AI 引擎）
+  const activeEngines = [primaryEngine, alternateEngine].filter(Boolean);
+  const hasAiEngine = activeEngines.some((engine) => AI_ENGINES.includes(engine));
+  let firstShownSection = null;
+  let shownConfigCount = 0;
 
   document.querySelectorAll('#translation-engine-configs .engine-config').forEach((section) => {
-    const isVisible = section.dataset.engine === selectedEngine;
+    const isVisible = activeEngines.includes(section.dataset.engine);
     section.hidden = !isVisible;
     if (isVisible) {
-      activeSection = section;
+      shownConfigCount += 1;
+      if (!firstShownSection) {
+        firstShownSection = section;
+      }
     }
   });
 
   const aiParams = document.querySelector('#translation-engine-configs .engine-config-ai');
   if (aiParams) {
-    aiParams.hidden = !isAiEngine;
+    aiParams.hidden = !hasAiEngine;
   }
 
   const noConfig = document.querySelector('#translation-engine-configs .engine-config-none');
   if (noConfig) {
-    // 选了引擎、但不是 AI 引擎、也没有专属配置块 → 提示无需配置
-    noConfig.hidden = !(selectedEngine && !isAiEngine && !activeSection);
+    // 选了引擎、但没有任何需要填写的配置块（纯传统引擎）→ 提示无需配置
+    noConfig.hidden = !(activeEngines.length > 0 && shownConfigCount === 0 && !hasAiEngine);
   }
 
-  if (scrollIntoView && activeSection) {
+  if (scrollIntoView && firstShownSection) {
     requestAnimationFrame(() => {
-      activeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      firstShownSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 }
@@ -749,7 +756,7 @@ function controlHasAccessibleName(control) {
 
 function resolveSettingsControlLabel(control) {
   const directLabelMap = {
-    'textarea-ai-custom-translation-prompt': 'section-ai-prompt',
+    'textarea-ai-custom-translation-prompt': 'section-ai-params',
   };
   const directLabelId = directLabelMap[control.id];
 
@@ -1032,6 +1039,10 @@ function setEvent() {
 
   document.getElementById('select-engine').addEventListener('change', () => {
     updateTranslationEngineSections({ scrollIntoView: true });
+  });
+
+  document.getElementById('select-engine-alternate').addEventListener('change', () => {
+    updateTranslationEngineSections();
   });
 
 }
@@ -1858,7 +1869,7 @@ function validateMiMoFormConfig(config = {}) {
     return 'MiMo 模型无效';
   }
 
-  if (!['wav', 'pcm16'].includes(config.responseFormat)) {
+  if (!['wav'].includes(config.responseFormat)) {
     return 'MiMo 音频格式无效';
   }
 
