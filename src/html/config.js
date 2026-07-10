@@ -655,6 +655,91 @@ function updateTtsEngineSections(options = {}) {
 // AI 类引擎（需要密钥 + AI 参数），其余为传统免费引擎
 const AI_ENGINES = ['Gemini', 'GPT', 'Kimi', 'OpenRouter', 'NVIDIA', 'LLM-API'];
 
+// 评测站：NVIDIA 模型推荐（性价比 top3 + 质量 top3，实测排名）
+const BENCHMARK_RECOMMEND_URL = 'https://ff14-nvidia-benchmark.pages.dev/api/recommendations';
+// 内置兜底选项（评测站不可达时保留）
+const NVIDIA_FALLBACK_OPTIONS = [
+  { value: 'meta/llama-4-maverick-17b-128e-instruct', label: 'Llama 4 Maverick — 速度最快 ~500ms，翻译精准 (推荐)' },
+  { value: 'qwen/qwen3-next-80b-a3b-instruct', label: 'Qwen 3 Next 80B — 中文最自然 ~590ms，游戏术语准确' },
+  { value: 'mistralai/mistral-small-4-119b-2603', label: 'Mistral Small 4 — 稳定可靠 ~650ms，多语言均衡' },
+  { value: 'mistralai/mistral-nemotron', label: 'Mistral Nemotron — 表现稳定 ~1200ms，翻译简洁' },
+];
+
+function shortModelName(modelId = '') {
+  return String(modelId).split('/').pop() || modelId;
+}
+
+function appendModelOptgroup(select, label, models, formatLabel) {
+  if (!Array.isArray(models) || models.length === 0) return;
+  const optgroup = document.createElement('optgroup');
+  optgroup.label = label;
+  for (const model of models) {
+    const option = document.createElement('option');
+    option.value = model.modelId;
+    option.textContent = formatLabel(model);
+    optgroup.appendChild(option);
+  }
+  select.appendChild(optgroup);
+}
+
+// 从评测站拉取 NVIDIA 推荐，重建下拉（保留用户当前选择；失败则回退内置项）
+async function loadNvidiaRecommendations() {
+  const select = document.getElementById('input-nvidia-model');
+  const status = document.getElementById('nvidia-recommend-status');
+  const button = document.getElementById('btn-refresh-nvidia-recommend');
+  if (!select) return;
+
+  const currentValue = select.value;
+  if (button) button.disabled = true;
+  if (status) { status.hidden = false; status.innerText = getUiText('comparing') || '加载中…'; }
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const resp = await fetch(`${BENCHMARK_RECOMMEND_URL}?latencyCap=3000`, { signal: controller.signal });
+    clearTimeout(timer);
+    const data = await resp.json();
+
+    const topValue = Array.isArray(data?.topValue) ? data.topValue : [];
+    const topQuality = Array.isArray(data?.topQuality) ? data.topQuality : [];
+
+    if (topValue.length === 0 && topQuality.length === 0) {
+      if (status) status.innerText = '评测站暂无推荐数据，已显示内置模型';
+      return;
+    }
+
+    // 质量组去掉已在性价比组里的，避免重复
+    const valueIds = new Set(topValue.map((m) => m.modelId));
+    const qualityOnly = topQuality.filter((m) => !valueIds.has(m.modelId));
+
+    select.innerHTML = '';
+    appendModelOptgroup(select, '⭐ 推荐 · 性价比', topValue, (m) =>
+      `${shortModelName(m.modelId)} — 综合 ${m.overallAverage} · ${Math.round(m.averageLatencyMs)}ms`);
+    appendModelOptgroup(select, '🎯 推荐 · 翻译质量', qualityOnly, (m) =>
+      `${shortModelName(m.modelId)} — 准确 ${m.accuracyAverage} · ${Math.round(m.averageLatencyMs)}ms`);
+    appendModelOptgroup(select, '内置备选', NVIDIA_FALLBACK_OPTIONS.filter(
+      (o) => !valueIds.has(o.value) && !topQuality.some((m) => m.modelId === o.value)
+    ), (o) => o.label);
+
+    // 保留用户之前的选择；没有则默认 #1 性价比
+    const allValues = Array.from(select.options).map((o) => o.value);
+    if (currentValue && allValues.includes(currentValue)) {
+      select.value = currentValue;
+    } else if (topValue[0]) {
+      select.value = topValue[0].modelId;
+    }
+
+    const testedAt = topValue[0]?.testedAt || topQuality[0]?.testedAt || '';
+    const testedDate = testedAt ? testedAt.slice(0, 10) : '';
+    if (status) status.innerText = testedDate ? `推荐基于 ${testedDate} 的实测排名` : '已更新推荐';
+  } catch (error) {
+    if (status) status.innerText = '评测站不可达，已显示内置模型';
+    console.warn('[Config] Failed to load NVIDIA recommendations:', error.message);
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 // 根据所选主/备翻译引擎，只显示相关引擎的配置（镜像 updateTtsEngineSections）
 function updateTranslationEngineSections(options = {}) {
   const { scrollIntoView = false } = options;
@@ -1183,6 +1268,11 @@ function setEvent() {
   document.getElementById('select-engine-alternate').addEventListener('change', () => {
     updateTranslationEngineSections();
   });
+
+  const btnRefreshNvidia = document.getElementById('btn-refresh-nvidia-recommend');
+  if (btnRefreshNvidia) {
+    btnRefreshNvidia.addEventListener('click', loadNvidiaRecommendations);
+  }
 
   const btnCompareAi = document.getElementById('btn-compare-ai');
   if (btnCompareAi) {
@@ -2848,6 +2938,8 @@ async function readConfig() {
   // Async voice loading (non-blocking)
   loadMiMoVoices().catch(() => {});
   loadFishVoices().catch(() => {});
+  // NVIDIA 模型推荐（评测站实测排名，非阻塞）
+  loadNvidiaRecommendations().catch(() => {});
 
   // channel
   readChannel(config, chatCode);

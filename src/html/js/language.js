@@ -182,6 +182,7 @@ function getElementTextList() {
         'btn-test-fish': ['測試', '测试', 'Test'],
         'btn-preview-fish-voice': ['試聽', '试听', 'Preview'],
         'btn-refresh-fish-voices': ['刷新', '刷新', 'Refresh'],
+        'btn-refresh-nvidia-recommend': ['刷新推薦', '刷新推荐', 'Refresh'],
         'btn-refresh-elevenlabs-voices': ['刷新', '刷新', 'Refresh'],
         'btn-test-speechify': ['測試', '测试', 'Test'],
         'btn-preview-voice': ['試聽', '试听', 'Preview'],
