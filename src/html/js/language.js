@@ -117,13 +117,14 @@ function getElementTextList() {
         'button-save-default-config': ['預設', '预设', 'Default'],
         
         // 新标签导航栏
-        'tab-appearance': ['外觀', '外观', 'Appearance'],
+        'tab-appearance': ['通用', '通用', 'General'],
         'tab-translation': ['翻譯', '翻译', 'Translation'],
         'tab-speech': ['語音', '语音', 'Speech'],
-        'tab-api': ['API', 'API', 'API'],
-        'tab-ai': ['AI', 'AI', 'AI'],
         'tab-system': ['系統', '系统', 'System'],
         'tab-about': ['關於', '关于', 'About'],
+        'summary-advanced-appearance': ['進階外觀', '高级外观', 'Advanced Appearance'],
+        'summary-advanced-translation': ['進階設定', '高级设置', 'Advanced'],
+        'p-engine-no-config': ['該引擎免費直連，無需填寫 API 密鑰，選好即可使用。', '该引擎免费直连，无需填写 API 密钥，选好即可使用。', 'This engine is free and needs no API key — just select it.'],
         
         // 保存按钮文本
         'btn-save-text': ['儲存設定', '储存设定', 'Save Settings'],

@@ -209,6 +209,7 @@ async function setView() {
 
   updateGoogleVisionTypeVisibility();
   updateTtsEngineSections();
+  updateTranslationEngineSections();
   updateMoreEnginesConfiguredCount();
 
   // change UI text (立即加载，然后移除 loading 类显示内容)
@@ -648,6 +649,42 @@ function updateTtsEngineSections(options = {}) {
   }
 }
 
+// AI 类引擎（需要密钥 + AI 参数），其余为传统免费引擎
+const AI_ENGINES = ['Gemini', 'GPT', 'Kimi', 'OpenRouter', 'NVIDIA', 'LLM-API'];
+
+// 根据所选主翻译引擎，只显示对应引擎的配置（镜像 updateTtsEngineSections）
+function updateTranslationEngineSections(options = {}) {
+  const { scrollIntoView = false } = options;
+  const selectedEngine = document.getElementById('select-engine')?.value || '';
+  const isAiEngine = AI_ENGINES.includes(selectedEngine);
+  let activeSection = null;
+
+  document.querySelectorAll('#translation-engine-configs .engine-config').forEach((section) => {
+    const isVisible = section.dataset.engine === selectedEngine;
+    section.hidden = !isVisible;
+    if (isVisible) {
+      activeSection = section;
+    }
+  });
+
+  const aiParams = document.querySelector('#translation-engine-configs .engine-config-ai');
+  if (aiParams) {
+    aiParams.hidden = !isAiEngine;
+  }
+
+  const noConfig = document.querySelector('#translation-engine-configs .engine-config-none');
+  if (noConfig) {
+    // 选了引擎、但不是 AI 引擎、也没有专属配置块 → 提示无需配置
+    noConfig.hidden = !(selectedEngine && !isAiEngine && !activeSection);
+  }
+
+  if (scrollIntoView && activeSection) {
+    requestAnimationFrame(() => {
+      activeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+}
+
 function setDirtyState(nextValue) {
   isDirty = Boolean(nextValue);
   const saveButton = document.getElementById('button-save-config');
@@ -991,6 +1028,10 @@ function setEvent() {
   document.getElementById('select-tts-engine').addEventListener('change', () => {
     updateTtsEngineSections({ scrollIntoView: true });
     updateElevenLabsActionAvailability();
+  });
+
+  document.getElementById('select-engine').addEventListener('change', () => {
+    updateTranslationEngineSections({ scrollIntoView: true });
   });
 
 }
@@ -2655,6 +2696,7 @@ async function readConfig() {
   updateMoreEnginesConfiguredCount();
   updateGoogleVisionTypeVisibility();
   updateTtsEngineSections();
+  updateTranslationEngineSections();
 
   // about
   document.getElementById('span-version').innerText = version;
