@@ -26,14 +26,16 @@ export async function onRequestGet(context) {
 
   const url = new URL(request.url);
   const gameId = (url.searchParams.get('gameId') || '').trim() || null;
+  const provider = (url.searchParams.get('provider') || '').trim().toLowerCase() || null;
   const latencyCapMs = clampInt(url.searchParams.get('latencyCap'), 500, 60000, DEFAULT_LATENCY_CAP_MS);
   const topN = clampInt(url.searchParams.get('top'), 1, 10, 3);
 
   // 拉取最近的评测历史（跨所有评测轮次，recommend 内部按模型取最新一次）
-  const entries = await listHistoryEntries(env, { gameId, limit: 200 });
+  const entries = await listHistoryEntries(env, { gameId, limit: 500 });
   const recommendations = computeRecommendations(entries, {
     latencyCapMs,
     topN,
+    provider,
     now: new Date().toISOString(),
   });
 

@@ -546,12 +546,15 @@
             <div class="setting-item">
               <div class="setting-info">
                 <div class="setting-label" id="label-openrouter-model">模型</div>
-                <div class="setting-description" id="desc-openrouter-model">如 openai/gpt-5.4-nano</div>
+                <div class="setting-description" id="desc-openrouter-model">可手填任意模型；推荐来自评测站实测排名</div>
               </div>
-              <div class="setting-control">
-                <input type="text" class="form-control control-w-220" id="input-openrouter-model" />
+              <div class="setting-control setting-control-group">
+                <input type="text" class="form-control control-w-220" id="input-openrouter-model" list="openrouter-model-suggestions" />
+                <datalist id="openrouter-model-suggestions"></datalist>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-openrouter-recommend">刷新推荐</button>
               </div>
             </div>
+            <p class="settings-helper-text" id="openrouter-recommend-status" hidden></p>
           </div>
 
           <!-- OpenAI GPT -->

@@ -5,17 +5,37 @@
 //   - Secret: NVIDIA_API_KEY, OPENROUTER_API_KEY, AUTO_BENCHMARK_SECRET
 //   - D1 binding: DB
 //
-// 成本护栏：OpenRouter 只测「免费」模型（pricing.prompt == 0），并对每次新增
-// 模型数量设上限，避免烧钱 / 超时。
+// 成本护栏：OpenRouter 只测「≤ $6/M 且纯文本」的模型，最新优先；每次限量，避免烧钱/超时。
+// 每个模型只测一次（历史里有就跳过），除非在请求体里显式 retest。
 import { classifyModel, findGame } from '../_lib/benchmark.js';
 import { benchmarkModel } from '../_lib/runner.js';
 import { listHistoryEntries, saveHistoryEntry } from '../_lib/history.js';
 
 const DEFAULT_GAME_ID = 'ff14';
-const MAX_NEW_MODELS_PER_RUN = 10; // 每次最多新测的模型数（护栏）
+const MAX_NEW_MODELS_PER_RUN = 8; // 每次最多新测的模型数（护栏，兼顾 Function 超时）
 const LINE_LIMIT = 4; // 每个模型跑几句
+const PRICE_CAP_PER_M = 6; // OpenRouter 价格上限：$6 / 百万 token
 const NVIDIA_BASE = 'https://integrate.api.nvidia.com/v1';
 const OPENROUTER_MODELS_URL = 'https://openrouter.ai/api/v1/models';
+
+// 只保留纯文本模型（排除 image / audio / video / file 多模态）
+function isTextOnlyModel(item) {
+  const arch = item?.architecture || {};
+  const inputs = Array.isArray(arch.input_modalities) ? arch.input_modalities : null;
+  const outputs = Array.isArray(arch.output_modalities) ? arch.output_modalities : null;
+
+  if (inputs) {
+    if (!inputs.every((m) => m === 'text')) return false;
+  }
+  if (outputs) {
+    if (!outputs.includes('text')) return false;
+  }
+  // 退化到 modality 字符串（如 "text->text" / "text+image->text"）
+  if (!inputs && typeof arch.modality === 'string') {
+    if (/image|audio|video|file/i.test(arch.modality)) return false;
+  }
+  return true;
+}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -32,22 +52,31 @@ export async function onRequestPost(context) {
   const gameId = DEFAULT_GAME_ID;
   const game = findGame(gameId);
 
-  // 已测过的模型（跨全部历史）→ 跳过
+  // 请求体可选：{ retest: ["modelId", ...] } 用于 bug 后强制重测指定模型
+  let requestBody = {};
+  try {
+    requestBody = await request.json();
+  } catch {
+    requestBody = {};
+  }
+  const retestSet = new Set(Array.isArray(requestBody?.retest) ? requestBody.retest : []);
+
+  // 已测过的模型（跨全部历史）→ 跳过；但 retest 列表里的强制重测
   const history = await listHistoryEntries(env, { limit: 500 });
   const tested = new Set();
   for (const entry of history) {
     for (const model of entry.models || []) {
-      if (model?.modelId) tested.add(model.modelId);
+      if (model?.modelId && !retestSet.has(model.modelId)) tested.add(model.modelId);
     }
   }
 
-  // 待测候选：NVIDIA(全免费) + OpenRouter(仅免费)
+  // 待测候选：NVIDIA(全免费) + OpenRouter(≤ $6/M、纯文本、最新优先)
   const candidates = [];
   if (env.NVIDIA_API_KEY) {
     candidates.push(...(await fetchNvidiaCandidates(env, tested)));
   }
   if (env.OPENROUTER_API_KEY) {
-    candidates.push(...(await fetchOpenRouterFreeCandidates(env, tested)));
+    candidates.push(...(await fetchOpenRouterCandidates(env, tested)));
   }
 
   const toTest = candidates.slice(0, MAX_NEW_MODELS_PER_RUN);
@@ -117,22 +146,29 @@ async function fetchNvidiaCandidates(env, tested) {
   }
 }
 
-async function fetchOpenRouterFreeCandidates(env, tested) {
+async function fetchOpenRouterCandidates(env, tested) {
   try {
     const response = await fetch(OPENROUTER_MODELS_URL, {
       headers: { Authorization: `Bearer ${env.OPENROUTER_API_KEY}` },
     });
     const payload = await response.json();
     const models = Array.isArray(payload?.data) ? payload.data : [];
+    const capPerToken = PRICE_CAP_PER_M / 1_000_000; // $6/M → 每 token 单价上限
+
     return models
       .filter((item) => {
         const id = item?.id || '';
-        // 只要免费模型：prompt 与 completion 单价都为 0
-        const promptPrice = Number.parseFloat(item?.pricing?.prompt ?? '1');
-        const completionPrice = Number.parseFloat(item?.pricing?.completion ?? '1');
-        const isFree = promptPrice === 0 && completionPrice === 0;
-        return id && isFree && classifyModel(id).benchmarkable && !tested.has(id);
+        if (!id || tested.has(id)) return false;
+        // 纯文本 + 可评测（非 embed/rerank/tts 等）
+        if (!isTextOnlyModel(item) || !classifyModel(id).benchmarkable) return false;
+        // 价格：prompt 与 completion 单价都 ≤ $6/M
+        const promptPrice = Number.parseFloat(item?.pricing?.prompt ?? '999');
+        const completionPrice = Number.parseFloat(item?.pricing?.completion ?? '999');
+        return Number.isFinite(promptPrice) && Number.isFinite(completionPrice)
+          && promptPrice <= capPerToken && completionPrice <= capPerToken;
       })
+      // 最新的很火的模型优先（按 created 时间倒序）
+      .sort((a, b) => (b?.created || 0) - (a?.created || 0))
       .map((item) => ({ provider: 'openrouter', modelId: item.id }));
   } catch {
     return [];

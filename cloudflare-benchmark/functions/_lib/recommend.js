@@ -86,7 +86,12 @@ export function computeRecommendations(historyEntries = [], options = {}) {
   const latencyCapMs = options.latencyCapMs ?? DEFAULT_LATENCY_CAP_MS;
 
   const aggregated = aggregateLatestByModel(historyEntries);
-  const eligible = aggregated.filter((model) => isEligible(model, options));
+  // 可选：只看某个提供方（nvidia / openrouter），用于分别出 NVIDIA / OpenRouter 榜单
+  const providerFilter = options.provider ? String(options.provider).toLowerCase() : null;
+  const scoped = providerFilter
+    ? aggregated.filter((model) => String(model.provider).toLowerCase() === providerFilter)
+    : aggregated;
+  const eligible = scoped.filter((model) => isEligible(model, options));
 
   // 性价比：综合分（准确度45+可用性35+延迟20）；质量：纯准确度
   const topValue = rankTop(eligible, (m) => m.overallAverage, topN);
@@ -100,7 +105,8 @@ export function computeRecommendations(historyEntries = [], options = {}) {
       maxLeakRate: options.maxLeakRate ?? DEFAULT_MAX_LEAK_RATE,
       minUsableRate: options.minUsableRate ?? DEFAULT_MIN_USABLE_RATE,
     },
-    totalEvaluated: aggregated.length,
+    provider: providerFilter,
+    totalEvaluated: scoped.length,
     totalEligible: eligible.length,
     topValue,
     topQuality,

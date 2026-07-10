@@ -740,6 +740,60 @@ async function loadNvidiaRecommendations() {
   }
 }
 
+// OpenRouter 推荐（≤$6/M、纯文本、最新优先）→ 填进 datalist 供自动补全（不限制手填）
+async function loadOpenRouterRecommendations() {
+  const datalist = document.getElementById('openrouter-model-suggestions');
+  const status = document.getElementById('openrouter-recommend-status');
+  const button = document.getElementById('btn-refresh-openrouter-recommend');
+  if (!datalist) return;
+
+  if (button) button.disabled = true;
+  if (status) { status.hidden = false; status.innerText = getUiText('comparing') || '加载中…'; }
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const resp = await fetch(`${BENCHMARK_RECOMMEND_URL}?provider=openrouter&latencyCap=3000`, { signal: controller.signal });
+    clearTimeout(timer);
+    const data = await resp.json();
+
+    const topValue = Array.isArray(data?.topValue) ? data.topValue : [];
+    const topQuality = Array.isArray(data?.topQuality) ? data.topQuality : [];
+    const merged = [];
+    const seen = new Set();
+    for (const model of [...topValue, ...topQuality]) {
+      if (model?.modelId && !seen.has(model.modelId)) {
+        seen.add(model.modelId);
+        merged.push(model);
+      }
+    }
+
+    if (merged.length === 0) {
+      if (status) status.innerText = '评测站暂无 OpenRouter 推荐（等每月评测跑出数据）';
+      return;
+    }
+
+    datalist.innerHTML = '';
+    for (const model of merged) {
+      const option = document.createElement('option');
+      option.value = model.modelId;
+      option.label = `综合 ${model.overallAverage} · 准确 ${model.accuracyAverage} · ${Math.round(model.averageLatencyMs)}ms`;
+      datalist.appendChild(option);
+    }
+
+    const testedAt = merged[0]?.testedAt || '';
+    const testedDate = testedAt ? testedAt.slice(0, 10) : '';
+    if (status) status.innerText = testedDate
+      ? `${merged.length} 个推荐（基于 ${testedDate} 实测），点输入框查看`
+      : `${merged.length} 个推荐，点输入框查看`;
+  } catch (error) {
+    if (status) status.innerText = '评测站不可达，可手动填写模型名';
+    console.warn('[Config] Failed to load OpenRouter recommendations:', error.message);
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 // 根据所选主/备翻译引擎，只显示相关引擎的配置（镜像 updateTtsEngineSections）
 function updateTranslationEngineSections(options = {}) {
   const { scrollIntoView = false } = options;
@@ -1272,6 +1326,11 @@ function setEvent() {
   const btnRefreshNvidia = document.getElementById('btn-refresh-nvidia-recommend');
   if (btnRefreshNvidia) {
     btnRefreshNvidia.addEventListener('click', loadNvidiaRecommendations);
+  }
+
+  const btnRefreshOpenRouter = document.getElementById('btn-refresh-openrouter-recommend');
+  if (btnRefreshOpenRouter) {
+    btnRefreshOpenRouter.addEventListener('click', loadOpenRouterRecommendations);
   }
 
   const btnCompareAi = document.getElementById('btn-compare-ai');
@@ -2938,8 +2997,9 @@ async function readConfig() {
   // Async voice loading (non-blocking)
   loadMiMoVoices().catch(() => {});
   loadFishVoices().catch(() => {});
-  // NVIDIA 模型推荐（评测站实测排名，非阻塞）
+  // 模型推荐（评测站实测排名，非阻塞）
   loadNvidiaRecommendations().catch(() => {});
+  loadOpenRouterRecommendations().catch(() => {});
 
   // channel
   readChannel(config, chatCode);
