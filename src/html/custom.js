@@ -7,8 +7,6 @@ const { IPC_CHANNELS } = require('../constants');
 const arrayParameters = {
   'player-name-table': { type: 'user', name: 'playerName' },
   'custom-target-table': { type: 'user', name: 'customTarget' },
-  'custom-overwrite-table': { type: 'user', name: 'customOverwrite' },
-  'custom-source-table': { type: 'user', name: 'customSource' },
   'temp-name-table': { type: 'user', name: 'tempName' },
   'temp-name-table-valid': { type: 'user', name: 'tempNameValid' },
 };

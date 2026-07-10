@@ -159,7 +159,7 @@ async function translateStream(text, source, target, type, onChunk) {
 }
 
 // get image text
-async function getImageText(imageBase64 = '') {
+async function getImageText(imageBase64 = '', language = 'Japanese') {
   if (imageBase64 === '') {
     return '';
   }
@@ -178,7 +178,7 @@ async function getImageText(imageBase64 = '') {
           content: [
             {
               type: 'text',
-              text: aiFunction.createImagePrompt(),
+              text: aiFunction.createImagePrompt(language),
             },
             {
               type: 'image_url',

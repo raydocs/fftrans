@@ -71,7 +71,44 @@ async function translate(text, source, target, type) {
   return responseText;
 }
 
+// get image text (vision OCR)
+async function getImageText(imageBase64 = '', language = 'Japanese') {
+  if (imageBase64 === '') {
+    return '';
+  }
+
+  try {
+    const config = configModule.getConfig();
+    const apiUrl = 'https://api.moonshot.cn/v1/chat/completions';
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config.api.kimiToken}`,
+    };
+
+    const payload = {
+      model: config.api.kimiModel,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: aiFunction.createImagePrompt(language) },
+            { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` } },
+          ],
+        },
+      ],
+      temperature: parseFloat(config.ai.temperature),
+    };
+
+    const response = await requestModule.post(apiUrl, payload, headers);
+    return extractChoicesContent(response, 'Kimi');
+  } catch (error) {
+    console.warn('[Kimi] getImageText failed:', error.message);
+    return '';
+  }
+}
+
 // module exports
 module.exports = {
   exec,
+  getImageText,
 };

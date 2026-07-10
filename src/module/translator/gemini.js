@@ -265,9 +265,42 @@ async function translateStream(text, source, target, table = [], type, onChunk) 
   });
 }
 
+// get image text (vision OCR)
+async function getImageText(imageBase64 = '', language = 'Japanese') {
+  if (imageBase64 === '') {
+    return '';
+  }
+
+  try {
+    const config = configModule.getConfig();
+    const model = config.api.geminiModel;
+    const apiKey = config.api.geminiApiKey;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    const payload = {
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: aiFunction.createImagePrompt(language) },
+            { inlineData: { mimeType: 'image/png', data: imageBase64 } },
+          ],
+        },
+      ],
+    };
+
+    const response = await requestModule.post(apiUrl, payload, { 'Content-Type': 'application/json' });
+    return extractGeminiContent(response);
+  } catch (error) {
+    console.warn('[Gemini] getImageText failed:', error.message);
+    return '';
+  }
+}
+
 // module exports
 module.exports = {
   exec,
   translate,
   translateStream,
+  getImageText,
 };

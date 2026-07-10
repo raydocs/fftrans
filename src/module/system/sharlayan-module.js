@@ -1,6 +1,12 @@
 'use strict';
 
-// FIND ASMSignature:
+// BYTES: 488941104488492C4C8949244C89491C4584C07412488B4218488905********48890D
+// RECENT BASE ADDRESS: "ffxiv_dx11.exe"+028F8418
+// NAME 118 F8 20 38A8 238 F2
+// TEXT 118 F8 20 38A8 350 0
+// CUTSCENE 118 F8 68 288 0
+
+// FIND ASMSignature (UNUSED):
 // 1. FINDOUT TARGET'S BASE ADDRESS, THEN FIND OUT WHAT ACCESS TO THIS ADDRESS
 // 2. SELECT ONE OF THE INSTRUCTIONS, THEN CLICK 'SHOW DISASSEMBLER'
 // 3. IF BYTE NOT LONG ENOUGH, SELECT OTHER INSTRUCTION
@@ -8,7 +14,7 @@
 
 // CHECK ASMSignature:
 // 1. SCAN OPTION: VALUE TYPE: ARRAY OF BYTE, CHECK HEX, CHECK 'WRITABLE' AND 'EXECUTABLE' TO SQUARE
-// 2. PASTE THE BYTES, THEN CLICK FIRST SCAN
+// 2. PASTE THE BYTES, THEN CLICK FIRST SCAN (BYTES: 488941104488492C4C8949244C89491C4584C07412488B4218488905********48890D)
 // 3. ONLY 1 RESULT = CORRECT BYTES
 // 4. RIGHT CLICK AND SELECT 'DISASSEMBLE THIS MEMORY REGION' TO VIEW THE BASE ADDRESS ("ffxiv_dx11.exe"+XXXXXXX)
 
@@ -17,29 +23,30 @@
 // 2. RESTART THE GAME, AND CHANGE MAP ATLEAST ONE TIME, AND SCAN THE STRING BELOW AGAIN, THEN RIGHT CLICK THE ADDRESS, SELECT 'POINTER SCAN FOR THIS ADDRESS'
 // 3. TEST THE PROBABLY RESULT
 
-// ASMSignature path[0,0]: TARGET'S BASE ADDRESS (VALUE OF ["ffxiv_dx11.exe"+XXXXXXX])
-// DIALOG AND CUTSCENE HAVE SAME BASE ADDRESS
-
 // MAX DIFFERENT OFFSETS PER NODE: 4
 // MAXIUM OFFSET VALUE: 65535
 // MAX LEVEL: 7
 
+// ASMSignature path[0,0]: TARGET'S BASE ADDRESS (VALUE OF ["ffxiv_dx11.exe"+XXXXXXX])
+// DIALOG AND CUTSCENE HAVE SAME BASE ADDRESS
+
 // DIALOG NAME
 // PATH: 20 38A8 ...OTHER
 // NOT ACTION, NOT OBJECT, NOT SKILL
-// REMEMBER ADD 2 TO LAST OFFSET
+// REMEMBER ADD 2 TO THE LAST OFFSET
+// サブクエスト：ヴォイドの旁観者
+// カットシーン3： 分裂した目玉 NEXT 深窓の令嬢 NEXT 粗暴な口調の父親
 
 // DIALOG TEXT
 // PATH: 20 38A8 ...OTHER
 // NOT ACTION, NOT OBJECT, NOT SKILL, NO NEW LINE
-// STEP 100, FIRST ONE
+// サブクエスト：ヴォイドの旁観者
+// カットシーン3： ついたあだ名は、野蛮な女（バルバリシア）
 
 // CUTSCENE
-// PATH: 68 250 0
-
-// CUTSCENE 2
-// TRIAL: 99, 100
-// NO CUTSCENE FLAG
+// PATH: F8 F8 68 ...OTHER
+// メインクエスト：暁月のフィナーレ やがて流れは海へと注ぐ
+// カットシーン3：北洋諸島唯一の都市国家 シャーレアン――
 
 // CUTSCENE DETECTOR
 // IN CUTSCENE: 0
@@ -89,7 +96,7 @@ const dialogHistory = [];
 const textHistory = {};
 
 // pure text
-const regexPureText = /[^0-9a-z０-９ａ-ｚＡ-Ｚぁ-ゖァ-ヺ一-龯]/gi;
+const regexInvalidCharacter = /[^0-9a-z０-９ａ-ｚＡ-Ｚぁ-ゖァ-ヺ一-龯]/gi;
 
 // start
 function start() {
@@ -177,7 +184,8 @@ function start() {
 
             fixText(dialogData);
 
-            if (isNotRepeated(dialogData)) {
+            // check repetition
+            if (isValidData(dialogData)) {
               serverModule.dataProcess(dialogData);
             } else {
               console.log('Repeated text');
@@ -238,8 +246,8 @@ function fixText2(text = '') {
     .replace(/FE/g, ''); // Temporary fix
 }
 
-// check repetition
-function isNotRepeated(dialogData) {
+// is valid data
+function isValidData(dialogData) {
   const code = dialogData.code;
   const text = fixText2(dialogData.text);
 
@@ -247,18 +255,27 @@ function isNotRepeated(dialogData) {
   if (dialogData.type === 'DIALOG') {
     if (text !== dialogHistory.slice(-1)[0]) {
       dialogHistory.push(text);
-      if (dialogHistory.length > 20) dialogHistory.splice(0, 10);
+
+      if (dialogHistory.length > 20) {
+        dialogHistory.splice(0, 10);
+      }
     } else {
       return false;
     }
   }
   // other 003D
   else if (dialogData.code === '003D') {
-    for (let index = 0; index < dialogHistory.length; index++) {
+    let count = 0;
+    for (let index = dialogHistory.length - 1; index >= 0; index--) {
       const dialogText = dialogHistory[index];
 
       if (isSameText(dialogText, text)) {
         return false;
+      }
+
+      count++;
+      if (count >= 10) {
+        break;
       }
     }
   }
@@ -274,11 +291,10 @@ function isNotRepeated(dialogData) {
   return true;
 }
 
-// compare string
+// is same text
 function isSameText(str1 = '', str2 = '') {
-  str1 = str1.replace(regexPureText, '');
-  str2 = str2.replace(regexPureText, '');
-
+  str1 = str1.replace(regexInvalidCharacter, '');
+  str2 = str2.replace(regexInvalidCharacter, '');
   return str1 === str2;
 }
 

@@ -1,7 +1,18 @@
 'use strict';
 
 // all language list
-const allLanguageList = ['Japanese', 'English', 'Traditional-Chinese', 'Simplified-Chinese', 'Korean', 'Russian', 'Italian'];
+const allLanguageList = [
+  'Japanese',
+  'English',
+  'Traditional-Chinese',
+  'Simplified-Chinese',
+  'Korean',
+  'Russian',
+  'Italian',
+  'Portuguese',
+  'Brazilian',
+  'Arabic',
+];
 
 // source list (只支持英文源语言)
 const sourceList = ['English'];
@@ -23,12 +34,6 @@ const uiList = ['Traditional-Chinese', 'Simplified-Chinese', 'English'];
 
 // engine list
 const engineList = [
-  '#Web-Translator',
-  'Youdao',
-  'Baidu',
-  'Caiyun',
-  'Papago',
-  'DeepL',
   '#AI-Translator',
   'Gemini',
   'GPT',
@@ -36,6 +41,12 @@ const engineList = [
   'OpenRouter',
   'NVIDIA',
   'LLM-API',
+  '#Traditional-Translator',
+  'Youdao',
+  'Baidu',
+  'Caiyun',
+  'Papago',
+  'DeepL',
 ];
 
 // change list
@@ -45,7 +56,7 @@ const changeList = ['Youdao', 'Baidu', 'Caiyun', 'Papago', 'DeepL'];
 const aiList = ['Gemini', 'GPT', 'Kimi', 'OpenRouter', 'NVIDIA', 'LLM-API'];
 
 // vision list
-const visionList = ['tesseract-ocr', 'google-vision', 'gpt-vision'];
+const visionList = ['tesseract-ocr', 'google-vision', 'gpt-vision', 'gemini-vision', 'kimi-vision'];
 
 // language enum
 const languageEnum = {
@@ -78,6 +89,9 @@ const llmTable = {
   Korean: 'Korean',
   Russian: 'Russian',
   Italian: 'Italian',
+  Portuguese: 'Portuguese',
+  Brazilian: 'Brazilian Portuguese',
+  Arabic: 'Arabic',
 };
 
 // engine table
@@ -92,6 +106,9 @@ const engineTable = {
     Korean: 'kor',
     Russian: 'ru',
     Italian: 'it',
+    Portuguese: 'pt',
+    Brazilian: 'pot',
+    Arabic: 'ara',
   },
   Caiyun: {
     Auto: 'auto',
@@ -103,6 +120,9 @@ const engineTable = {
     Korean: 'ko',
     Russian: 'ru',
     Italian: 'it',
+    Portuguese: 'pt',
+    Brazilian: 'pt',
+    Arabic: 'ar',
   },
   Youdao: {
     Auto: 'auto',
@@ -114,6 +134,9 @@ const engineTable = {
     Korean: 'ko',
     Russian: 'ru',
     Italian: 'it',
+    Portuguese: 'pt',
+    Brazilian: 'pt',
+    Arabic: 'ar',
   },
   Papago: {
     Auto: 'detect',
@@ -125,6 +148,9 @@ const engineTable = {
     Korean: 'ko',
     Russian: 'ru',
     Italian: 'it',
+    Portuguese: 'pt',
+    Brazilian: 'pt',
+    Arabic: 'ar',
   },
   DeepL: {
     Auto: 'auto',
@@ -136,6 +162,9 @@ const engineTable = {
     Korean: 'KO',
     Russian: 'RU',
     Italian: 'IT',
+    Portuguese: 'PT',
+    Brazilian: 'PT',
+    Arabic: 'ar',
   },
   Google: {
     Auto: 'auto',
@@ -147,6 +176,9 @@ const engineTable = {
     Korean: 'ko',
     Russian: 'ru',
     Italian: 'it',
+    Portuguese: 'pt-PT',
+    Brazilian: 'pt-BR',
+    Arabic: 'ar',
   },
   GPT: llmTable,
   Gemini: llmTable,
@@ -228,8 +260,8 @@ function getEngineList(engine = changeList[0], engineAlternate = changeList[0]) 
 }
 
 // get translate option
-function getTranslateOption(text, engine, translation) {
-  const table = engineTable[engine];
+function getTranslateOption(text, translation) {
+  const table = engineTable[translation.engine];
 
   if (table) {
     return {
@@ -246,6 +278,11 @@ function getTranslateOption(text, engine, translation) {
 function getLanguageCode(language, engine) {
   const table = engineTable[engine];
   return table[language];
+}
+
+// get LLM table
+function getLLMTable() {
+  return JSON.parse(JSON.stringify(llmTable));
 }
 
 // sleep
@@ -266,6 +303,7 @@ module.exports = {
   changeList,
   aiList,
   visionList,
+  getLLMTable,
 
   languageEnum,
   languageIndex,

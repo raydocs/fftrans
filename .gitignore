@@ -58,6 +58,7 @@ speechify-*.json
 .dev.vars.*
 
 # Image files (keep in Git LFS if needed)
+src/data/img/*.jpg
 src/data/img/*.png
 
 # Cloudflare benchmark local state

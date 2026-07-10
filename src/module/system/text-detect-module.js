@@ -21,31 +21,36 @@ const engineModule = require('./engine-module');
 // fix entry
 const { addTask } = require('../fix/fix-entry');
 
-// gpt module
-const gptModule = require('../translator/gpt');
+// AI
+// gemini
+const gemini = require('../translator/gemini');
+// gpt
+const gpt = require('../translator/gpt');
+// kimi
+const kimi = require('../translator/kimi');
 
 // OCR Rate Limiter
 const PromiseQueue = require('../../utils/promise-queue');
 const ocrQueue = new PromiseQueue(1); // Max 1 concurrent OCR request
 
-// Singleton OCR Worker
-let ocrWorkerPromise = null;
+// Singleton OCR Workers (per language)
+const ocrWorkerPromises = {};
 
-// Get or create OCR worker (singleton)
-async function getOcrWorker() {
-  if (!ocrWorkerPromise) {
-    ocrWorkerPromise = createWorker('eng');
+// Get or create OCR worker (singleton per language)
+async function getOcrWorker(lang = 'eng') {
+  if (!ocrWorkerPromises[lang]) {
+    ocrWorkerPromises[lang] = createWorker(lang);
   }
-  return ocrWorkerPromise;
+  return ocrWorkerPromises[lang];
 }
 
-// Cleanup OCR worker
+// Cleanup OCR workers
 async function cleanup() {
-  if (ocrWorkerPromise) {
+  for (const lang of Object.keys(ocrWorkerPromises)) {
     try {
-      const worker = await ocrWorkerPromise;
+      const worker = await ocrWorkerPromises[lang];
       await worker.terminate();
-      ocrWorkerPromise = null;
+      delete ocrWorkerPromises[lang];
     } catch (error) {
       console.warn('[TextDetect] Worker cleanup failed:', error.message);
     }
@@ -54,16 +59,24 @@ async function cleanup() {
 
 // start reconizing
 async function startReconizing(captureData) {
+  const imageBase64 = captureData.imageBuffer ? captureData.imageBuffer.toString('base64') : '';
   captureData.text = '';
 
-  // gpt vision
-  if (captureData.type === 'gpt-vision') {
-    const imageBase64 = captureData.imageBuffer.toString('base64');
-    captureData.text = await ocrQueue.add(() => gptModule.getImageText(imageBase64));
-  }
   // google vision
-  else if (captureData.type === 'google-vision') {
+  if (captureData.type === 'google-vision') {
     captureData.text = await ocrQueue.add(() => googleVision(captureData));
+  }
+  // gemini vision
+  else if (captureData.type === 'gemini-vision') {
+    captureData.text = await ocrQueue.add(() => gemini.getImageText(imageBase64, captureData.from));
+  }
+  // gpt vision
+  else if (captureData.type === 'gpt-vision') {
+    captureData.text = await ocrQueue.add(() => gpt.getImageText(imageBase64, captureData.from));
+  }
+  // kimi vision
+  else if (captureData.type === 'kimi-vision') {
+    captureData.text = await ocrQueue.add(() => kimi.getImageText(imageBase64, captureData.from));
   }
   // tesseract ocr
   else {
@@ -111,8 +124,9 @@ async function tesseractOCR(captureData) {
   let text = '';
 
   try {
-    // Get singleton worker - reuse across all OCR requests
-    const worker = await getOcrWorker();
+    // Get singleton worker (per language) - reuse across all OCR requests
+    const lang = captureData.from === engineModule.languageEnum.ja ? 'jpn' : 'eng';
+    const worker = await getOcrWorker(lang);
 
     // recognize text
     const ret = await worker.recognize(captureData.imageBuffer);
@@ -131,9 +145,7 @@ async function tesseractOCR(captureData) {
 
 // fix image text
 function fixText(captureData) {
-  let text = '';
-  text = captureData.text;
-
+  let text = captureData.text;
   console.log(text);
 
   // fix new line - 简化为仅英文处理

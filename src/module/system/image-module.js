@@ -74,6 +74,8 @@ async function cropImage(captureData, screenshotBuffer) {
         width: parseInt(captureData.rectangleSize.width),
         height: parseInt(captureData.rectangleSize.height),
       })
+      .greyscale(true)
+      .png({ quality: 100 })
       .toBuffer();
 
     // set image buffer

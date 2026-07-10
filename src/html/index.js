@@ -77,7 +77,7 @@ function setIPC() {
     dialog.style.display = 'block';
 
     if (dialogData.translatedName !== '') {
-      dialogData.translatedName += '：</br>';
+      dialogData.translatedName += '</br>';
     }
 
     setDialogContent(dialog, dialogData.translatedName + dialogData.translatedText);

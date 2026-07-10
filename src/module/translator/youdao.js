@@ -66,7 +66,7 @@ async function setAuthentication() {
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-site',
       'User-Agent': requestModule.getUserAgent(),
-    }
+    },
   );
 
   const secretKey = response?.data?.data?.secretKey;
@@ -111,7 +111,7 @@ async function translate(option) {
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-site',
       'User-Agent': requestModule.getUserAgent(),
-    }
+    },
   );
 
   let data;
