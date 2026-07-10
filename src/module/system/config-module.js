@@ -162,6 +162,8 @@ const defaultConfig = {
     autoDownloadJson: true,
     sslCertificate: true,
     theme: 'dark',
+    // 记录上次同步 AI 模型默认值时的 app 版本；版本变化时自动同步到最新
+    modelSyncedVersion: '',
   },
 };
 
@@ -505,21 +507,17 @@ function fixConfig2(config) {
   }
 
   try {
-    // 仅当仍是旧的出厂默认（用户没改过）时，迁移到新默认；不动用户自选的模型
-    const staleDefaults = {
-      geminiModel: ['gemini-3.1-flash-lite-preview', 'gemini-flash-latest'],
-      gptModel: ['gpt-5.4-nano', 'gpt-5.6-luna'],
-      nvidiaModel: ['meta/llama-4-maverick-17b-128e-instruct', 'deepseek-ai/deepseek-v4-pro'],
-    };
-    if (config.api) {
-      for (const [key, [oldValue, newValue]] of Object.entries(staleDefaults)) {
-        if (config.api[key] === oldValue) {
-          config.api[key] = newValue;
-        }
-      }
+    // 老用户更新到新版本时，自动把 AI 翻译模型同步到当前最新默认。
+    // 按 app 版本一次性触发：更新后首次启动同步一次；两次更新之间用户自己改的模型会保留。
+    const currentVersion = (app && typeof app.getVersion === 'function') ? app.getVersion() : '';
+    if (config.system && config.api && currentVersion && config.system.modelSyncedVersion !== currentVersion) {
+      config.api.geminiModel = defaultConfig.api.geminiModel; // gemini-flash-latest（自动追最新）
+      config.api.gptModel = defaultConfig.api.gptModel;       // 当前最新 GPT
+      config.api.nvidiaModel = defaultConfig.api.nvidiaModel; // 评测榜单实测 #1（发布时）
+      config.system.modelSyncedVersion = currentVersion;
     }
   } catch (error) {
-    console.warn('[ConfigModule] fixConfig2 - migrate stale model defaults failed:', error.message);
+    console.warn('[ConfigModule] fixConfig2 - sync model defaults failed:', error.message);
   }
 
   try {
