@@ -659,10 +659,10 @@ const AI_ENGINES = ['Gemini', 'GPT', 'Kimi', 'OpenRouter', 'NVIDIA', 'LLM-API'];
 const BENCHMARK_RECOMMEND_URL = 'https://ff14-nvidia-benchmark.pages.dev/api/recommendations';
 // 内置兜底选项（评测站不可达时保留）
 const NVIDIA_FALLBACK_OPTIONS = [
-  { value: 'meta/llama-4-maverick-17b-128e-instruct', label: 'Llama 4 Maverick — 速度最快 ~500ms，翻译精准 (推荐)' },
-  { value: 'qwen/qwen3-next-80b-a3b-instruct', label: 'Qwen 3 Next 80B — 中文最自然 ~590ms，游戏术语准确' },
-  { value: 'mistralai/mistral-small-4-119b-2603', label: 'Mistral Small 4 — 稳定可靠 ~650ms，多语言均衡' },
-  { value: 'mistralai/mistral-nemotron', label: 'Mistral Nemotron — 表现稳定 ~1200ms，翻译简洁' },
+  { value: 'deepseek-ai/deepseek-v4-pro', label: 'DeepSeek V4 Pro — 翻译质量最高 (实测推荐)' },
+  { value: 'abacusai/dracarys-llama-3.1-70b-instruct', label: 'Dracarys Llama 3.1 70B — 质量与速度均衡' },
+  { value: 'qwen/qwen3-next-80b-a3b-instruct', label: 'Qwen 3 Next 80B — 中文自然，游戏术语准确' },
+  { value: 'meta/llama-3.1-8b-instruct', label: 'Llama 3.1 8B — 速度最快 ~400ms' },
 ];
 
 function shortModelName(modelId = '') {

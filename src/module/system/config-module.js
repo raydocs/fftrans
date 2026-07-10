@@ -80,9 +80,9 @@ const defaultConfig = {
     googleVisionType: 'google-api-key',
     googleVisionApiKey: '',
     geminiApiKey: '',
-    geminiModel: 'gemini-3.1-flash-lite-preview',
+    geminiModel: 'gemini-flash-latest',
     gptApiKey: '',
-    gptModel: 'gpt-5.4-nano',
+    gptModel: 'gpt-5.6-luna',
     kimiToken: '',
     kimiModel: 'kimi-k2.5',
     llmApiUrl: '',
@@ -91,7 +91,7 @@ const defaultConfig = {
     openRouterApiKey: '',
     openRouterModel: 'inception/mercury-2',
     nvidiaApiKey: '',
-    nvidiaModel: 'meta/llama-4-maverick-17b-128e-instruct',
+    nvidiaModel: 'deepseek-ai/deepseek-v4-pro',
     speechify: {
       bearerToken: '',
       voiceId: 'gwyneth',
@@ -502,6 +502,24 @@ function fixConfig2(config) {
     }
   } catch (error) {
     console.warn('[ConfigModule] fixConfig2 - migrate tts engine failed:', error.message);
+  }
+
+  try {
+    // 仅当仍是旧的出厂默认（用户没改过）时，迁移到新默认；不动用户自选的模型
+    const staleDefaults = {
+      geminiModel: ['gemini-3.1-flash-lite-preview', 'gemini-flash-latest'],
+      gptModel: ['gpt-5.4-nano', 'gpt-5.6-luna'],
+      nvidiaModel: ['meta/llama-4-maverick-17b-128e-instruct', 'deepseek-ai/deepseek-v4-pro'],
+    };
+    if (config.api) {
+      for (const [key, [oldValue, newValue]] of Object.entries(staleDefaults)) {
+        if (config.api[key] === oldValue) {
+          config.api[key] = newValue;
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('[ConfigModule] fixConfig2 - migrate stale model defaults failed:', error.message);
   }
 
   try {

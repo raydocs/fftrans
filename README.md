@@ -82,17 +82,17 @@
 | **Kimi** | 月之暗面 | 付费 | 中文场景优化 |
 | **自定义 LLM** | 任意 | — | 任何 OpenAI 兼容端点，自填 URL / Key / 模型 |
 
-> 💡 **模型名可自由填写**。下方"默认模型"只是出厂预设——新模型发布后，直接在设置里把模型名改成最新的即可，无需等应用更新。
+> 💡 **模型名可自由填写**。NVIDIA / OpenRouter 的推荐由[评测榜单](#-模型对比与选择)实测驱动、每月自动更新；其它引擎新模型发布后直接在设置里改模型名即可，无需等应用更新。
 
-**当前默认模型**（截至 v0.1.4，随时可改）：
+**当前默认模型**（随时可改）：
 
-| 引擎 | 默认模型 |
-|------|---------|
-| NVIDIA | `meta/llama-4-maverick-17b-128e-instruct` |
-| OpenRouter | `inception/mercury-2` |
-| Gemini | `gemini-3.1-flash-lite-preview` |
-| GPT | `gpt-5.4-nano` |
-| Kimi | `kimi-k2.5` |
+| 引擎 | 默认模型 | 说明 |
+|------|---------|------|
+| NVIDIA | `deepseek-ai/deepseek-v4-pro` | 评测榜单实测 #1（性价比），随榜单自动更新 |
+| OpenRouter | `inception/mercury-2` | 应用内按榜单显示推荐（≤ $6/M） |
+| Gemini | `gemini-flash-latest` | 自动指向最新 Flash，无需手动升级 |
+| GPT | `gpt-5.6-luna` | GPT-5.6 家族中最快最省的一档 |
+| Kimi | `kimi-k2.5` | 中文场景优化 |
 
 [获取 NVIDIA 免费 Key →](https://build.nvidia.com/) · [获取 OpenRouter Key →](https://openrouter.ai/)
 
