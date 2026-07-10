@@ -1,0 +1,36 @@
+name: Monthly model benchmark
+
+# 每月自动评测 NVIDIA + OpenRouter(免费) 的新模型，更新推荐排名。
+# 需要在仓库 Secrets 里配置 AUTO_BENCHMARK_SECRET（与 Cloudflare 同名 secret 一致）。
+# 可选：BENCHMARK_ENDPOINT 覆盖默认站点地址。
+
+on:
+  schedule:
+    - cron: '0 3 1 * *' # 每月 1 号 03:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger auto-benchmark (drain new-model queue)
+        env:
+          SECRET: ${{ secrets.AUTO_BENCHMARK_SECRET }}
+          ENDPOINT: ${{ vars.BENCHMARK_ENDPOINT }}
+        run: |
+          if [ -z "$SECRET" ]; then
+            echo "::error::AUTO_BENCHMARK_SECRET is not set in repo secrets"; exit 1
+          fi
+          URL="${ENDPOINT:-https://ff14-nvidia-benchmark.pages.dev}/api/auto-benchmark"
+          # 每次最多测 10 个新模型；多次调用直到没有剩余（上限 8 轮 = 80 模型/月）
+          for i in $(seq 1 8); do
+            echo "=== Round $i ==="
+            RESP=$(curl -sS -X POST "$URL" -H "x-auto-benchmark-secret: $SECRET")
+            echo "$RESP"
+            REMAINING=$(echo "$RESP" | grep -o '"remaining":[0-9]*' | grep -o '[0-9]*' || echo "0")
+            NEW=$(echo "$RESP" | grep -o '"newlyTested":[0-9]*' | grep -o '[0-9]*' || echo "0")
+            if [ "${REMAINING:-0}" = "0" ] && [ "${NEW:-0}" = "0" ]; then
+              echo "No more new models. Done."; break
+            fi
+            sleep 15
+          done
