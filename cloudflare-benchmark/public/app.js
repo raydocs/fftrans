@@ -712,29 +712,53 @@ function renderLeaderboard(report) {
           <th>#</th>
           <th>Model</th>
           <th>Verdict</th>
-          <th>Usable Rate</th>
-          <th>Think Leak</th>
-          <th>Avg Latency</th>
           <th>Accuracy</th>
+          <th>Avg Latency</th>
+          <th>Think Leak</th>
+          <th>Usable</th>
           <th>Overall</th>
         </tr>
       </thead>
       <tbody>
         ${report.models.map((model, index) => `
           <tr>
-            <td>${index + 1}</td>
-            <td>${escapeHtml(model.modelId)}</td>
-            <td>${escapeHtml(model.verdict)}</td>
-            <td>${model.usableRate}%</td>
-            <td>${model.leakRate}%</td>
-            <td>${model.averageLatencyMs} ms</td>
-            <td>${model.accuracyAverage}</td>
-            <td>${model.overallAverage}</td>
+            <td><span class="lb-rank rank-${index + 1}">${index + 1}</span></td>
+            <td>${formatModelCell(model.modelId)}</td>
+            <td>${formatVerdict(model.verdict)}</td>
+            <td class="lb-num">${model.accuracyAverage}</td>
+            <td class="lb-num">${model.averageLatencyMs} ms</td>
+            <td class="lb-leak ${model.leakRate > 0 ? 'warn' : 'ok'}">${model.leakRate}%</td>
+            <td class="lb-num">${model.usableRate}%</td>
+            <td>${formatScoreBar(model.overallAverage)}</td>
           </tr>
         `).join('')}
       </tbody>
     </table>
   `;
+}
+
+function formatModelCell(modelId = '') {
+  const parts = String(modelId).split('/');
+  if (parts.length >= 2) {
+    const provider = parts.shift();
+    return `<span class="lb-model">${escapeHtml(parts.join('/'))} <span class="lb-provider">· ${escapeHtml(provider)}</span></span>`;
+  }
+  return `<span class="lb-model">${escapeHtml(modelId)}</span>`;
+}
+
+function formatVerdict(verdict = '') {
+  const v = String(verdict).toLowerCase();
+  let cls = 'v-bad';
+  if (v.includes('recommended')) cls = 'v-good';
+  else if (v.includes('usable')) cls = 'v-ok';
+  else if (v.includes('borderline')) cls = 'v-weak';
+  const short = v.includes('recommended') ? '推荐' : v.includes('usable') ? '可用' : v.includes('borderline') ? '勉强' : '不适合';
+  return `<span class="verdict ${cls}" title="${escapeHtml(verdict)}">${short}</span>`;
+}
+
+function formatScoreBar(score = 0) {
+  const pct = Math.max(0, Math.min(100, Number(score) || 0));
+  return `<div class="score-cell"><div class="score-bar"><span style="width:${pct}%"></span></div><span class="score-val">${score}</span></div>`;
 }
 
 function renderModelDetails(report) {
@@ -956,16 +980,16 @@ function renderHistory() {
       <tbody>
         ${ranking.map((row, index) => `
           <tr>
-            <td>${index + 1}</td>
-            <td>${escapeHtml(row.modelId)}<br /><span class="subcopy">${escapeHtml(row.latestVerdict)}</span></td>
-            <td>${row.runs}</td>
-            <td>${row.consistencyScore}</td>
-            <td>${row.averageOverall}</td>
-            <td>${row.bestOverall}</td>
-            <td>${row.bestAccuracy}</td>
-            <td>${row.bestLatencyMs > 0 ? `${row.bestLatencyMs} ms` : '-'}</td>
-            <td>${row.averageUsableRate}%</td>
-            <td>${escapeHtml(formatTimestamp(row.lastSeenAt))}</td>
+            <td><span class="lb-rank rank-${index + 1}">${index + 1}</span></td>
+            <td>${formatModelCell(row.modelId)} ${formatVerdict(row.latestVerdict)}</td>
+            <td class="lb-num">${row.runs}</td>
+            <td class="lb-num">${row.consistencyScore}</td>
+            <td>${formatScoreBar(row.averageOverall)}</td>
+            <td class="lb-num">${row.bestOverall}</td>
+            <td class="lb-num">${row.bestAccuracy}</td>
+            <td class="lb-num">${row.bestLatencyMs > 0 ? `${row.bestLatencyMs} ms` : '-'}</td>
+            <td class="lb-num">${row.averageUsableRate}%</td>
+            <td class="lb-num">${escapeHtml(formatTimestamp(row.lastSeenAt))}</td>
           </tr>
         `).join('')}
       </tbody>
