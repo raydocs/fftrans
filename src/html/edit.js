@@ -65,7 +65,7 @@ async function setView() {
   document.getElementById('checkbox-replace').checked = config.translation.replace;
 
   // Set TTS engine from config
-  const ttsEngine = config.indexWindow.ttsEngine || 'google';
+  const ttsEngine = config.indexWindow.ttsEngine || 'elevenlabs';
   document.getElementById('select-tts-engine').value = ttsEngine;
 
   // change UI text

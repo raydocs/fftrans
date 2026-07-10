@@ -156,40 +156,6 @@ function setTranslateChannel() {
         }
     });
 
-    // TTS latency benchmark — time a single synthesis for one engine
-    ipcMain.handle(IPC_CHANNELS.BENCHMARK_TTS, async (event, engine, sampleTextArg) => {
-        const engineName = typeof engine === 'string' ? engine.trim().toLowerCase() : '';
-        if (!engineName) {
-            return { success: false, engine, message: 'Invalid TTS engine' };
-        }
-
-        const config = configModule.getConfig();
-        const from = config.translation?.to === 'English' ? 'English' : 'Japanese';
-        const sampleText = (typeof sampleTextArg === 'string' && sampleTextArg.trim())
-            ? sampleTextArg.trim()
-            : 'こんにちは、これは音声テストです。';
-
-        const startTime = Date.now();
-        try {
-            const result = await withTimeout(
-                ttsService.getAudioUrlForEngine(engineName, sampleText, from),
-                30000,
-                'TTS benchmark'
-            );
-            const durationMs = Date.now() - startTime;
-            // getAudioUrlForEngine 可能返回单个 url 或 url 数组
-            const audioUrl = Array.isArray(result) ? result[0] : result;
-
-            if (!audioUrl) {
-                return { success: false, engine: engineName, message: '未返回音频' };
-            }
-
-            return { success: true, engine: engineName, durationMs, audioUrl };
-        } catch (error) {
-            return { success: false, engine: engineName, message: error?.message || String(error) };
-        }
-    });
-
     // add task
     ipcMain.on(IPC_CHANNELS.ADD_TASK, (event, dialogData) => {
         addTask(dialogData);
@@ -249,9 +215,14 @@ function setTranslateChannel() {
         }
     });
 
-    // google tts
+    // 通用朗读（字典/编辑窗口）：用用户选定的 TTS 引擎（Google TTS 已移除）
     ipcMain.handle(IPC_CHANNELS.GOOGLE_TTS, async (event, text, from) => {
-        return ttsService.getAudioUrlForEngine('google', text, from);
+        try {
+            return await ttsService.getConfiguredAudioUrl(text, from);
+        } catch (error) {
+            Logger.error('translate-ipc', 'Failed to generate TTS audio', error);
+            return [];
+        }
     });
 
     // elevenlabs tts

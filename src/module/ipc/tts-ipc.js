@@ -144,15 +144,6 @@ function setTTSChannel() {
   ipcMain.handle(IPC_CHANNELS.TEST_CURRENT_TTS_ENGINE, async (event, payload = {}) => {
     const { engine = '', config = {} } = payload;
 
-    if (engine === 'google') {
-      return IPCResponse.success({
-        engine: 'google',
-        provider: 'Google',
-        supported: false,
-        message: 'Google TTS 无需配置测试，可直接使用。',
-      }, 'Google TTS 无需测试');
-    }
-
     const dispatcher = TTS_TEST_DISPATCHERS[engine];
     if (!dispatcher) {
       return IPCResponse.error(new Error('Unknown engine'), `不支持的 TTS 引擎: ${engine}`);
@@ -164,6 +155,30 @@ function setTTSChannel() {
     } catch (error) {
       Logger.error('tts-ipc', `Failed to test TTS engine: ${engine}`, error);
       return IPCResponse.error(error, error.message, buildErrorDetails(error, error.provider || engine));
+    }
+  });
+
+  // TTS 延迟测速：对单个引擎做一次真实合成（testConfiguration 不走缓存、并校验密钥）
+  ipcMain.handle(IPC_CHANNELS.BENCHMARK_TTS, async (event, engine) => {
+    const engineName = typeof engine === 'string' ? engine.trim().toLowerCase() : '';
+    const dispatcher = TTS_TEST_DISPATCHERS[engineName];
+    if (!dispatcher) {
+      return { success: false, engine: engineName, message: `不支持的 TTS 引擎: ${engine}` };
+    }
+
+    const config = configModule.getConfig();
+    const engineConfig = config.api?.[engineName] || {};
+    const startTime = Date.now();
+    try {
+      const result = await enqueueSynthesis(() => dispatcher(engineConfig));
+      return {
+        success: true,
+        engine: engineName,
+        durationMs: Date.now() - startTime,
+        audioUrl: result?.audioUrl || '',
+      };
+    } catch (error) {
+      return { success: false, engine: engineName, message: error?.message || String(error) };
     }
   });
 
@@ -212,7 +227,7 @@ function setTTSChannel() {
 
   ipcMain.handle(IPC_CHANNELS.GET_TTS_ENGINE, () => {
     const config = configModule.getConfig();
-    return config.indexWindow.ttsEngine || 'google';
+    return config.indexWindow.ttsEngine || 'elevenlabs';
   });
 
   ipcMain.handle(IPC_CHANNELS.SET_TTS_ENGINE, (event, engine) => {

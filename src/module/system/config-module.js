@@ -35,7 +35,7 @@ const defaultConfig = {
     lock: false,
     speech: false,
     speechSpeed: '1',
-    ttsEngine: 'google',
+    ttsEngine: 'elevenlabs',
     compactMode: false,
     compactWidth: 320,
     compactHeight: 200,
@@ -493,6 +493,15 @@ function fixConfig2(config) {
     }
   } catch (error) {
     console.warn('[ConfigModule] fixConfig2 - fix engine failed:', error.message);
+  }
+
+  try {
+    // Google TTS 已移除，旧配置迁移到 ElevenLabs
+    if (config.indexWindow && config.indexWindow.ttsEngine === 'google') {
+      config.indexWindow.ttsEngine = 'elevenlabs';
+    }
+  } catch (error) {
+    console.warn('[ConfigModule] fixConfig2 - migrate tts engine failed:', error.message);
   }
 
   try {

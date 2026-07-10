@@ -629,7 +629,7 @@ function updateGoogleVisionTypeVisibility() {
 
 function updateTtsEngineSections(options = {}) {
   const { scrollIntoView = false } = options;
-  const selectedEngine = document.getElementById('select-tts-engine')?.value || 'google';
+  const selectedEngine = document.getElementById('select-tts-engine')?.value || 'elevenlabs';
   let activeSection = null;
 
   document.querySelectorAll('.tts-engine-config').forEach((section) => {
@@ -696,9 +696,8 @@ function updateTranslationEngineSections(options = {}) {
 }
 
 // 各语音引擎（对比测速用）
-const TTS_ENGINES = ['google', 'elevenlabs', 'speechify', 'mimo', 'fish'];
+const TTS_ENGINES = ['elevenlabs', 'speechify', 'mimo', 'fish'];
 const TTS_ENGINE_LABELS = {
-  google: 'Google TTS',
   elevenlabs: 'ElevenLabs',
   speechify: 'Speechify',
   mimo: 'MiMo TTS',

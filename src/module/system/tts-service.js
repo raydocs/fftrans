@@ -2,7 +2,6 @@
 
 const configModule = require('./config-module');
 const ttsRequestQueue = require('./tts-request-queue');
-const googleTTS = require('../translator/google-tts');
 const speechifyTTS = require('../translator/speechify-tts');
 const elevenLabsTTS = require('../translator/elevenlabs-tts');
 const mimoTTS = require('../translator/mimo-tts');
@@ -56,14 +55,16 @@ async function emitBufferedChunks(onChunk = null, chunks = []) {
   }
 }
 
-function normalizeEngine(engine = 'google') {
-  return typeof engine === 'string' && engine.trim()
+function normalizeEngine(engine = 'elevenlabs') {
+  const normalized = typeof engine === 'string' && engine.trim()
     ? engine.trim().toLowerCase()
-    : 'google';
+    : 'elevenlabs';
+  // Google TTS 已移除，旧配置回退到 ElevenLabs
+  return normalized === 'google' ? 'elevenlabs' : normalized;
 }
 
 function getConfiguredEngine(config = configModule.getConfig()) {
-  return normalizeEngine(config?.indexWindow?.ttsEngine || 'google');
+  return normalizeEngine(config?.indexWindow?.ttsEngine || 'elevenlabs');
 }
 
 function isFullAppConfig(config = null) {
@@ -176,14 +177,10 @@ function applyElevenLabsVoiceRouting(engine = 'google', options = {}) {
   };
 }
 
-async function getAudioUrlForEngine(engine = 'google', text = '', from = 'English', options = {}) {
+async function getAudioUrlForEngine(engine = 'elevenlabs', text = '', from = 'English', options = {}) {
   const normalizedEngine = normalizeEngine(engine);
   const effectiveOptions = applyElevenLabsVoiceRouting(normalizedEngine, options);
   const configOverride = getEngineConfigOverride(normalizedEngine, effectiveOptions);
-
-  if (normalizedEngine === 'google') {
-    return googleTTS.getAudioUrl(text, from);
-  }
 
   const dispatcher = RUNTIME_TTS_DISPATCHERS[normalizedEngine];
   if (!dispatcher) {
@@ -200,7 +197,7 @@ async function getConfiguredAudioUrl(text = '', from = 'English', options = {}) 
   return getAudioUrlForEngine(engine, text, from, options);
 }
 
-async function getAudioUrlProgressiveForEngine(engine = 'google', text = '', from = 'English', options = {}) {
+async function getAudioUrlProgressiveForEngine(engine = 'elevenlabs', text = '', from = 'English', options = {}) {
   const normalizedEngine = normalizeEngine(engine);
   const effectiveOptions = applyElevenLabsVoiceRouting(normalizedEngine, options);
   const configOverride = getEngineConfigOverride(normalizedEngine, effectiveOptions);
@@ -229,7 +226,7 @@ async function getConfiguredAudioUrlProgressive(text = '', from = 'English', opt
 async function getConfiguredAudioUrlWithFallback(text = '', from = 'English', options = {}) {
   const config = options.config || configModule.getConfig();
   const engine = options.engine || getConfiguredEngine(config);
-  const { fallbackToGoogle = true, onError = null } = options;
+  const { failSilently = true, onError = null } = options;
 
   try {
     return await getAudioUrlForEngine(engine, text, from, options);
@@ -238,8 +235,9 @@ async function getConfiguredAudioUrlWithFallback(text = '', from = 'English', op
       onError(error, normalizeEngine(engine));
     }
 
-    if (fallbackToGoogle) {
-      return googleTTS.getAudioUrl(text, from);
+    // Google TTS 兜底已移除；失败时静默（不出声，文字照常显示）
+    if (failSilently) {
+      return [];
     }
 
     throw error;
@@ -250,8 +248,8 @@ async function getConfiguredAudioUrlProgressiveWithFallback(text = '', from = 'E
   const config = options.config || configModule.getConfig();
   const engine = options.engine || getConfiguredEngine(config);
   const normalizedEngine = normalizeEngine(engine);
-  const { fallbackToGoogle = true, onError = null, onChunk = null } = options;
-  const shouldBufferPrimaryChunks = fallbackToGoogle && normalizedEngine === 'elevenlabs' && typeof onChunk === 'function';
+  const { failSilently = true, onError = null, onChunk = null } = options;
+  const shouldBufferPrimaryChunks = failSilently && normalizedEngine === 'elevenlabs' && typeof onChunk === 'function';
   const bufferedChunks = [];
   const progressiveOptions = shouldBufferPrimaryChunks
     ? {
@@ -265,7 +263,7 @@ async function getConfiguredAudioUrlProgressiveWithFallback(text = '', from = 'E
   try {
     const result = await getAudioUrlProgressiveForEngine(engine, text, from, progressiveOptions);
 
-    if (fallbackToGoogle && Array.isArray(result?.failures) && result.failures.length > 0) {
+    if (failSilently && Array.isArray(result?.failures) && result.failures.length > 0) {
       const partialFailureError = new Error(`${normalizedEngine} progressive TTS returned partial audio`);
       partialFailureError.failures = result.failures;
       partialFailureError.totalChunks = result.totalChunks;
@@ -283,19 +281,17 @@ async function getConfiguredAudioUrlProgressiveWithFallback(text = '', from = 'E
       onError(error, normalizedEngine);
     }
 
-    if (fallbackToGoogle) {
-      Logger.warn('tts-service', 'Progressive TTS failed; falling back to Google', {
+    if (failSilently) {
+      Logger.warn('tts-service', 'Progressive TTS failed; no audio (Google fallback removed)', {
         engine: normalizedEngine,
         message: error?.message || String(error),
         failureCount: Array.isArray(error?.failures) ? error.failures.length : 0,
       });
 
-      const urls = googleTTS.getAudioUrl(text, from);
-      await emitBatchChunks(onChunk, text, urls);
       return {
-        urls,
+        urls: [],
         failures: [],
-        totalChunks: Array.isArray(urls) ? urls.length : 0,
+        totalChunks: 0,
       };
     }
 
