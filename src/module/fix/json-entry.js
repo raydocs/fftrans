@@ -125,12 +125,36 @@ async function downloadJSON() {
     console.log('All done');
 
     if (downloadStatus === 'COMPLETE') {
+      // 保留 fork 特有文件（上游 text 包里没有，rmdir 会连带删掉，例如 NPC 性别数据）
+      const fs = require('fs');
+      const path = require('path');
+      const preserveRelPaths = ['cache/msq-speaker-gender.json'];
+      const preserved = {};
+      for (const rel of preserveRelPaths) {
+        try {
+          const p = path.join(textPath, rel);
+          if (fs.existsSync(p)) preserved[rel] = fs.readFileSync(p);
+        } catch (e) { console.log('preserve read failed', rel, e.message); }
+      }
+
       // delete old text files
       fileModule.rmdir(textPath);
 
       // decompress new text files
       await decompress(filePath, textPath, { strip: 1 });
       fileModule.unlink(filePath);
+
+      // 恢复 fork 特有文件（若新数据里没有）
+      for (const rel of Object.keys(preserved)) {
+        try {
+          const p = path.join(textPath, rel);
+          if (!fs.existsSync(p)) {
+            fs.mkdirSync(path.dirname(p), { recursive: true });
+            fs.writeFileSync(p, preserved[rel]);
+          }
+        } catch (e) { console.log('preserve restore failed', rel, e.message); }
+      }
+
       dialogModule.addNotification('DOWNLOAD_COMPLETED');
     }
   } catch (error) {
