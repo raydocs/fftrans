@@ -713,9 +713,9 @@ async function loadNvidiaRecommendations() {
     const qualityOnly = topQuality.filter((m) => !valueIds.has(m.modelId));
 
     select.innerHTML = '';
-    appendModelOptgroup(select, '⭐ 推荐 · 性价比', topValue, (m) =>
+    appendModelOptgroup(select, '⚡ 实时推荐 (≤1s，快)', topValue, (m) =>
       `${shortModelName(m.modelId)} — 综合 ${m.overallAverage} · ${Math.round(m.averageLatencyMs)}ms`);
-    appendModelOptgroup(select, '🎯 推荐 · 翻译质量', qualityOnly, (m) =>
+    appendModelOptgroup(select, '🎯 质量推荐 (慢，看剧情)', qualityOnly, (m) =>
       `${shortModelName(m.modelId)} — 准确 ${m.accuracyAverage} · ${Math.round(m.averageLatencyMs)}ms`);
     appendModelOptgroup(select, '内置备选', NVIDIA_FALLBACK_OPTIONS.filter(
       (o) => !valueIds.has(o.value) && !topQuality.some((m) => m.modelId === o.value)
