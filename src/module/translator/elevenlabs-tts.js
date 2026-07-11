@@ -194,9 +194,18 @@ function buildElevenLabsError(error, overrides = {}) {
     suggestion = overrides.suggestion || '请检查网络或代理设置';
   }
 
+  // ElevenLabs 免费额度用尽会返回 401，但 code 是 quota_exceeded——
+  // 此时不是 Token 失效，避免误导用户去查 Token
+  const quotaProbe = `${overrides.message || ''} ${error?.message || ''} ${decodeErrorBody(error)}`;
+  const isQuotaExceeded = /quota[_\s]?exceeded/i.test(quotaProbe);
+  if (isQuotaExceeded) {
+    message = overrides.message || 'ElevenLabs 配额已用尽';
+    suggestion = '当前 ElevenReader 账号的免费额度已用尽：请更换其他账号的 Refresh Token，或等待额度按月重置，或临时改用 Fish Audio / MiMo 引擎';
+  }
+
   const normalizedError = new Error(message);
   normalizedError.provider = 'ElevenLabs';
-  normalizedError.authCode = overrides.authCode || error?.authCode || '';
+  normalizedError.authCode = isQuotaExceeded ? 'quota_exceeded' : (overrides.authCode || error?.authCode || '');
   normalizedError.statusCode = statusCode;
   normalizedError.status = statusCode;
   normalizedError.retryable = retryable;
