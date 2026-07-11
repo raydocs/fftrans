@@ -240,6 +240,14 @@ function getWindowSize(windowName, config) {
           bounds.height = indexBounds.height;
         }
 
+        // The saved bounds may come from the full translation window or from
+        // the old 300x300 minimum. Compact mode must never retain that invisible
+        // hit area around the voice controller.
+        if (isCompactMode) {
+          bounds.width = config.indexWindow.compactWidth || 232;
+          bounds.height = config.indexWindow.compactHeight || 56;
+        }
+
         if (configModule.getConfig().indexWindow.minSize) {
           bounds.minWidth = isCompactMode ? 232 : 200;
           bounds.minHeight = isCompactMode ? 56 : 200;

@@ -69,11 +69,18 @@ function setWindowChannel() {
     });
 
     // set min size
-    ipcMain.on(IPC_CHANNELS.SET_MIN_SIZE, (event, minSize) => {
-        if (minSize) {
-            BrowserWindow.fromWebContents(event.sender).setMinimumSize(300, 300);
+    ipcMain.on(IPC_CHANNELS.SET_MIN_SIZE, (event, minSize, compactMode = false, compactWidth = 232, compactHeight = 56) => {
+        const targetWindow = BrowserWindow.fromWebContents(event.sender);
+        if (!targetWindow) return;
+
+        if (minSize && compactMode) {
+            targetWindow.setMinimumSize(compactWidth, compactHeight);
+            const bounds = targetWindow.getContentBounds();
+            targetWindow.setContentBounds({ ...bounds, width: compactWidth, height: compactHeight });
+        } else if (minSize) {
+            targetWindow.setMinimumSize(300, 300);
         } else {
-            BrowserWindow.fromWebContents(event.sender).setMinimumSize(1, 1);
+            targetWindow.setMinimumSize(1, 1);
         }
     });
 

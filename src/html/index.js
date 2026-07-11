@@ -324,7 +324,13 @@ function resetView(config) {
   resetDialogStyle();
   ipcRenderer.send(IPC_CHANNELS.SHOW_DIALOG);
   document.getElementById('div-dialog').style.backgroundColor = config.indexWindow.backgroundColor;
-  ipcRenderer.send(IPC_CHANNELS.SET_MIN_SIZE, config.indexWindow.minSize);
+  ipcRenderer.send(
+    IPC_CHANNELS.SET_MIN_SIZE,
+    config.indexWindow.minSize,
+    config.indexWindow.compactMode,
+    config.indexWindow.compactWidth,
+    config.indexWindow.compactHeight,
+  );
 }
 
 // add dialog
