@@ -139,7 +139,8 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
     const cacheKey = getCacheKey(text, translation, table, type);
 
     // ✨ Check cache first (OPTIMIZED: direct key lookup, no double normalization)
-    const cached = translationCache.getByKey(cacheKey);
+    // 测试连接时 skipCache=true，绕过缓存以测量真实延迟
+    const cached = translation.skipCache ? null : translationCache.getByKey(cacheKey);
 
     if (cached) {
       // Cache hit - return immediately
@@ -160,7 +161,9 @@ async function translate(text = '', translation = {}, table = [], type = 'senten
       const finalResult = clearCode(rawResult, table);
 
       // ✨ Store in cache (OPTIMIZED: direct key storage, no double normalization)
-      translationCache.setByKey(cacheKey, finalResult);
+      if (!translation.skipCache) {
+        translationCache.setByKey(cacheKey, finalResult);
+      }
 
       return finalResult;
     })();
@@ -208,7 +211,8 @@ async function translateStream(text = '', translation = {}, table = [], type = '
     const cacheKey = getCacheKey(text, translation, table, type);
 
     // Cache short-circuit (OPTIMIZED: direct key lookup)
-    const cached = translationCache.getByKey(cacheKey);
+    // 测试连接时 skipCache=true，绕过缓存以测量真实首字延迟
+    const cached = translation.skipCache ? null : translationCache.getByKey(cacheKey);
     if (cached) {
       if (onChunk) {
         onChunk(cached);
@@ -217,7 +221,7 @@ async function translateStream(text = '', translation = {}, table = [], type = '
     }
 
     // Check if engine supports streaming
-    const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini'];
+    const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini', 'LLM-API'];
 
     if (streamingSupportedEngines.includes(translation.engine)) {
       const option = engineModule.getTranslateOption(text, translation.engine, translation);
@@ -236,6 +240,9 @@ async function translateStream(text = '', translation = {}, table = [], type = '
             break;
           case 'Gemini':
             streamFunction = gemini.translateStream;
+            break;
+          case 'LLM-API':
+            streamFunction = openai.translateStream;
             break;
           default:
             // Fallback to regular translation
@@ -284,7 +291,9 @@ async function translateStream(text = '', translation = {}, table = [], type = '
         const finalResult = processedText || clearCode(result, table);
 
         // ✅ cache after streaming completes (OPTIMIZED: direct key storage)
-        translationCache.setByKey(cacheKey, finalResult);
+        if (!translation.skipCache) {
+          translationCache.setByKey(cacheKey, finalResult);
+        }
 
         return finalResult;
       }

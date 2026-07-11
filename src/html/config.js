@@ -1482,7 +1482,10 @@ function setButton() {
       const result = await invokeWithTimeout('test-ai-translation', [engine], TEST_TIMEOUT_MS);
 
       if (result.success) {
-        alert(`✅ 测试成功\n引擎: ${result.engine}\n模型: ${result.model || '-'}\n⏱ 延迟: ${result.durationMs} ms\n结果: ${result.result}\n\n(延迟已记录到 config/latency-test-log.txt)`);
+        const latencyLine = result.streaming
+          ? `⏱ 首字延迟: ${result.durationMs} ms（全句 ${result.totalMs} ms）`
+          : `⏱ 延迟: ${result.durationMs} ms`;
+        alert(`✅ 测试成功\n引擎: ${result.engine}\n模型: ${result.model || '-'}\n${latencyLine}\n结果: ${result.result}\n\n(延迟已记录到 config/latency-test-log.txt)`);
       } else {
         alert(`测试失败\n${result.message || '未知错误'}`);
       }

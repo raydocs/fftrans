@@ -123,7 +123,7 @@ async function entry() {
   // normal translation
   else {
     const config = configModule.getConfig();
-    const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini'];
+    const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini', 'LLM-API'];
     const useStreaming = config.ai?.useStreaming !== false && streamingSupportedEngines.includes(dialogData.translation.engine);
     const hasNpcName = npcChannel.includes(dialogData.code);
 

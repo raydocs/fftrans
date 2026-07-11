@@ -23,7 +23,7 @@ function getEngineModel(config, engine) {
 function appendLatencyLog(engine, model, durationMs, ok, note = '') {
   try {
     const p = fileModule.getUserDataPath('config', 'latency-test-log.txt');
-    const line = `${new Date().toISOString()} | ${engine} | ${model || '-'} | ${ok ? durationMs + 'ms' : 'FAIL'} | ${ok ? 'OK' : note}`.trim();
+    const line = `${new Date().toISOString()} | ${engine} | ${model || '-'} | ${ok ? durationMs + 'ms' : 'FAIL'} | ${ok ? (note || 'OK') : note}`.trim();
     fileModule.appendFileAsync ? fileModule.appendFileAsync(p, line + '\n') : require('fs').appendFileSync(p, line + '\n');
   } catch (error) {
     Logger.warn('translate-ipc', 'appendLatencyLog failed', error.message);
@@ -141,6 +141,7 @@ function setTranslateChannel() {
             autoChange: false,
             from,
             to,
+            skipCache: true, // 测试连接测真实延迟，不走缓存
         };
 
         const sampleText = (typeof sampleTextArg === 'string' && sampleTextArg.trim())
@@ -150,13 +151,24 @@ function setTranslateChannel() {
         const configTimeout = parseInt(config.translation?.timeout, 10);
         const timeoutMs = Math.max(30000, Number.isNaN(configTimeout) ? 30000 : configTimeout * 1000);
 
+        // 支持流式的引擎按「首字延迟」计时，反映实际游戏中看到第一个字的速度
+        const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini', 'LLM-API'];
+        const useStreaming = config.ai?.useStreaming !== false && streamingSupportedEngines.includes(engineName);
+
         try {
+            let firstChunkMs = null;
             const result = await withTimeout(
-                translateModule.translate(sampleText, translation, [], 'sentence'),
+                useStreaming
+                    ? translateModule.translateStream(sampleText, translation, [], 'sentence', () => {
+                        if (firstChunkMs === null) firstChunkMs = Date.now() - startTime;
+                    })
+                    : translateModule.translate(sampleText, translation, [], 'sentence'),
                 timeoutMs,
                 'AI translation test'
             );
-            const durationMs = Date.now() - startTime;
+            const totalMs = Date.now() - startTime;
+            // 流式：优先报首字延迟；非流式：总耗时
+            const durationMs = (useStreaming && firstChunkMs !== null) ? firstChunkMs : totalMs;
             const model = getEngineModel(config, engineName);
 
             if (typeof result !== 'string' || result.trim().length === 0) {
@@ -170,12 +182,14 @@ function setTranslateChannel() {
                 return { success: false, message: result.trim() };
             }
 
-            appendLatencyLog(engineName, model, durationMs, true);
+            appendLatencyLog(engineName, model, durationMs, true, useStreaming ? `首字${durationMs}ms 全句${totalMs}ms` : '');
             return {
                 success: true,
                 engine: engineName,
                 model,
                 durationMs,
+                totalMs,
+                streaming: useStreaming,
                 result,
             };
         } catch (error) {
@@ -226,7 +240,7 @@ function setTranslateChannel() {
             const config = configModule.getConfig();
 
             // Check if streaming is enabled and engine supports it
-            const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini'];
+            const streamingSupportedEngines = ['OpenRouter', 'GPT', 'Gemini', 'LLM-API'];
             const useStreaming = config.ai?.useStreaming !== false && streamingSupportedEngines.includes(dialogData.translation.engine);
 
             if (useStreaming) {
