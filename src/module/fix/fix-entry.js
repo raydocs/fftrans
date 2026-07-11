@@ -112,6 +112,18 @@ async function entry() {
   dialogData.translatedName = dialogData.name;
   dialogData.translatedText = dialogData.text;
 
+  // Compact mode is the dedicated voice-only path. Static EXD already owns
+  // the on-screen bilingual text, so do not invoke any translation engine,
+  // name translation, streaming translation, or translation cache here.
+  if (config.indexWindow.compactMode) {
+    if (npcChannel.includes(dialogData.code)) {
+      dialogModule.updateDialog(dialogData);
+    } else {
+      dialogModule.removeDialog(dialogData.id);
+    }
+    return;
+  }
+
   // get true language
   const trueLanguage = getLanguage(dialogData);
 

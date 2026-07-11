@@ -270,8 +270,13 @@ function saveDialog(dialogData) {
     }
 
     // speech text at first time
-    if (!cachedLog[item.id] && npcChannel.includes(dialogData.code) && dialogData.audioText !== '') {
-      const currentConfig = configModule.getConfig();
+    const currentConfig = configModule.getConfig();
+    if (
+      currentConfig.indexWindow.speech &&
+      !cachedLog[item.id] &&
+      npcChannel.includes(dialogData.code) &&
+      dialogData.audioText !== ''
+    ) {
       enqueueDialogPlayback(dialogData, currentConfig)
         .catch(error => console.error('[Dialog Module] Failed to queue TTS audio:', error));
     }

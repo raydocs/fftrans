@@ -508,6 +508,6 @@ function updateCompactButton(isCompact) {
   const btn = document.getElementById('img-button-compact');
   if (btn) {
     btn.style.opacity = isCompact ? '1' : '0.5';
-    btn.title = isCompact ? 'Compact Mode (ON)' : 'Compact Mode (OFF)';
+    btn.title = isCompact ? 'Voice-only Mode (ON)' : 'Voice-only Mode (OFF)';
   }
 }
