@@ -161,6 +161,42 @@
 | **Eleven v3** | 中等（不支持流式） | 剧情精读、最高音质 |
 | **Multilingual v2** | 中等 | 多语言兼容 |
 
+<details>
+<summary><b>📥 如何获取 ElevenLabs Refresh Token（免费白嫖朗读的关键）</b></summary>
+
+ElevenReader 用 Firebase 登录，Refresh Token 存在浏览器的 **localStorage** 里（不在 Console、也不在 Cookie，所以直接翻找容易漏）。三步搞定：
+
+**① 登录**：电脑浏览器打开 **<https://elevenreader.io>** 并登录你的账号。
+
+**② 取 Token**：按 `F12` 打开开发者工具 → 切到 **Console（控制台）** → 如提示需要授权粘贴，先输入 `allow pasting` 回车 → 然后粘贴这**一行**并回车：
+
+```js
+JSON.parse(localStorage[Object.keys(localStorage).find(k=>k.startsWith('firebase:authUser'))]).stsTokenManager.refreshToken
+```
+
+会直接打印一段 **`AMf-` 开头的长字符串**——那就是 Refresh Token，复制它。
+
+**③ 填入**：FFTrans → 设置 → 语音 → ElevenLabs → 展开 **「Fallbacks: manual Refresh Token」** → 粘进 **Refresh Token** 框 → 点 **Validate** 验证 → 保存。
+
+> ⚠️ 别复制成 `accessToken`（`eyJ...` 开头那个），那是 1 小时就过期的短期令牌。Refresh Token 是长期的，失效了重抓一次即可。
+> ⚠️ 这个 Token 等于你账号的钥匙，**当密码看待**，别发到公开地方。
+
+**🤖 让 AI 帮你抓（脚本跑不通时）**
+
+如果上面那行报错或找不到，把整个浏览器存储 dump 出来交给 AI（Claude / ChatGPT 等）识别。在 Console 跑：
+
+```js
+Object.keys(localStorage).map(k=>k+' = '+localStorage.getItem(k)).join('\n')
+```
+
+把输出**整段复制**发给 AI，附上这句话：
+
+> 这是 elevenreader.io 的 localStorage 内容，帮我找出 Firebase 的 refresh token（`stsTokenManager.refreshToken`，`AMf-` 开头的那个），只回给我那串 token。
+
+AI 会直接把 Token 挑出来给你。**注意**：dump 里含你的邮箱等信息，介意隐私就用本地/可信的 AI，别发公开渠道。
+
+</details>
+
 ### Fish Audio 🐟（含声音克隆）
 
 支持在 [fish.audio](https://fish.audio) 克隆你自己的声音，在设置里点"刷新"即可选用。
