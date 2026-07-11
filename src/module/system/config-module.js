@@ -147,6 +147,7 @@ const defaultConfig = {
     temperature: '0.7',
     customTranslationPrompt: '',
     useStreaming: true,
+    disableThinking: false,
   },
   proxy: {
     enable: false,

@@ -55,6 +55,11 @@ async function translate(text, source, target, type) {
     //top_p: 1,
   };
 
+  // 禁用思考模式（针对 gpt-5.6-sol/terra 这类推理模型）：不生成 reasoning
+  if (config.ai.disableThinking) {
+    payload.reasoning_effort = 'none';
+  }
+
   // get response
   const response = await requestModule.post(apiUrl, payload, headers);
   const responseText = extractChoicesContent(response, 'LLM-API');

@@ -7,7 +7,28 @@ const translateModule = require('../system/translate-module');
 const configModule = require('../system/config-module');
 const ttsService = require('../system/tts-service');
 const requestModule = require('../system/request-module');
+const fileModule = require('../system/file-module');
 const Logger = require('../../utils/logger');
+
+// 引擎 → 当前模型名
+function getEngineModel(config, engine) {
+  const a = config.api || {};
+  return {
+    Gemini: a.geminiModel, GPT: a.gptModel, Kimi: a.kimiModel,
+    OpenRouter: a.openRouterModel, NVIDIA: a.nvidiaModel, 'LLM-API': a.llmApiModel,
+  }[engine] || '';
+}
+
+// 把测试结果追加到延迟记录文件，方便日后查看
+function appendLatencyLog(engine, model, durationMs, ok, note = '') {
+  try {
+    const p = fileModule.getUserDataPath('config', 'latency-test-log.txt');
+    const line = `${new Date().toISOString()} | ${engine} | ${model || '-'} | ${ok ? durationMs + 'ms' : 'FAIL'} | ${ok ? 'OK' : note}`.trim();
+    fileModule.appendFileAsync ? fileModule.appendFileAsync(p, line + '\n') : require('fs').appendFileSync(p, line + '\n');
+  } catch (error) {
+    Logger.warn('translate-ipc', 'appendLatencyLog failed', error.message);
+  }
+}
 const { addTask } = require('../fix/fix-entry');
 
 function withTimeout(promise, ms, label) {
@@ -136,23 +157,29 @@ function setTranslateChannel() {
                 'AI translation test'
             );
             const durationMs = Date.now() - startTime;
+            const model = getEngineModel(config, engineName);
 
             if (typeof result !== 'string' || result.trim().length === 0) {
+                appendLatencyLog(engineName, model, durationMs, false, 'empty response');
                 return { success: false, message: 'Empty response from translation' };
             }
 
             // 引擎失败时可能把错误文本当译文返回，识别后判为失败，避免误标为最快
             if (/^(assistant\s+)?error[:：]|translation failed/i.test(result.trim())) {
+                appendLatencyLog(engineName, model, durationMs, false, result.trim().slice(0, 60));
                 return { success: false, message: result.trim() };
             }
 
+            appendLatencyLog(engineName, model, durationMs, true);
             return {
                 success: true,
                 engine: engineName,
+                model,
                 durationMs,
                 result,
             };
         } catch (error) {
+            appendLatencyLog(engineName, getEngineModel(config, engineName), 0, false, error.message || String(error));
             return { success: false, message: error.message || String(error) };
         }
     });

@@ -1482,7 +1482,7 @@ function setButton() {
       const result = await invokeWithTimeout('test-ai-translation', [engine], TEST_TIMEOUT_MS);
 
       if (result.success) {
-        alert(`测试成功\n引擎: ${result.engine}\n耗时: ${result.durationMs}ms\n结果: ${result.result}`);
+        alert(`✅ 测试成功\n引擎: ${result.engine}\n模型: ${result.model || '-'}\n⏱ 延迟: ${result.durationMs} ms\n结果: ${result.result}\n\n(延迟已记录到 config/latency-test-log.txt)`);
       } else {
         alert(`测试失败\n${result.message || '未知错误'}`);
       }
@@ -3638,6 +3638,10 @@ function getOptionList() {
     [
       ['checkbox-ai-streaming', 'checked'],
       ['ai', 'useStreaming'],
+    ],
+    [
+      ['checkbox-ai-disable-thinking', 'checked'],
+      ['ai', 'disableThinking'],
     ],
     [
       ['textarea-ai-custom-translation-prompt', 'value'],
