@@ -107,7 +107,7 @@ const defaultConfig = {
       genderVoiceRoutingEnabled: true,
       femaleVoiceId: 'EXAVITQu4vr4xnSDxMaL',
       maleVoiceId: 'nPczCjzI2devNBz1zQrb',
-      modelId: 'eleven_v3',
+      modelId: 'eleven_flash_v2_5',
       stability: '0.5',
       similarityBoost: '0.75',
       style: '0',
