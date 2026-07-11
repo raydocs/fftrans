@@ -70,6 +70,7 @@ const UI_COPY = {
   comparing: ['測試中…', '测试中…', 'Testing…'],
   fastest: ['最快', '最快', 'Fastest'],
   preview: ['試聽', '试听', 'Preview'],
+  fetchModels: ['獲取模型', '获取模型', 'Fetch Models'],
   moreEnginesConfigured: ['已設定 {count} 個', '已配置 {count} 个', '{count} configured'],
   toggleVisibility: ['切換顯示狀態', '切换显示状态', 'Toggle visibility'],
   elevenlabsUnavailableTitle: [
@@ -1331,6 +1332,11 @@ function setEvent() {
   const btnRefreshOpenRouter = document.getElementById('btn-refresh-openrouter-recommend');
   if (btnRefreshOpenRouter) {
     btnRefreshOpenRouter.addEventListener('click', loadOpenRouterRecommendations);
+  }
+
+  const btnFetchLlm = document.getElementById('btn-fetch-llm-models');
+  if (btnFetchLlm) {
+    btnFetchLlm.addEventListener('click', loadLlmModels);
   }
 
   const btnCompareAi = document.getElementById('btn-compare-ai');
@@ -2973,6 +2979,43 @@ async function loadFishVoices() {
   } finally {
     btn.disabled = false;
     btn.innerText = originalText;
+  }
+}
+
+// 自定义 LLM API：从接口拉取可用模型 → 填进 datalist（用表单当前值，保存前也能用）
+async function loadLlmModels() {
+  const datalist = document.getElementById('llm-model-suggestions');
+  const status = document.getElementById('llm-models-status');
+  const button = document.getElementById('btn-fetch-llm-models');
+  if (!datalist) return;
+
+  const url = document.getElementById('input-llm-api-url')?.value.trim() || '';
+  const key = document.getElementById('input-llm-api-key')?.value.trim() || '';
+  if (!url) {
+    if (status) { status.hidden = false; status.innerText = '请先填写 API URL'; }
+    return;
+  }
+
+  if (button) { button.disabled = true; button.innerText = getUiText('comparing') || '获取中…'; }
+  if (status) { status.hidden = false; status.innerText = '获取中…'; }
+
+  try {
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.GET_LLM_MODELS, { url, key });
+    if (result?.success && Array.isArray(result.models) && result.models.length > 0) {
+      datalist.innerHTML = '';
+      for (const id of result.models) {
+        const option = document.createElement('option');
+        option.value = id;
+        datalist.appendChild(option);
+      }
+      if (status) status.innerText = `获取到 ${result.models.length} 个模型，点输入框查看`;
+    } else {
+      if (status) status.innerText = result?.message ? `获取失败：${result.message}` : '未返回模型列表';
+    }
+  } catch (error) {
+    if (status) status.innerText = `获取失败：${error.message}`;
+  } finally {
+    if (button) { button.disabled = false; button.innerText = getUiText('fetchModels') || '获取模型'; }
   }
 }
 

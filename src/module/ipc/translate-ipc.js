@@ -6,6 +6,7 @@ const engineModule = require('../system/engine-module');
 const translateModule = require('../system/translate-module');
 const configModule = require('../system/config-module');
 const ttsService = require('../system/tts-service');
+const requestModule = require('../system/request-module');
 const Logger = require('../../utils/logger');
 const { addTask } = require('../fix/fix-entry');
 
@@ -153,6 +154,32 @@ function setTranslateChannel() {
             };
         } catch (error) {
             return { success: false, message: error.message || String(error) };
+        }
+    });
+
+    // 自定义 LLM API：拉取可用模型列表（GET {base}/models）
+    ipcMain.handle(IPC_CHANNELS.GET_LLM_MODELS, async (event, override = {}) => {
+        const config = configModule.getConfig();
+        const rawUrl = (typeof override.url === 'string' && override.url.trim()) ? override.url.trim() : (config.api?.llmApiUrl || '');
+        const key = (typeof override.key === 'string' && override.key.trim()) ? override.key.trim() : (config.api?.llmApiKey || '');
+        if (!rawUrl) {
+            return { success: false, message: '请先填写 API URL' };
+        }
+
+        // 由 base / 完整端点推出 /models 地址
+        const base = rawUrl.trim().replace(/\/+$/, '').replace(/\/chat\/completions$/i, '');
+        const modelsUrl = `${base}/models`;
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (key) headers.Authorization = `Bearer ${key}`;
+            const response = await withTimeout(requestModule.get(modelsUrl, headers), 15000, 'Get LLM models');
+            const data = response?.data;
+            const list = Array.isArray(data?.data) ? data.data : (Array.isArray(data?.models) ? data.models : (Array.isArray(data) ? data : []));
+            const models = list.map((m) => (typeof m === 'string' ? m : (m?.id || m?.name || ''))).filter(Boolean);
+            return { success: true, models, url: modelsUrl };
+        } catch (error) {
+            return { success: false, message: `${error?.response?.status ? `HTTP ${error.response.status} ` : ''}${error?.message || String(error)}`, url: modelsUrl };
         }
     });
 

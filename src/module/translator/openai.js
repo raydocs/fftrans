@@ -9,6 +9,13 @@ const { extractChoicesContent } = require('../../utils/safe-extract');
 
 const chatHistoryList = {};
 
+// 兼容用户填「Base URL」(如 http://host/v1) 或「完整端点」(.../chat/completions)
+function normalizeChatCompletionsUrl(url = '') {
+  const trimmed = String(url || '').trim().replace(/\/+$/, '');
+  if (!trimmed) return trimmed;
+  return /\/chat\/completions$/i.test(trimmed) ? trimmed : `${trimmed}/chat/completions`;
+}
+
 // exec
 async function exec(option, type) {
   const response = translate(option.text, option.from, option.to, type);
@@ -19,7 +26,8 @@ async function exec(option, type) {
 async function translate(text, source, target, type) {
   const config = configModule.getConfig();
   const prompt = aiFunction.createTranslationPrompt(source, target, type);
-  const apiUrl = config.api.llmApiUrl;
+  // 兼容填「Base URL」或「完整端点」：没带 /chat/completions 就补上
+  const apiUrl = normalizeChatCompletionsUrl(config.api.llmApiUrl);
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${config.api.llmApiKey}`,
@@ -42,6 +50,8 @@ async function translate(text, source, target, type) {
       },
     ],
     temperature: parseFloat(config.ai.temperature),
+    // 部分 OpenAI 兼容模型不带 max_tokens 会返回空 choices
+    max_tokens: 2000,
     //top_p: 1,
   };
 

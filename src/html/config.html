@@ -665,12 +665,15 @@
             <div class="setting-item">
               <div class="setting-info">
                 <div class="setting-label" id="label-llm-model">模型</div>
-                <div class="setting-description" id="desc-llm-model">要使用的模型名称</div>
+                <div class="setting-description" id="desc-llm-model">可手填；或点"获取模型"从接口拉取列表</div>
               </div>
-              <div class="setting-control">
-                <input type="text" class="form-control control-w-200" id="input-llm-model" />
+              <div class="setting-control setting-control-group">
+                <input type="text" class="form-control control-w-200" id="input-llm-model" list="llm-model-suggestions" />
+                <datalist id="llm-model-suggestions"></datalist>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-fetch-llm-models">获取模型</button>
               </div>
             </div>
+            <p class="settings-helper-text" id="llm-models-status" hidden></p>
           </div>
 
           <!-- NVIDIA -->
