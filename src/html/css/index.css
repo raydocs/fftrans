@@ -243,3 +243,41 @@ body:not(:hover) footer:not(:focus-within) {
   85% { opacity: 1; }
   100% { opacity: 0; }
 }
+/* Compact mode is a voice-only controller. Translation and utility controls
+ * continue running in the renderer but stay out of the way while playing. */
+body.voice-only-mode main,
+body.voice-only-mode #img-button-capture,
+body.voice-only-mode #img-button-through,
+body.voice-only-mode #img-button-update,
+body.voice-only-mode #img-button-config,
+body.voice-only-mode #img-button-minimize,
+body.voice-only-mode #img-button-custom,
+body.voice-only-mode #img-button-dictionary,
+body.voice-only-mode #img-button-read-log,
+body.voice-only-mode #img-button-backspace,
+body.voice-only-mode #img-button-clear {
+  display: none !important;
+}
+
+body.voice-only-mode header,
+body.voice-only-mode footer {
+  background: rgba(18, 18, 18, 0.94);
+}
+
+body.voice-only-mode header {
+  border-radius: 10px;
+}
+
+body.voice-only-mode footer {
+  top: 0;
+  bottom: auto;
+  left: 112px;
+  right: auto;
+  width: 56px;
+  background: transparent;
+  border-radius: 0;
+}
+
+body.voice-only-mode #img-button-speech {
+  color: #74d99f;
+}

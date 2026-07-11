@@ -39,8 +39,8 @@ const defaultConfig = {
     // Fish 流式朗读：边合成边播，首声 ~190ms（默认开启，仅对 Fish 生效）
     ttsStreaming: true,
     compactMode: false,
-    compactWidth: 320,
-    compactHeight: 200,
+    compactWidth: 232,
+    compactHeight: 56,
   },
   dialog: {
     weight: 'normal',
@@ -77,8 +77,12 @@ const defaultConfig = {
     fromPlayer: 'Auto',
     to: 'Simplified-Chinese',
     timeout: '10',
-    },
-    api: {
+  },
+  dalamudBridge: {
+    enabled: true,
+    pipeName: 'fftrans-dalamud-v1',
+  },
+  api: {
     googleVisionType: 'google-api-key',
     googleVisionApiKey: '',
     geminiApiKey: '',

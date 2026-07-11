@@ -96,6 +96,14 @@ async function entry() {
   // add dialog
   dialogModule.addDialog(dialogData);
 
+  // The game flattens the line break between the English source and the static
+  // EXD translation into a space. Stop before the first CJK character so TTS
+  // only receives the English portion regardless of how the break is decoded.
+  const translatedTextIndex = dialogData.text.search(/[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]/);
+  dialogData.audioText = (translatedTextIndex < 0
+    ? dialogData.text
+    : dialogData.text.slice(0, translatedTextIndex)).trim();
+
   // clear newline
   dialogData.name = dialogData.name.replace(/[\r\n]/g, '');
   dialogData.text = dialogData.text.replace(/[\r\n]/g, '');
@@ -103,7 +111,6 @@ async function entry() {
   // reset translated content
   dialogData.translatedName = dialogData.name;
   dialogData.translatedText = dialogData.text;
-  dialogData.audioText = dialogData.text;
 
   // get true language
   const trueLanguage = getLanguage(dialogData);

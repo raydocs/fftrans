@@ -156,7 +156,6 @@ async function setView() {
 
   resetView(config);
   setClickThrough(config.indexWindow.clickThrough);
-  setSpeech(config.indexWindow.speech);
   updateCompactButton(config.indexWindow.compactMode);
 
   if (config.system.firstTime) {
@@ -235,12 +234,24 @@ function setButton() {
   document.getElementById('img-button-compact').onclick = async () => {
     const config = await ipcRenderer.invoke(IPC_CHANNELS.GET_CONFIG);
     config.indexWindow.compactMode = !config.indexWindow.compactMode;
+    if (config.indexWindow.compactMode) {
+      config.indexWindow.compactWidth = 232;
+      config.indexWindow.compactHeight = 56;
+    }
     config.indexWindow.x = -1;
     config.indexWindow.y = -1;
     config.indexWindow.width = -1;
     config.indexWindow.height = -1;
     await ipcRenderer.invoke(IPC_CHANNELS.SET_CONFIG, config);
     ipcRenderer.send(IPC_CHANNELS.SEND_INDEX, IPC_CHANNELS.RESET_VIEW, config);
+    if (config.indexWindow.compactMode) {
+      ipcRenderer.send(IPC_CHANNELS.MOVE_WINDOW, {
+        x: window.screenX,
+        y: window.screenY,
+        width: config.indexWindow.compactWidth,
+        height: config.indexWindow.compactHeight,
+      });
+    }
     updateCompactButton(config.indexWindow.compactMode);
     ipcRenderer.send(IPC_CHANNELS.ADD_NOTIFICATION, config.indexWindow.compactMode ? 'COMPACT_MODE_ON' : 'COMPACT_MODE_OFF');
   };
@@ -298,6 +309,8 @@ function startApp() {
 
 // reset view
 function resetView(config) {
+  document.body.classList.toggle('voice-only-mode', Boolean(config.indexWindow.compactMode));
+  setSpeech(config.indexWindow.speech);
   ipcRenderer.send(IPC_CHANNELS.RESTORE_WINDOW);
   ipcRenderer.send(IPC_CHANNELS.SET_ALWAYS_ON_TOP, config.indexWindow.alwaysOnTop);
   ipcRenderer.send(IPC_CHANNELS.SET_FOCUSABLE, config.indexWindow.focusable);
@@ -454,6 +467,16 @@ function setClickThrough(value) {
 function setSpeech(value) {
   console.log('[TTS] setSpeech called with:', value);
   const button = document.getElementById('img-button-speech');
+  const iconPath = button?.querySelector('svg path:last-child');
+  const enabledIcon = 'M3 9v6h4l5 5V4L7 9H3zm11 6.54c1.19-.69 2-1.97 2-3.54s-.81-2.85-2-3.54v7.08zm0-11.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z';
+  const disabledIcon = 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z';
+
+  if (iconPath) iconPath.setAttribute('d', value ? enabledIcon : disabledIcon);
+  if (button) {
+    button.title = value ? 'Mute TTS' : 'Enable TTS';
+    button.setAttribute('aria-label', button.title);
+  }
+
   if (value) {
     if (button) button.style.opacity = '1';
     console.log('[TTS] Dispatching start-playing event');

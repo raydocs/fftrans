@@ -42,6 +42,7 @@
 | 功能 | 描述 |
 |------|------|
 | 🎮 **实时翻译** | 自动捕获并翻译游戏对话与过场字幕 |
+| 💬 **原生双语对话** | 可选 Dalamud 伴侣插件，把英文原文与中文译文写进同一个游戏 `Talk` 对话框 |
 | 🧠 **多引擎 AI 翻译** | NVIDIA / OpenRouter / Gemini / GPT / Kimi / 自定义 LLM，覆盖免费到付费 |
 | 📊 **模型对比** | 应用内实时对比译文质量与延迟；配套 Cloudflare 云端评测站 |
 | 📸 **OCR 截图翻译** | 屏幕区域截取，识别并翻译任意文字（Tesseract / Google Vision / AI 视觉） |
@@ -64,6 +65,32 @@
 2. 运行 `FFTrans_Setup.exe` 完成安装
 3. 启动游戏并进入，再以管理员身份启动 FFTrans
 4. 打开设置，选择翻译引擎并（如需）填入 API Key，保存即可
+
+---
+
+## 💬 游戏原生双语对话框（可选）
+
+普通悬浮窗无法真正进入 FFXIV 的对话 UI。仓库现在包含独立的
+[FFTrans Dalamud 插件](dalamud/FFTransDalamud/README.md)，可将普通 NPC `Talk` 对话显示为：
+
+```text
+The original English dialogue.
+对应的中文译文。
+```
+
+FFTrans 仍负责模型、API、词典和缓存；插件只读取当前可见原文并写回游戏 UI。两者通过
+Windows 本地命名管道通信，每次启动使用新的随机令牌，插件永远不会获得翻译 API Key。
+
+```powershell
+# 构建、测试并生成 build/dalamud/FFTransDalamud-latest.zip
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-dalamud.ps1
+
+# 同时复制到 XIVLauncher 开发插件目录
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-dalamud.ps1 -Install
+```
+
+> ⚠️ XIVLauncher、Dalamud 和其他第三方工具均不符合 FFXIV 官方服务条款，存在账号风险。
+> 当前插件先支持普通 NPC `Talk`；对话切换或插件卸载时会严格校验并恢复原始 UI。
 
 ---
 
@@ -269,6 +296,7 @@ fftrans/
 │   │   └── ipc/              # IPC 通信（分类处理）
 │   └── data/text/            # 游戏术语词库
 ├── cloudflare-benchmark/     # 云端模型评测站（Cloudflare Pages + Functions + D1）
+├── dalamud/FFTransDalamud/   # 原生 Talk 双语对话插件（Dalamud API 15 / .NET 10）
 ├── package.json
 └── CLAUDE.md                 # AI 开发指南
 ```
@@ -279,6 +307,8 @@ fftrans/
 npm run pack    # 打包（不生成安装包）
 npm run dist    # 构建安装包 → build/FFTrans_Setup.exe
 npm run lint    # 代码检查
+npm run test:dalamud # 编译插件、运行 C# 测试与 Node↔C# 命名管道测试
+npm run test:all     # 完整 Node/Electron + Dalamud 测试
 ```
 
 ---

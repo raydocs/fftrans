@@ -1,0 +1,37 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFTransDalamud.Core", "src\FFTransDalamud.Core\FFTransDalamud.Core.csproj", "{A53CF690-5A13-47C3-A693-B7451B31CE84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFTransDalamud", "src\FFTransDalamud\FFTransDalamud.csproj", "{C6E47030-547C-43A8-8EB8-EC5D9A18D7AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFTransDalamud.Core.Tests", "tests\FFTransDalamud.Core.Tests\FFTransDalamud.Core.Tests.csproj", "{66D776FD-A1CF-43C0-809E-CF02400B1030}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFTransDalamud.BridgeProbe", "tools\FFTransDalamud.BridgeProbe\FFTransDalamud.BridgeProbe.csproj", "{57D804E8-D555-43D7-86A0-021094929895}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A53CF690-5A13-47C3-A693-B7451B31CE84}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A53CF690-5A13-47C3-A693-B7451B31CE84}.Debug|x64.Build.0 = Debug|Any CPU
+		{A53CF690-5A13-47C3-A693-B7451B31CE84}.Release|x64.ActiveCfg = Release|Any CPU
+		{A53CF690-5A13-47C3-A693-B7451B31CE84}.Release|x64.Build.0 = Release|Any CPU
+		{C6E47030-547C-43A8-8EB8-EC5D9A18D7AE}.Debug|x64.ActiveCfg = Debug|x64
+		{C6E47030-547C-43A8-8EB8-EC5D9A18D7AE}.Debug|x64.Build.0 = Debug|x64
+		{C6E47030-547C-43A8-8EB8-EC5D9A18D7AE}.Release|x64.ActiveCfg = Release|x64
+		{C6E47030-547C-43A8-8EB8-EC5D9A18D7AE}.Release|x64.Build.0 = Release|x64
+		{66D776FD-A1CF-43C0-809E-CF02400B1030}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{66D776FD-A1CF-43C0-809E-CF02400B1030}.Debug|x64.Build.0 = Debug|Any CPU
+		{66D776FD-A1CF-43C0-809E-CF02400B1030}.Release|x64.ActiveCfg = Release|Any CPU
+		{66D776FD-A1CF-43C0-809E-CF02400B1030}.Release|x64.Build.0 = Release|Any CPU
+		{57D804E8-D555-43D7-86A0-021094929895}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{57D804E8-D555-43D7-86A0-021094929895}.Debug|x64.Build.0 = Debug|Any CPU
+		{57D804E8-D555-43D7-86A0-021094929895}.Release|x64.ActiveCfg = Release|Any CPU
+		{57D804E8-D555-43D7-86A0-021094929895}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

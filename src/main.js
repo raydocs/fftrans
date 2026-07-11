@@ -10,7 +10,8 @@ change icon
 */
 
 // electron
-const { app, BrowserWindow, globalShortcut } = require('electron');
+const { app, BrowserWindow, globalShortcut, Menu, Tray } = require('electron');
+const path = require('path');
 //app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-http-cache');
 
@@ -33,61 +34,142 @@ const { globalMonitor } = require('./module/system/performance-monitor');
 const { globalCache } = require('./module/system/translation-cache');
 const { globalTTSAudioCache } = require('./module/system/tts-audio-cache');
 const elevenLabsExtensionBridge = require('./module/system/elevenlabs-extension-bridge');
+const dalamudBridge = require('./module/system/dalamud-bridge');
+const configModule = require('./module/system/config-module');
+const { IPC_CHANNELS } = require('./constants');
 
 // text detect module
 const textDetectModule = require('./module/system/text-detect-module');
 
+let tray = null;
+let isQuitting = false;
+let cleanupPromise = null;
+
+function getIndexWindow() {
+  return windowModule.getWindow('index');
+}
+
+function showIndexWindow() {
+  const indexWindow = getIndexWindow();
+  if (indexWindow && !indexWindow.isDestroyed()) {
+    indexWindow.show();
+    indexWindow.focus();
+  } else {
+    createIndexWindow();
+  }
+}
+
+function createIndexWindow() {
+  const indexWindow = windowModule.createWindow('index');
+  indexWindow?.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      indexWindow.hide();
+    }
+  });
+  return indexWindow;
+}
+
+function setSpeechEnabled(enabled) {
+  const config = configModule.getConfig();
+  config.indexWindow.speech = enabled;
+  configModule.setConfig(config);
+
+  const indexWindow = getIndexWindow();
+  if (indexWindow && !indexWindow.isDestroyed()) {
+    indexWindow.webContents.setAudioMuted(!enabled);
+    indexWindow.webContents.send(IPC_CHANNELS.RESET_VIEW, config);
+  }
+}
+
+function createTray() {
+  tray = new Tray(path.join(__dirname, 'data', 'img', 'tataru.ico'));
+  tray.setToolTip('FFTrans');
+  tray.setContextMenu(Menu.buildFromTemplate([
+    {
+      label: '显示/隐藏语音控制条',
+      click: () => {
+        const indexWindow = getIndexWindow();
+        if (indexWindow?.isVisible()) indexWindow.hide();
+        else showIndexWindow();
+      },
+    },
+    {
+      label: '启用英文语音',
+      type: 'checkbox',
+      checked: Boolean(configModule.getConfig().indexWindow.speech),
+      click: menuItem => setSpeechEnabled(menuItem.checked),
+    },
+    { type: 'separator' },
+    {
+      label: '退出 FFTrans',
+      click: () => app.quit(),
+    },
+  ]));
+  tray.on('double-click', showIndexWindow);
+}
+
 // on ready
 app.on('ready', () => {
   appModule.startApp();
-  windowModule.createWindow('index');
+  createIndexWindow();
+  createTray();
 });
 
 // on window all closed
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  // Keep memory reading and TTS alive while the controller is hidden in the tray.
 });
 
 // on activate
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) windowModule.createWindow('index');
+  showIndexWindow();
 });
 
 // Cleanup on app exit
-app.on('before-quit', async (event) => {
+app.on('before-quit', (event) => {
+  isQuitting = true;
   // Prevent default to allow async cleanup
   event.preventDefault();
 
-  try {
-    console.log('Starting app cleanup...');
+  if (cleanupPromise) return;
 
-    // Stop Sharlayan reader process (don't restart)
-    sharlayanModule.stop(false);
+  cleanupPromise = (async () => {
+    try {
+      console.log('Starting app cleanup...');
 
-    // Cleanup translation batch processor (flush pending batches)
-    await translateModule.cleanup();
+      // Stop Sharlayan reader process (don't restart)
+      sharlayanModule.stop(false);
 
-    // Cleanup translation cache (stop auto-save interval, final save)
-    await globalCache.cleanup();
-    await globalTTSAudioCache.cleanup();
-    await elevenLabsExtensionBridge.shutdown();
+      // Stop accepting local plugin translations before cleaning up translators.
+      await dalamudBridge.shutdown();
 
-    // Cleanup OCR worker
-    await textDetectModule.cleanup();
+      // Cleanup translation batch processor (flush pending batches)
+      await translateModule.cleanup();
 
-    // Performance monitor final report
-    globalMonitor.cleanup();
+      // Cleanup translation cache (stop auto-save interval, final save)
+      await globalCache.cleanup();
+      await globalTTSAudioCache.cleanup();
+      await elevenLabsExtensionBridge.shutdown();
 
-    // Unregister all global shortcuts
-    globalShortcut.unregisterAll();
+      // Cleanup OCR worker
+      await textDetectModule.cleanup();
 
-    console.log('App cleanup completed');
-  } catch (error) {
-    console.error('Error during app cleanup:', error);
-  }
+      // Performance monitor final report
+      globalMonitor.cleanup();
 
-  // Now actually quit
-  app.exit(0);
+      // Unregister all global shortcuts
+      globalShortcut.unregisterAll();
+
+      console.log('App cleanup completed');
+    } catch (error) {
+      console.error('Error during app cleanup:', error);
+    } finally {
+      // Now actually quit
+      app.exit(0);
+    }
+  })();
+
 });
 
 // ignore uncaughtException

@@ -223,8 +223,8 @@ function getWindowSize(windowName, config) {
         if (boundsValidCheck(indexBounds)) {
           if (isCompactMode) {
             // Compact mode: use configured compact size, position at bottom-right corner
-            bounds.width = config.indexWindow.compactWidth || 320;
-            bounds.height = config.indexWindow.compactHeight || 200;
+            bounds.width = config.indexWindow.compactWidth || 232;
+            bounds.height = config.indexWindow.compactHeight || 56;
             bounds.x = displayBounds.x + displayBounds.width - bounds.width - 10;
             bounds.y = displayBounds.y + displayBounds.height - bounds.height - 50;
           } else {
@@ -241,8 +241,8 @@ function getWindowSize(windowName, config) {
         }
 
         if (configModule.getConfig().indexWindow.minSize) {
-          bounds.minWidth = isCompactMode ? 150 : 200;
-          bounds.minHeight = isCompactMode ? 100 : 200;
+          bounds.minWidth = isCompactMode ? 232 : 200;
+          bounds.minHeight = isCompactMode ? 56 : 200;
         }
 
         bounds = boundsSizeCheck(bounds);

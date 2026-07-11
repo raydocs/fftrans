@@ -21,6 +21,12 @@ const enJson = require('./en-json');
 // fix entry
 const fixEntry = require('./fix-entry');
 
+// fork-specific files that must survive upstream text dictionary replacements
+const {
+  capturePreservedFiles,
+  restorePreservedFiles,
+} = require('./text-update-preserve');
+
 // config module
 const configModule = require('../system/config-module');
 
@@ -126,16 +132,7 @@ async function downloadJSON() {
 
     if (downloadStatus === 'COMPLETE') {
       // 保留 fork 特有文件（上游 text 包里没有，rmdir 会连带删掉，例如 NPC 性别数据）
-      const fs = require('fs');
-      const path = require('path');
-      const preserveRelPaths = ['cache/msq-speaker-gender.json'];
-      const preserved = {};
-      for (const rel of preserveRelPaths) {
-        try {
-          const p = path.join(textPath, rel);
-          if (fs.existsSync(p)) preserved[rel] = fs.readFileSync(p);
-        } catch (e) { console.log('preserve read failed', rel, e.message); }
-      }
+      const preserved = capturePreservedFiles(textPath);
 
       // delete old text files
       fileModule.rmdir(textPath);
@@ -145,15 +142,7 @@ async function downloadJSON() {
       fileModule.unlink(filePath);
 
       // 恢复 fork 特有文件（若新数据里没有）
-      for (const rel of Object.keys(preserved)) {
-        try {
-          const p = path.join(textPath, rel);
-          if (!fs.existsSync(p)) {
-            fs.mkdirSync(path.dirname(p), { recursive: true });
-            fs.writeFileSync(p, preserved[rel]);
-          }
-        } catch (e) { console.log('preserve restore failed', rel, e.message); }
-      }
+      restorePreservedFiles(textPath, preserved);
 
       dialogModule.addNotification('DOWNLOAD_COMPLETED');
     }

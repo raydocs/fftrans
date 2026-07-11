@@ -1,0 +1,15 @@
+{
+  "Author": "FFTrans",
+  "Name": "FFTrans",
+  "InternalName": "FFTransDalamud",
+  "Punchline": "在游戏原生 Talk 对话框中显示 FFTrans 双语翻译。",
+  "Description": "通过 Tataru Assistant 本地命名管道翻译原生 Talk 对话。使用 /fftrans 打开设置。",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "Tags": [
+    "translation",
+    "dialogue",
+    "tataru"
+  ]
+}
+
