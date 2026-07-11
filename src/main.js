@@ -52,6 +52,7 @@ function getIndexWindow() {
 function showIndexWindow() {
   const indexWindow = getIndexWindow();
   if (indexWindow && !indexWindow.isDestroyed()) {
+    if (indexWindow.isMinimized()) indexWindow.restore();
     indexWindow.show();
     indexWindow.focus();
   } else {
@@ -64,7 +65,7 @@ function createIndexWindow() {
   indexWindow?.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault();
-      indexWindow.hide();
+      indexWindow.minimize();
     }
   });
   return indexWindow;
@@ -106,6 +107,7 @@ function createTray() {
       click: () => app.quit(),
     },
   ]));
+  tray.on('click', showIndexWindow);
   tray.on('double-click', showIndexWindow);
 }
 
