@@ -260,8 +260,8 @@ function getEngineList(engine = changeList[0], engineAlternate = changeList[0]) 
 }
 
 // get translate option
-function getTranslateOption(text, translation) {
-  const table = engineTable[translation.engine];
+function getTranslateOption(text, engine, translation) {
+  const table = engineTable[engine];
 
   if (table) {
     return {
