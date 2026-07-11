@@ -161,6 +161,7 @@ const IPC_CHANNELS = {
     SEND_DATA: 'send-data',
     RESET_VIEW: 'reset-view',
     REVEAL_COMPACT_CONTROLS: 'reveal-compact-controls',
+    SET_SPEECH_STATE: 'set-speech-state',
     ADD_TO_PLAYLIST: 'add-to-playlist',
     HIDE_UPDATE_BUTTON: 'hide-update-button',
 };

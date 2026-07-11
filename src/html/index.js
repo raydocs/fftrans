@@ -45,6 +45,10 @@ function setIPC() {
     }, 5000);
   });
 
+  ipcRenderer.on(IPC_CHANNELS.SET_SPEECH_STATE, (event, enabled) => {
+    setSpeech(enabled);
+  });
+
   // hide button
   ipcRenderer.on(IPC_CHANNELS.HIDE_BUTTON, (event, value) => {
     hideButton(value.isMouseOut, value.hideButton);

@@ -162,6 +162,19 @@ function setGlobalShortcut() {
 function registerGlobalShortcut() {
   globalShortcut.unregisterAll();
 
+  globalShortcut.register('CommandOrControl+F8', () => {
+    const config = configModule.getConfig();
+    config.indexWindow.speech = !config.indexWindow.speech;
+    configModule.setConfig(config);
+
+    const indexWindow = windowModule.getWindow('index');
+    if (indexWindow && !indexWindow.isDestroyed()) {
+      indexWindow.webContents.setAudioMuted(!config.indexWindow.speech);
+      indexWindow.webContents.send(IPC_CHANNELS.SET_SPEECH_STATE, config.indexWindow.speech);
+      indexWindow.webContents.send(IPC_CHANNELS.REVEAL_COMPACT_CONTROLS);
+    }
+  });
+
   globalShortcut.register('CommandOrControl+F9', () => {
     const readmePath = fileModule.getRootPath('src', 'data', 'text', 'readme', 'index.html');
     // Use execFile for security
