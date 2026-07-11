@@ -13,6 +13,7 @@ let hideUpdateButton = true;
 // timeout
 let rafScroll = null;
 let rafMove = null;
+let revealControlsTimeout = null;
 
 // DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
@@ -34,6 +35,14 @@ function setIPC() {
   // reset view
   ipcRenderer.on(IPC_CHANNELS.RESET_VIEW, (event, config) => {
     resetView(config);
+  });
+
+  ipcRenderer.on(IPC_CHANNELS.REVEAL_COMPACT_CONTROLS, () => {
+    clearTimeout(revealControlsTimeout);
+    document.body.classList.add('controls-revealed');
+    revealControlsTimeout = setTimeout(() => {
+      document.body.classList.remove('controls-revealed');
+    }, 5000);
   });
 
   // hide button

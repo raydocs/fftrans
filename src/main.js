@@ -49,12 +49,19 @@ function getIndexWindow() {
   return windowModule.getWindow('index');
 }
 
+function revealIndexControls(indexWindow = getIndexWindow()) {
+  if (indexWindow && !indexWindow.isDestroyed() && !indexWindow.webContents.isLoading()) {
+    indexWindow.webContents.send(IPC_CHANNELS.REVEAL_COMPACT_CONTROLS);
+  }
+}
+
 function showIndexWindow() {
   const indexWindow = getIndexWindow();
   if (indexWindow && !indexWindow.isDestroyed()) {
     if (indexWindow.isMinimized()) indexWindow.restore();
     indexWindow.show();
     indexWindow.focus();
+    revealIndexControls(indexWindow);
   } else {
     createIndexWindow();
   }
@@ -68,6 +75,8 @@ function createIndexWindow() {
       indexWindow.minimize();
     }
   });
+  indexWindow?.on('focus', () => revealIndexControls(indexWindow));
+  indexWindow?.webContents.once('did-finish-load', () => revealIndexControls(indexWindow));
   return indexWindow;
 }
 

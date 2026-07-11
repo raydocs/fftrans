@@ -264,10 +264,10 @@ body.voice-only-mode footer {
   background: rgba(18, 18, 18, 0.94);
 }
 
-/* In compact mode these controls are the entire UI. Never let the generic
- * mouse-out rule make the controller invisible and impossible to find. */
-body.voice-only-mode:not(:hover) header:not(:focus-within),
-body.voice-only-mode:not(:hover) footer:not(:focus-within) {
+/* Taskbar/tray activation reveals the otherwise auto-hidden compact controls
+ * long enough for the user to locate and interact with them. */
+body.voice-only-mode.controls-revealed:not(:hover) header:not(:focus-within),
+body.voice-only-mode.controls-revealed:not(:hover) footer:not(:focus-within) {
   opacity: 1;
   pointer-events: auto;
 }
