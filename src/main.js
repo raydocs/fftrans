@@ -69,12 +69,25 @@ function showIndexWindow() {
 
 function createIndexWindow() {
   const indexWindow = windowModule.createWindow('index');
+  let minimizeRequestedByController = false;
+
   indexWindow?.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault();
+      minimizeRequestedByController = true;
       indexWindow.minimize();
+      setImmediate(() => {
+        minimizeRequestedByController = false;
+      });
     }
   });
+
+  indexWindow?.on('minimize', () => {
+    if (!minimizeRequestedByController && configModule.getConfig().indexWindow.compactMode) {
+      setImmediate(() => showIndexWindow());
+    }
+  });
+  indexWindow?.on('restore', () => revealIndexControls(indexWindow));
   indexWindow?.on('focus', () => revealIndexControls(indexWindow));
   indexWindow?.webContents.once('did-finish-load', () => revealIndexControls(indexWindow));
   return indexWindow;
