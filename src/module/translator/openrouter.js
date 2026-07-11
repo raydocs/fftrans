@@ -115,6 +115,7 @@ async function translate(text, source, target, type) {
       },
     ],
     temperature: parseFloat(config.ai.temperature),
+    max_tokens: 2000,
   };
 
   // Execute with retry logic for transient failures
@@ -178,6 +179,7 @@ async function translateStream(text, source, target, type, onChunk) {
       },
     ],
     temperature: parseFloat(config.ai.temperature),
+    max_tokens: 2000,
     stream: true,  // Enable streaming
   };
 

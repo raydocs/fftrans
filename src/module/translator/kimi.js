@@ -42,6 +42,7 @@ async function translate(text, source, target, type) {
       },
     ],
     temperature: parseFloat(config.ai.temperature),
+    max_tokens: 2000,
     //top_p: 1,
   };
 
@@ -97,6 +98,7 @@ async function getImageText(imageBase64 = '', language = 'Japanese') {
         },
       ],
       temperature: parseFloat(config.ai.temperature),
+      max_tokens: 2000,
     };
 
     const response = await requestModule.post(apiUrl, payload, headers);

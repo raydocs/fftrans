@@ -44,6 +44,8 @@ async function translate(text, source, target, type) {
       },
     ],
     temperature: parseFloat(config.ai.temperature),
+    // 某些 NVIDIA 模型不带 max_tokens 会返回空 choices，必须显式设置
+    max_tokens: 2000,
   };
 
   // Execute with retry logic for transient failures
