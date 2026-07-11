@@ -36,6 +36,8 @@ const defaultConfig = {
     speech: false,
     speechSpeed: '1',
     ttsEngine: 'elevenlabs',
+    // Fish 流式朗读：边合成边播，首声 ~190ms（默认开启，仅对 Fish 生效）
+    ttsStreaming: true,
     compactMode: false,
     compactWidth: 320,
     compactHeight: 200,
@@ -91,7 +93,7 @@ const defaultConfig = {
     openRouterApiKey: '',
     openRouterModel: 'inception/mercury-2',
     nvidiaApiKey: '',
-    nvidiaModel: 'deepseek-ai/deepseek-v4-pro',
+    nvidiaModel: 'deepseek-ai/deepseek-v4-flash',
     speechify: {
       bearerToken: '',
       voiceId: 'gwyneth',

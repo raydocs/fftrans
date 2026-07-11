@@ -51,6 +51,20 @@ function setIPC() {
     document.dispatchEvent(new CustomEvent('add-to-playlist', { detail: urlList }));
   });
 
+  // Fish 流式 TTS：转成 DOM 事件交给 speech.js 的 MediaSource 播放
+  ipcRenderer.on(IPC_CHANNELS.FISH_TTS_STREAM_START, (event, payload) => {
+    document.dispatchEvent(new CustomEvent('fish-stream-start', { detail: payload }));
+  });
+  ipcRenderer.on(IPC_CHANNELS.FISH_TTS_STREAM_CHUNK, (event, payload) => {
+    document.dispatchEvent(new CustomEvent('fish-stream-chunk', { detail: payload }));
+  });
+  ipcRenderer.on(IPC_CHANNELS.FISH_TTS_STREAM_END, (event, payload) => {
+    document.dispatchEvent(new CustomEvent('fish-stream-end', { detail: payload }));
+  });
+  ipcRenderer.on(IPC_CHANNELS.FISH_TTS_STREAM_ERROR, (event, payload) => {
+    document.dispatchEvent(new CustomEvent('fish-stream-error', { detail: payload }));
+  });
+
   // console log
   ipcRenderer.on(IPC_CHANNELS.CONSOLE_LOG, (event, text) => {
     console.log(text);

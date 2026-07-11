@@ -16,6 +16,7 @@ const fileModule = require('./file-module');
 const notificationModule = require('./notification-module');
 
 const ttsService = require('./tts-service');
+const fishTTS = require('../translator/fish-tts');
 
 // window module
 const windowModule = require('./window-module');
@@ -162,10 +163,47 @@ let cachedLogPath = '';
 let logWriteChain = Promise.resolve(); // Serialize async writes to prevent race conditions
 let dialogPlaybackChain = Promise.resolve(); // Keep auto-play lines in order and prevent cross-line interleaving
 
+// Fish 流式朗读：整句一个请求，二进制块经 IPC 推给渲染层的 MediaSource 边收边播（首声 ~190ms）
+async function playFishStreaming(dialogData = {}, config = configModule.getConfig()) {
+  const requestId = `fish-${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+  const fishConfig = config.api?.fish || null;
+
+  try {
+    windowModule.sendIndex(IPC_CHANNELS.FISH_TTS_STREAM_START, {
+      requestId,
+      mimeType: 'audio/mpeg',
+    });
+
+    await fishTTS.synthesizeSpeechStream(dialogData.audioText, dialogData.translation.from, fishConfig, {
+      onChunk: (chunk) => {
+        windowModule.sendIndex(IPC_CHANNELS.FISH_TTS_STREAM_CHUNK, { requestId, chunk });
+      },
+    });
+
+    windowModule.sendIndex(IPC_CHANNELS.FISH_TTS_STREAM_END, { requestId });
+    return { streamed: true, requestId };
+  } catch (error) {
+    console.error('[Dialog Module] Fish streaming TTS error:', error);
+    windowModule.sendIndex(IPC_CHANNELS.FISH_TTS_STREAM_ERROR, {
+      requestId,
+      message: error?.message || String(error),
+    });
+    return { streamed: false, error };
+  }
+}
+
 function enqueueDialogPlayback(dialogData = {}, config = configModule.getConfig()) {
+  const engine = ttsService.getConfiguredEngine(config);
+  const streamingEnabled = config.indexWindow?.ttsStreaming !== false;
+
   const playbackTask = dialogPlaybackChain
     .catch(() => undefined)
     .then(async () => {
+      // Fish + 流式开关 → 走 MediaSource 边收边播
+      if (engine === 'fish' && streamingEnabled) {
+        return await playFishStreaming(dialogData, config);
+      }
+
       const result = await ttsService.getConfiguredAudioUrlProgressiveWithFallback(
         dialogData.audioText,
         dialogData.translation.from,

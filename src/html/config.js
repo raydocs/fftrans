@@ -2157,7 +2157,8 @@ function collectMiMoFormConfig() {
     apiKey: document.getElementById('input-mimo-api-key').value.trim(),
     model: document.getElementById('select-mimo-model').value,
     voice: document.getElementById('input-mimo-voice').value.trim(),
-    responseFormat: document.getElementById('select-mimo-response-format').value,
+    // MiMo v2.5 只支持 wav；旧存档里可能是 mp3/ogg 导致下拉框读出空值，这里兜底成 wav
+    responseFormat: document.getElementById('select-mimo-response-format').value || 'wav',
     styleInstructions: document.getElementById('input-mimo-style').value.trim(),
   };
 }
@@ -3034,6 +3035,12 @@ async function readConfig() {
 
   // Sync MiMo voice controls from stored value
   syncMiMoVoiceControlsFromStoredValue(config?.api?.mimo?.voice || '');
+
+  // MiMo v2.5 只支持 wav；旧存档若为 mp3/ogg 会让下拉框选中空值，强制归位到 wav
+  const mimoFormatSelect = document.getElementById('select-mimo-response-format');
+  if (mimoFormatSelect && mimoFormatSelect.value !== 'wav') {
+    mimoFormatSelect.value = 'wav';
+  }
 
   // Sync Fish Audio voice controls from stored value
   syncFishVoiceControlsFromStoredValue(config?.api?.fish?.referenceId || '');

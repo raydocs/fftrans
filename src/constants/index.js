@@ -148,6 +148,12 @@ const IPC_CHANNELS = {
     ELEVENLABS_TTS_PROGRESSIVE_ERROR: 'elevenlabs-tts-progressive-error',
     MIMO_TTS: 'mimo-tts',
 
+    // Fish 流式 TTS（主进程 → 渲染层，边收边播）
+    FISH_TTS_STREAM_START: 'fish-tts-stream-start',
+    FISH_TTS_STREAM_CHUNK: 'fish-tts-stream-chunk',
+    FISH_TTS_STREAM_END: 'fish-tts-stream-end',
+    FISH_TTS_STREAM_ERROR: 'fish-tts-stream-error',
+
     // Global Shortcut
     SET_GLOBAL_SHORTCUT: 'set-global-shortcut',
 
