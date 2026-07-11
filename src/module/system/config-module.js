@@ -507,6 +507,19 @@ function fixConfig2(config) {
   }
 
   try {
+    // 防御：频道全空是坏状态（会导致所有对话被跳过、完全不翻译）→ 恢复默认频道
+    const ch = config.channel;
+    const allEmpty = !ch || typeof ch !== 'object'
+      || Object.keys(ch).length === 0
+      || Object.values(ch).every((v) => !v);
+    if (allEmpty) {
+      config.channel = { ...defaultConfig.channel };
+    }
+  } catch (error) {
+    console.warn('[ConfigModule] fixConfig2 - restore empty channels failed:', error.message);
+  }
+
+  try {
     // 老用户更新到新版本时，自动把 AI 翻译模型同步到当前最新默认。
     // 按 app 版本一次性触发：更新后首次启动同步一次；两次更新之间用户自己改的模型会保留。
     const currentVersion = (app && typeof app.getVersion === 'function') ? app.getVersion() : '';
