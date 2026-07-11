@@ -7,6 +7,9 @@
 //
 // NVIDIA 模型全免费，"性价比"= 综合分（已含延迟权重）；"质量"= 纯准确度。
 
+// 明显的非文本/非聊天模型（漏进 D1 的也不推荐）
+const NON_TEXT_NAME = /diffusion|vision|image|video|audio|speech|tts|\bocr\b|embed|rerank|clip|fuyu|whisper|sana|flux|sdxl|stable-?diffusion/i;
+
 export const DEFAULT_LATENCY_CAP_MS = 3000; // 延迟上限：3 秒
 export const DEFAULT_MAX_LEAK_RATE = 20; // 思考泄漏率上限：20%
 export const DEFAULT_MIN_USABLE_RATE = 50; // 可用率下限：50%
@@ -59,6 +62,9 @@ export function isEligible(model, options = {}) {
   const maxLeakRate = options.maxLeakRate ?? DEFAULT_MAX_LEAK_RATE;
   const minUsableRate = options.minUsableRate ?? DEFAULT_MIN_USABLE_RATE;
 
+  if (NON_TEXT_NAME.test(String(model.modelId))) {
+    return false; // 非文本模型（扩散/视觉等）不进推荐
+  }
   if (model.averageLatencyMs == null || model.averageLatencyMs > latencyCapMs) {
     return false; // 延迟太久
   }

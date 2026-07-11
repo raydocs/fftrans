@@ -18,6 +18,23 @@ const PRICE_CAP_PER_M = 6; // OpenRouter 价格上限：$6 / 百万 token
 const NVIDIA_BASE = 'https://integrate.api.nvidia.com/v1';
 const OPENROUTER_MODELS_URL = 'https://openrouter.ai/api/v1/models';
 
+// 交替合并两个数组：a0, b0, a1, b1, ...（较长的余下部分附在末尾）
+function interleave(a, b) {
+  const out = [];
+  const max = Math.max(a.length, b.length);
+  for (let i = 0; i < max; i += 1) {
+    if (i < a.length) out.push(a[i]);
+    if (i < b.length) out.push(b[i]);
+  }
+  return out;
+}
+
+// 按名字排除明显的非文本/非聊天模型（NVIDIA 接口不给模态，只能靠名字兜底）
+const NON_TEXT_NAME = /diffusion|vision|image|video|audio|speech|tts|\bocr\b|embed|rerank|clip|fuyu|whisper|sana|flux|sdxl|stable-?diffusion/i;
+function isProbablyTextModel(modelId) {
+  return !NON_TEXT_NAME.test(String(modelId));
+}
+
 // 只保留纯文本模型（排除 image / audio / video / file 多模态）
 function isTextOnlyModel(item) {
   const arch = item?.architecture || {};
@@ -71,13 +88,10 @@ export async function onRequestPost(context) {
   }
 
   // 待测候选：NVIDIA(全免费) + OpenRouter(≤ $6/M、纯文本、最新优先)
-  const candidates = [];
-  if (env.NVIDIA_API_KEY) {
-    candidates.push(...(await fetchNvidiaCandidates(env, tested)));
-  }
-  if (env.OPENROUTER_API_KEY) {
-    candidates.push(...(await fetchOpenRouterCandidates(env, tested)));
-  }
+  const nvidiaCandidates = env.NVIDIA_API_KEY ? await fetchNvidiaCandidates(env, tested) : [];
+  const openRouterCandidates = env.OPENROUTER_API_KEY ? await fetchOpenRouterCandidates(env, tested) : [];
+  // 交替排列，保证两个 provider 都能被覆盖到（否则 NVIDIA 数百个模型会把 OpenRouter 一直挤在后面）
+  const candidates = interleave(nvidiaCandidates, openRouterCandidates);
 
   const toTest = candidates.slice(0, MAX_NEW_MODELS_PER_RUN);
   const models = [];
@@ -139,7 +153,7 @@ async function fetchNvidiaCandidates(env, tested) {
     return models
       .map((item) => item?.id)
       .filter(Boolean)
-      .filter((id) => classifyModel(id).benchmarkable && !tested.has(id))
+      .filter((id) => classifyModel(id).benchmarkable && isProbablyTextModel(id) && !tested.has(id))
       .map((id) => ({ provider: 'nvidia', modelId: id }));
   } catch {
     return [];
@@ -160,7 +174,7 @@ async function fetchOpenRouterCandidates(env, tested) {
         const id = item?.id || '';
         if (!id || tested.has(id)) return false;
         // 纯文本 + 可评测（非 embed/rerank/tts 等）
-        if (!isTextOnlyModel(item) || !classifyModel(id).benchmarkable) return false;
+        if (!isTextOnlyModel(item) || !classifyModel(id).benchmarkable || !isProbablyTextModel(id)) return false;
         // 价格：prompt 与 completion 单价都 ≤ $6/M
         const promptPrice = Number.parseFloat(item?.pricing?.prompt ?? '999');
         const completionPrice = Number.parseFloat(item?.pricing?.completion ?? '999');
