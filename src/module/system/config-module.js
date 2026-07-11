@@ -80,7 +80,7 @@ const defaultConfig = {
     googleVisionType: 'google-api-key',
     googleVisionApiKey: '',
     geminiApiKey: '',
-    geminiModel: 'gemini-flash-latest',
+    geminiModel: 'gemini-2.5-flash-lite',
     gptApiKey: '',
     gptModel: 'gpt-5.6-luna',
     kimiToken: '',
@@ -147,7 +147,8 @@ const defaultConfig = {
     temperature: '0.7',
     customTranslationPrompt: '',
     useStreaming: true,
-    disableThinking: false,
+    // 翻译短句不需要思考，默认关闭以大幅降低延迟（思考模型开思考会多花数秒）
+    disableThinking: true,
   },
   proxy: {
     enable: false,
@@ -525,9 +526,10 @@ function fixConfig2(config) {
     // 按 app 版本一次性触发：更新后首次启动同步一次；两次更新之间用户自己改的模型会保留。
     const currentVersion = (app && typeof app.getVersion === 'function') ? app.getVersion() : '';
     if (config.system && config.api && currentVersion && config.system.modelSyncedVersion !== currentVersion) {
-      config.api.geminiModel = defaultConfig.api.geminiModel; // gemini-flash-latest（自动追最新）
+      config.api.geminiModel = defaultConfig.api.geminiModel; // gemini-2.5-flash-lite（低延迟、几乎不思考）
       config.api.gptModel = defaultConfig.api.gptModel;       // 当前最新 GPT
       config.api.nvidiaModel = defaultConfig.api.nvidiaModel; // 评测榜单实测 #1（发布时）
+      config.ai.disableThinking = defaultConfig.ai.disableThinking; // 默认关闭思考（翻译不需要）
       config.system.modelSyncedVersion = currentVersion;
     }
   } catch (error) {

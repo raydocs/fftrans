@@ -115,6 +115,8 @@ async function translate(text, source, target, table = [], type) {
       //maxOutputTokens: 800,
       //topP: 0.8,
       //topK: 10,
+      // 禁用思考模式：思考模型翻译短句无益反而拖慢
+      ...(config.ai.disableThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
     },
   };
 
@@ -179,6 +181,8 @@ async function translateStream(text, source, target, table = [], type, onChunk) 
     ],
     generationConfig: {
       temperature: parseFloat(config.ai.temperature),
+      // 禁用思考模式：gemini-2.5-flash 等思考模型默认会先"想"数秒，翻译短句无益反而拖慢首字
+      ...(config.ai.disableThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
     },
     safetySettings: safetySettings,
   };
