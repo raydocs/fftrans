@@ -28,7 +28,10 @@ function appendNamePreservationRules(prompt = '') {
 }
 
 function createTranslationPrompt(source = 'English', target = 'Chinese', type = 'sentence', withGlossary = false) {
-  const customPrompt = configModule.getConfig().ai.customTranslationPrompt?.trim();
+  const config = configModule.getConfig();
+  const customPrompt = config.ai.customTranslationPrompt?.trim();
+  // 仅在开启「保留原文名词」时追加不翻译名词的规则；默认 false=让 AI 翻译成官方译名
+  const applyNameRules = config.ai.preserveNames ? appendNamePreservationRules : (p) => p.trim();
   const glossaryRule = withGlossary
     ? ' The user input is JSON; translate only the "text" field, use glossary entries when relevant, and return only the translated text.'
     : '';
@@ -38,11 +41,11 @@ function createTranslationPrompt(source = 'English', target = 'Chinese', type = 
       source = 'any languages';
     }
 
-    return appendNamePreservationRules(
+    return applyNameRules(
       `${customPrompt.replaceAll('${source}', source).replaceAll('${target}', target).replaceAll('${type}', type)}${glossaryRule}`
     );
   } else {
-    return appendNamePreservationRules(`Translate ${source} text into ${target}, and don't provide any explanations.${glossaryRule}`);
+    return applyNameRules(`Translate ${source} text into ${target}, and don't provide any explanations.${glossaryRule}`);
   }
 }
 

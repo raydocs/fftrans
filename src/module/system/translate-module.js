@@ -6,6 +6,8 @@ const TRANSLATION_CACHE_SCHEMA_VERSION = 'name-preserve-v1';
 // dialog module
 const dialogModule = require('./dialog-module');
 
+const configModule = require('./config-module');
+
 // engine module
 const engineModule = require('./engine-module');
 
@@ -98,7 +100,13 @@ function getCacheKey(text = '', translation = {}, table = [], type = 'sentence')
 }
 
 function shouldPreserveOriginalText(type = 'sentence') {
-  return type === 'name';
+  if (type !== 'name') return false;
+  // 开启「保留原文名词」时，说话人名字段不交给 AI（依赖词库）；关闭则也翻译名字
+  try {
+    return configModule.getConfig().ai?.preserveNames === true;
+  } catch {
+    return false;
+  }
 }
 
 // translate

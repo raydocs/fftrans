@@ -3647,6 +3647,10 @@ function getOptionList() {
       ['ai', 'disableThinking'],
     ],
     [
+      ['checkbox-ai-preserve-names', 'checked'],
+      ['ai', 'preserveNames'],
+    ],
+    [
       ['textarea-ai-custom-translation-prompt', 'value'],
       ['ai', 'customTranslationPrompt'],
     ],

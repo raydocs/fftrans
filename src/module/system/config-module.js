@@ -80,7 +80,7 @@ const defaultConfig = {
     googleVisionType: 'google-api-key',
     googleVisionApiKey: '',
     geminiApiKey: '',
-    geminiModel: 'gemini-2.5-flash-lite',
+    geminiModel: 'gemini-3.1-flash-lite',
     gptApiKey: '',
     gptModel: 'gpt-5.6-luna',
     kimiToken: '',
@@ -149,6 +149,9 @@ const defaultConfig = {
     useStreaming: true,
     // 翻译短句不需要思考，默认关闭以大幅降低延迟（思考模型开思考会多花数秒）
     disableThinking: true,
+    // 是否保留原文名词（不翻译人名/地名）。默认 false=交给 AI 翻译成官方译名
+    // （词库 fix 仍会修正已知名词）；开启则强制保留英文/日文原名
+    preserveNames: false,
   },
   proxy: {
     enable: false,
@@ -526,7 +529,7 @@ function fixConfig2(config) {
     // 按 app 版本一次性触发：更新后首次启动同步一次；两次更新之间用户自己改的模型会保留。
     const currentVersion = (app && typeof app.getVersion === 'function') ? app.getVersion() : '';
     if (config.system && config.api && currentVersion && config.system.modelSyncedVersion !== currentVersion) {
-      config.api.geminiModel = defaultConfig.api.geminiModel; // gemini-2.5-flash-lite（低延迟、几乎不思考）
+      config.api.geminiModel = defaultConfig.api.geminiModel; // gemini-3.1-flash-lite（低延迟~385ms，且不幻觉 FF14 人名）
       config.api.gptModel = defaultConfig.api.gptModel;       // 当前最新 GPT
       config.api.nvidiaModel = defaultConfig.api.nvidiaModel; // 评测榜单实测 #1（发布时）
       config.ai.disableThinking = defaultConfig.ai.disableThinking; // 默认关闭思考（翻译不需要）
