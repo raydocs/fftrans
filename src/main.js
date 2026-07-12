@@ -10,7 +10,7 @@ change icon
 */
 
 // electron
-const { app, BrowserWindow, globalShortcut, Menu, Tray } = require('electron');
+const { app, globalShortcut, Menu, Tray } = require('electron');
 const path = require('path');
 //app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-http-cache');
