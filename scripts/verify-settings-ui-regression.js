@@ -113,10 +113,7 @@ const disclosureControlMap = {
   ],
   'details-mimo-voice-output-options': [
     'select-mimo-response-format',
-    'input-mimo-speed',
     'input-mimo-style',
-    'input-mimo-emotion',
-    'input-mimo-language',
   ],
 };
 
