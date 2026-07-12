@@ -289,3 +289,39 @@ body.voice-only-mode footer {
 body.voice-only-mode #img-button-speech {
   color: #74d99f;
 }
+
+/* ==========================================================================
+   FFXIV 风格对话框皮肤（纯视觉）
+   目标：把裸的荧光绿文字换成"暖白色小对话框"——近黑正文、深灰边框、大圆角、
+   柔和阴影，接近 FFXIV 原生对话框的缩小版。
+   说明：dialog-module.getStyle() 会给每条 #div-dialog>div 设【行内】
+   color / backgroundColor / borderRadius 等（绿色即来自行内 color），故此处用
+   !important 覆盖这些视觉属性。刻意【不覆盖】行内 fontSize/marginTop —— 字号与
+   间距沿用用户配置（保持当前大小）。不改 JS、不改窗口 bounds/点击穿透；阴影控制
+   在容器现有 padding 内，避免在可见框外新增透明命中区域。
+   ========================================================================== */
+#div-dialog div {
+  color: #1f1d1a !important;
+  background: linear-gradient(180deg, rgba(247, 243, 230, 0.97), rgba(226, 220, 201, 0.97)) !important;
+  border: 2px solid rgba(64, 61, 56, 0.9) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+  padding: 14px 18px !important;
+}
+
+/* hover 不做网页卡片式变化，保持皮肤一致 */
+#div-dialog div:hover {
+  color: #1f1d1a !important;
+  background: linear-gradient(180deg, rgba(247, 243, 230, 0.97), rgba(226, 220, 201, 0.97)) !important;
+  border: 2px solid rgba(64, 61, 56, 0.9) !important;
+}
+
+#div-dialog p,
+#div-dialog span {
+  color: #1f1d1a !important;
+  text-shadow: none !important;
+  line-height: 1.55 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif !important;
+}
